@@ -2,7 +2,7 @@ import { getActorToken, getCoverEffect, isProne } from './actor.js'
 import { PerceptionMenu } from './apps/perception-menu.js'
 import { createTokenMessage } from './chat.js'
 import { createCoverSource } from './effect.js'
-import { getSetting, localize, templatePath } from './module.js'
+import { getFlag, getSetting, localize, setFlag, templatePath } from './module.js'
 import { validateTokens } from './scene.js'
 import { clearTokenData, getTokenData, setTokenData } from './token.js'
 import { getPrototype } from './utils.js'
@@ -74,12 +74,13 @@ async function takeCover(token) {
 
                 const process = async (selected, cover) => {
                     const flavor = cover === 'none' ? (selected === true ? 'remove-all' : 'remove') : 'take'
-                    createTokenMessage({
+                    const message = await createTokenMessage({
                         content: localize(`message.cover.${flavor}`, { cover: localize(`cover.${cover}`) }),
                         flags: { selected, cover, skipWait: skip },
                         token,
                         secret: !token.document.hasPlayerOwner,
                     })
+
                     if (skip) {
                         if (cover === 'none' && selected === true) return clearTokenData(token)
                         const data = deepClone(getTokenData(token)) ?? {}
@@ -87,7 +88,10 @@ async function takeCover(token) {
                             setProperty(data, `${tokenId}.cover`, cover)
                         }
                         return setTokenData(token, data)
-                    } else if (game.user.isGM) PerceptionMenu.openMenu(token, { selected, cover })
+                    } else if (game.user.isGM) {
+                        const validated = await PerceptionMenu.openMenu(token, { selected, cover })
+                        if (validated) setFlag(message, 'validated', true)
+                    }
                 }
 
                 if (level === 'remove-all') process(true, 'none')

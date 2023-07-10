@@ -79,8 +79,15 @@
                 "take": "Takes cover ({cover}) from a selection of tokens on the board",
                 "remove": "Removes cover from a selection of tokens on the board",
                 "remove-all": "Removes all conditional covers",
-                "validate": "Validate Covers",
-                "wait": "Wait for a GM to validate.."
+                "gm": {
+                    "validate": "Validate Covers",
+                    "validated": "Covers Validated",
+                    "check": "Check Selected"
+                },
+                "player": {
+                    "wait": "Wait for a GM to validate..",
+                    "validated": "Covers have been validated"
+                }
             }
         },
         "actions": {

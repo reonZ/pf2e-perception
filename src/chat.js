@@ -1,12 +1,12 @@
 import { PerceptionMenu } from './apps/perception-menu.js'
-import { MODULE_ID, getFlags, localize } from './module.js'
+import { MODULE_ID, getFlag, getFlags, localize, setFlag } from './module.js'
 import { rollAltedCheck } from './roll.js'
 
 export function renderChatMessage(message, html) {
     const token = message.token
     if (!token) return
 
-    const { rollCheck, context, check, visibility, cover, selected, skipWait } = getFlags(message)
+    const { rollCheck, context, check, visibility, cover, selected, skipWait, validated } = getFlags(message)
 
     if (game.user.isGM) {
         if (context && check && !rollCheck) {
@@ -23,15 +23,19 @@ export function renderChatMessage(message, html) {
                 createTokenMessage({ content: localize('message.flat-check.failure'), token })
             })
         } else if (cover && selected) {
+            let label = localize(`message.cover.gm.${skipWait ? 'check' : validated ? 'validated' : 'validate'}`)
+            if (!skipWait && validated) label += '<i class="fa-solid fa-check" style="color: green; margin-left: 0.3em;"></i>'
+
             const button = createChatButton({
                 action: 'validate-covers',
                 icon: 'fa-solid fa-list',
-                label: localize('message.cover.validate'),
+                label,
             })
 
             html.find('.message-content').append(button)
-            html.find('[data-action=validate-covers]').on('click', () => {
-                PerceptionMenu.openMenu(token, { selected, cover })
+            html.find('[data-action=validate-covers]').on('click', async () => {
+                const validated = await PerceptionMenu.openMenu(token, { selected, cover })
+                if (validated && !getFlag(message, 'validated')) setFlag(message, 'validated', true)
             })
         }
     } else {
@@ -41,8 +45,10 @@ export function renderChatMessage(message, html) {
                 localize('message.flat-check.blind', { visibility: game.i18n.localize(`PF2E.condition.${visibility}.name`) })
             )
         } else if (cover && !skipWait) {
-            const wait = `<i style="display: block; font-size: .9em; text-align: end;">${localize('message.cover.wait')}</i>`
-            html.find('.message-content').append(wait)
+            let hint = localize(`message.cover.player.${validated ? 'validated' : 'wait'}`)
+            if (validated) hint = '<i class="fa-solid fa-check" style="color: green;"></i> ' + hint
+            hint = `<i style="display: block; font-size: .9em; text-align: end;">${hint}</i>`
+            html.find('.message-content').append(hint)
         }
     }
 
@@ -62,12 +68,12 @@ export function createChatButton({ action, icon, label }) {
     return button
 }
 
-export function createTokenMessage({ content, token, flags, secret }) {
+export async function createTokenMessage({ content, token, flags, secret }) {
     const data = { content, speaker: ChatMessage.getSpeaker({ token: token instanceof Token ? token.document : token }) }
     if (flags) setProperty(data, `flags.${MODULE_ID}`, flags)
     if (secret) {
         data.type = CONST.CHAT_MESSAGE_TYPES.WHISPER
         data.whisper = ChatMessage.getWhisperRecipients('gm')
     }
-    ChatMessage.create(data)
+    return ChatMessage.create(data)
 }
