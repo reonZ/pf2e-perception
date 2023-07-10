@@ -1,8 +1,9 @@
 import { getActorToken, getCoverEffect, isProne } from './actor.js'
 import { PerceptionMenu } from './apps/perception-menu.js'
 import { createTokenMessage } from './chat.js'
+import { defaultValues } from './constants.js'
 import { createCoverSource } from './effect.js'
-import { getFlag, getSetting, localize, setFlag, templatePath } from './module.js'
+import { getSetting, localize, setFlag, templatePath } from './module.js'
 import { validateTokens } from './scene.js'
 import { clearTokenData, getTokenData, setTokenData } from './token.js'
 import { getPrototype } from './utils.js'
@@ -73,7 +74,7 @@ async function takeCover(token) {
                 const skip = getSetting('skip-cover')
 
                 const process = async (selected, cover) => {
-                    const flavor = cover === 'none' ? (selected === true ? 'remove-all' : 'remove') : 'take'
+                    const flavor = cover === defaultValues.cover ? (selected === true ? 'remove-all' : 'remove') : 'take'
                     const message = await createTokenMessage({
                         content: localize(`message.cover.${flavor}`, { cover: localize(`cover.${cover}`) }),
                         flags: { selected, cover, skipWait: skip },
@@ -82,20 +83,23 @@ async function takeCover(token) {
                     })
 
                     if (skip) {
-                        if (cover === 'none' && selected === true) return clearTokenData(token)
+                        if (cover === defaultValues.cover && selected === true) return clearTokenData(token)
                         const data = deepClone(getTokenData(token)) ?? {}
                         for (const tokenId of targets) {
                             setProperty(data, `${tokenId}.cover`, cover)
                         }
                         return setTokenData(token, data)
                     } else if (game.user.isGM) {
-                        const validated = await PerceptionMenu.openMenu(token, { selected, cover })
+                        const validated = await PerceptionMenu.openMenu({
+                            token,
+                            validation: { property: 'cover', value: cover, selected },
+                        })
                         if (validated) setFlag(message, 'validated', true)
                     }
                 }
 
-                if (level === 'remove-all') process(true, 'none')
-                else if (level === 'remove') process(targets, 'none')
+                if (level === 'remove-all') process(true, defaultValues.cover)
+                else if (level === 'remove') process(targets, defaultValues.cover)
                 else if (targets.length) process(targets, level)
                 else {
                     const source = createCoverSource(level)

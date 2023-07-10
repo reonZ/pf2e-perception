@@ -29,7 +29,10 @@
             }
         },
         "menu": {
-            "title": "{name} - Perception Menu",
+            "title": {
+                "perception": "{name} - Perception Menu",
+                "validation": "{name} - Validation Menu"
+            },
             "allies": "Allies",
             "neutral": "Neutral",
             "enemies": "Enemies",
@@ -38,13 +41,16 @@
             "use-selection": "Selected Tokens",
             "accept": "Accept",
             "reset": "Reset",
+            "cancel": "Cancel",
+            "close": "Close",
             "visibility": {
                 "observed": "Observed by",
                 "concealed": "Concealed from",
                 "hidden": "Hidden from",
                 "undetected": "Undetected by",
                 "unnoticed": "Unnoticed by"
-            }
+            },
+            "nothing": "No changes to be made"
         },
         "cover": {
             "none": "No Cover from",

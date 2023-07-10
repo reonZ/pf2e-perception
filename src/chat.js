@@ -34,7 +34,10 @@ export function renderChatMessage(message, html) {
 
             html.find('.message-content').append(button)
             html.find('[data-action=validate-covers]').on('click', async () => {
-                const validated = await PerceptionMenu.openMenu(token, { selected, cover })
+                const validated = await PerceptionMenu.openMenu({
+                    token,
+                    validation: { property: 'cover', value: cover, selected },
+                })
                 if (validated && !getFlag(message, 'validated')) setFlag(message, 'validated', true)
             })
         }

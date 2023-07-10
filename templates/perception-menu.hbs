@@ -1,6 +1,9 @@
+{{#if hasTokens}}
+
+{{#unless validation}}
 <div class="buttons">
-    <button data-action="use-selection"><i class="fa-solid fa-expand"></i> {{i18n 'use-selection'}}</button>
-    <button data-action="select-all"><i class="fa-solid fa-users"></i> {{i18n 'select-all'}}</button>
+    <button data-action="use-selection"><i class="fa-solid fa-expand"></i> {{i18n 'menu.use-selection'}}</button>
+    <button data-action="select-all"><i class="fa-solid fa-users"></i> {{i18n 'menu.select-all'}}</button>
 </div>
 <div class="options">
     <div>
@@ -15,32 +18,67 @@
             {{selectOptions @root.covers nameAttr="value" labelAttr="label"}}
         </select>
     </div>
-    <div class="name">{{i18n 'selected'}}</div>
+    <div class="name">{{i18n 'menu.selected'}}</div>
 </div>
 <hr>
-<div class="tokens">
+{{/unless}}
+
+<div class="tokens {{#if validation}}validation{{/if}}">
     {{> tokens type='enemies'}}
     {{> tokens type='neutral'}}
     {{> tokens type='allies'}}
 </div>
+
+{{#unless validation}}
 <hr>
+{{/unless}}
+
 <div class="buttons">
-    <button data-action="accept"><i class="fa-solid fa-check"></i> {{i18n 'accept'}}</button>
-    <button data-action="reset"><i class="fa-solid fa-rotate-left"></i> {{i18n 'reset'}}</button>
+    <button data-action="accept"><i class="fa-solid fa-check"></i> {{i18n 'menu.accept'}}</button>
+    {{#if validation}}
+    <button data-action="close"><i class="fa-solid fa-xmark"></i> {{i18n 'menu.cancel'}}</button>
+    {{else}}
+    <button data-action="reset"><i class="fa-solid fa-rotate-left"></i> {{i18n 'menu.reset'}}</button>
+    {{/if}}
 </div>
+
+{{else}}
+<p>{{i18n 'menu.nothing'}}</p>
+<div class="button">
+    <button data-action="close"><i class="fa-solid fa-xmark"></i> {{i18n 'menu.close'}}</button>
+</div>
+{{/if}}
+
 
 {{#*inline 'tokens'}}
 {{#with (lookup this type) as |tokens|}}
 {{#if tokens.length}}
 <section>
     <header>
-        <div class="type">{{@root.i18n ../type}}</div>
+        <div class="type">{{@root.i18n (concat 'menu.' ../type)}}</div>
+        {{#unless @root.validation}}
         <div class="all">
             <a data-action="select-all"><i class="fa-solid fa-users"></i></a>
         </div>
+        {{/unless}}
     </header>
     {{#each tokens as |token|}}
     <div class="token {{#if token.selected}}ui-selected{{/if}}" data-token-id="{{token.id}}">
+        {{#if (eq @root.validation 'cover')}}
+        <div class="original {{#if (ne token.originalCover @root.default.cover)}}custom{{/if}}">
+            {{@root.i18n (concat 'cover.' token.originalCover)}}
+        </div>
+        {{else if (eq @root.validation 'cover')}}
+        <div class="original {{#if (ne token.originalVisibility @root.default.visibility)}}custom{{/if}}">
+            {{@root.i18n (concat 'visibility.' token.originalVisibility)}}
+        </div>
+        {{/if}}
+
+        {{#if @root.validation}}
+        <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        {{/if}}
+
+        {{#if (or (eq @root.validation undefined) (eq @root.validation 'visibility'))}}
         <div class="visibility">
             <select name="visibility"
                 class="{{#if (ne token.visibility token.originalVisibility)}}changed{{/if}}{{#if (ne token.visibility @root.default.visibility)}} custom{{/if}}"
@@ -48,6 +86,9 @@
                 {{selectOptions @root.visibilities selected=token.visibility nameAttr="value" labelAttr="label"}}
             </select>
         </div>
+        {{/if}}
+
+        {{#if (or (eq @root.validation undefined) (eq @root.validation 'cover'))}}
         <div class="cover">
             <select name="cover"
                 class="{{#if (ne token.cover token.originalCover)}}changed{{/if}}{{#if (ne token.cover @root.default.cover)}} custom{{/if}}"
@@ -55,6 +96,8 @@
                 {{selectOptions @root.covers selected=token.cover nameAttr="value" labelAttr="label"}}
             </select>
         </div>
+        {{/if}}
+
         <div class="name">{{token.name}}</div>
     </div>
     {{/each}}

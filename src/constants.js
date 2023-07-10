@@ -15,3 +15,8 @@ export const COVER_VALUES = {
     greater: 3,
     'greater-prone': 4,
 }
+
+export const defaultValues = {
+    cover: 'none',
+    visibility: 'observed',
+}

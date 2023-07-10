@@ -21,20 +21,26 @@
 [id^=pf2e-perception-] .window-content .options,
 [id^=pf2e-perception-] .window-content .token {
   display: flex;
+  align-items: center;
   gap: 0.3em;
 }
 [id^=pf2e-perception-] .window-content .options select,
 [id^=pf2e-perception-] .window-content .token select {
-  height: auto;
+  height: 1.5em;
   border: none;
   -webkit-appearance: none;
      -moz-appearance: none;
           appearance: none;
-  width: 8em;
 }
 [id^=pf2e-perception-] .window-content .options select:focus,
 [id^=pf2e-perception-] .window-content .token select:focus {
   box-shadow: none;
+}
+[id^=pf2e-perception-] .window-content .options .original,
+[id^=pf2e-perception-] .window-content .options select,
+[id^=pf2e-perception-] .window-content .token .original,
+[id^=pf2e-perception-] .window-content .token select {
+  width: 8em;
 }
 [id^=pf2e-perception-] .window-content .options .name,
 [id^=pf2e-perception-] .window-content .token .name {
@@ -68,12 +74,12 @@
 [id^=pf2e-perception-] .window-content .tokens section .token[data-token-id]:is(:hover, .hover) {
   background: rgba(0, 0, 0, 0.0901960784);
 }
-[id^=pf2e-perception-] .window-content .tokens section .token.ui-selected .name, [id^=pf2e-perception-] .window-content .tokens section .token.ui-selecting .name {
+[id^=pf2e-perception-] .window-content .tokens:not(.validation) section .token.ui-selected .name, [id^=pf2e-perception-] .window-content .tokens:not(.validation) section .token.ui-selecting .name {
   text-shadow: 0 0 8px var(--color-shadow-primary);
 }
-[id^=pf2e-perception-] .window-content .tokens section .token select.changed {
+[id^=pf2e-perception-] .window-content .tokens:not(.validation) section .token select.changed {
   box-shadow: inset 0 0 3px var(--color-shadow-primary);
 }
-[id^=pf2e-perception-] .window-content .tokens section .token select:not(.changed).custom {
+[id^=pf2e-perception-] .window-content .tokens:not(.validation) section .token select:not(.changed).custom {
   font-weight: bold;
 }

@@ -1,4 +1,5 @@
 import { isProne } from '../actor.js'
+import { defaultValues } from '../constants.js'
 import { MODULE_ID, localize, templatePath } from '../module.js'
 import { getValidTokens, validateTokens } from '../scene.js'
 import { getTokenData, setTokenData } from '../token.js'
@@ -10,12 +11,13 @@ const COVERS = ['none', 'lesser', 'standard', 'greater', 'greater-prone']
 export class PerceptionMenu extends Application {
     #token
     #resolve
-    #selected
+    #selected = []
     #currentData
+    #validation
     #hoverTokenListener
 
-    constructor({ token, selected, cover, resolve }, options = {}) {
-        options.title = localize('menu.title', { name: token.name })
+    constructor({ token, validation, resolve }, options = {}) {
+        options.title = localize('menu.title', validation ? 'validation' : 'perception', { name: token.name })
         super(options)
 
         this.#resolve = resolve
@@ -30,15 +32,18 @@ export class PerceptionMenu extends Application {
 
         this.#currentData = this.#getTokenData(true)
 
-        if (selected === true) selected = getValidTokens(token).map(t => t.id)
-        else if (Array.isArray(selected)) selected = validateTokens(token, selected)
+        if (validation) {
+            let { property = 'cover', value = defaultValues[property], selected = true } = validation
 
-        this.#selected = selected ?? []
+            if (selected === true) selected = getValidTokens(token).map(t => t.id)
+            else selected = validateTokens(token, selected)
 
-        if (selected && COVERS.includes(cover)) {
             for (const tokenId of selected) {
-                setProperty(this.#currentData, `${tokenId}.cover`, cover)
+                setProperty(this.#currentData, `${tokenId}.${property}`, value)
             }
+
+            this.#selected = selected
+            this.#validation = property
         }
 
         Hooks.on('hoverToken', this.#hoverTokenListener)
@@ -57,17 +62,18 @@ export class PerceptionMenu extends Application {
         })
     }
 
-    static async openMenu(token, options = {}) {
-        const actor = token?.actor
+    static async openMenu(params = {}, options = {}) {
+        const actor = params.token?.actor
         if (!actor) return
 
-        const id = `${MODULE_ID}-${actor.uuid}`
-        const win = Object.values(ui.windows).find(x => x.id === id)
+        options.id = `${MODULE_ID}-${actor.uuid}`
 
+        const win = Object.values(ui.windows).find(x => x.id === options.id)
         if (win) win.close()
 
         return new Promise(resolve => {
-            new PerceptionMenu({ ...options, token, resolve }, { id }).render(true)
+            params.resolve = resolve
+            new PerceptionMenu(params, options).render(true)
         })
     }
 
@@ -93,35 +99,51 @@ export class PerceptionMenu extends Application {
         const opposition = alliance === 'party' ? 'opposition' : alliance === 'opposition' ? 'party' : null
         const covers = COVERS.map(value => ({ value, label: localize(`cover.${value}`) }))
 
-        const tokens = getValidTokens(this.token).map(({ id, name, actor }) => {
+        let allies = []
+        let enemies = []
+        let neutral = []
+        let hasTokens = false
+
+        let tokens = getValidTokens(this.token)
+        if (this.#validation) tokens = tokens.filter(t => this.#selected.includes(t.id))
+
+        for (const { id, name, actor } of tokens) {
             const current = this.#currentData[id] ?? {}
             const original = originalData[id] ?? {}
 
-            return {
+            if (this.#validation && current[this.#validation] === (original[this.#validation] ?? defaultValues[this.#validation]))
+                continue
+
+            const token = {
                 id,
                 name,
-                alliance: actor.alliance,
-                cover: current.cover ?? 'none',
-                visibility: current.visibility ?? 'observed',
-                originalCover: original.cover ?? 'none',
-                originalVisibility: original.visibility ?? 'observed',
+                cover: current.cover ?? defaultValues.cover,
+                visibility: current.visibility ?? defaultValues.visibility,
+                originalCover: original.cover ?? defaultValues.cover,
+                originalVisibility: original.visibility ?? defaultValues.visibility,
                 selected: this.#selected.includes(id),
             }
-        })
 
-        const filterTokens = a => tokens.filter(t => t.alliance === a).sort(sortByName)
+            if (opposition) {
+                const actorAlliance = actor.alliance
+                if (actorAlliance === alliance) allies.push(token)
+                else if (actorAlliance === opposition) enemies.push(token)
+                else neutral.push(token)
+            } else neutral.push(token)
+
+            hasTokens = true
+        }
 
         return {
-            i18n: key => localize(`menu.${key}`),
-            allies: opposition && filterTokens(alliance),
-            enemies: opposition && filterTokens(opposition),
-            neutral: opposition ? filterTokens(null) : tokens.sort(sortByName),
+            i18n: key => localize(key),
+            allies: allies.sort(sortByName),
+            enemies: enemies.sort(sortByName),
+            neutral: neutral.sort(sortByName),
             visibilities: VISIBILITIES.map(value => ({ value, label: localize(`menu.visibility.${value}`) })),
             covers: isProne(this.actor) ? covers : covers.slice(0, -1),
-            default: {
-                visibility: 'observed',
-                cover: 'none',
-            },
+            default: defaultValues,
+            validation: this.#validation,
+            hasTokens,
         }
     }
 
@@ -138,18 +160,47 @@ export class PerceptionMenu extends Application {
     }
 
     activateListeners(html) {
-        html.filter('.tokens').selectable({
-            autoRefresh: false,
-            filter: '.token',
-            cancel: 'header,select',
-            stop: () => this.#setSelected(),
-        })
-
         html.find('[data-token-id]').on('mouseenter', event => {
             const { tokenId } = event.currentTarget.dataset
             const token = this.scene.tokens.get(tokenId)?.object
             if (!token || token.controlled) return
             token._onHoverIn(event, { hoverOutOthers: true })
+        })
+
+        html.find('select[name=visibility], select[name=cover]').on('change', event => {
+            const target = event.currentTarget
+            const property = target.name
+            const defaultValue = defaultValues[property]
+            const value = target.value || defaultValue
+            const tokenId = target.closest('.token')?.dataset.tokenId
+            const tokenIds = tokenId ? [tokenId] : this.#selected
+
+            for (const tokenId of tokenIds) {
+                setProperty(this.#currentData, `${tokenId}.${property}`, value)
+            }
+
+            if (tokenId) {
+                target.classList.toggle('changed', value !== target.dataset.original)
+                target.classList.toggle('custom', value !== defaultValue)
+            } else this.render()
+        })
+
+        html.find('[data-action=accept]').on('click', async event => {
+            await setTokenData(this.document, this.#currentData)
+            this.close({ resolve: true })
+        })
+
+        html.find('[data-action=close]').on('click', () => {
+            this.close()
+        })
+
+        if (this.#validation) return
+
+        html.filter('.tokens').selectable({
+            autoRefresh: false,
+            filter: '.token',
+            cancel: 'header,select',
+            stop: () => this.#setSelected(),
         })
 
         html.find('[data-action=select-all]').on('click', event => {
@@ -165,33 +216,10 @@ export class PerceptionMenu extends Application {
             this.render()
         })
 
-        html.find('select[name=visibility], select[name=cover]').on('change', event => {
-            const target = event.currentTarget
-            const property = target.name
-            const defaultValue = property === 'visibility' ? 'observed' : 'none'
-            const value = target.value || defaultValue
-            const tokenId = target.closest('.token')?.dataset.tokenId
-            const tokenIds = tokenId ? [tokenId] : this.#selected
-
-            for (const tokenId of tokenIds) {
-                setProperty(this.#currentData, `${tokenId}.${property}`, value)
-            }
-
-            if (tokenId) {
-                target.classList.toggle('changed', value !== target.dataset.original)
-                target.classList.toggle('custom', value !== defaultValue)
-            } else this.render()
-        })
-
         html.find('[data-action=reset]').on('click', event => {
             this.#currentData = this.#getTokenData(true)
             this.#selected = []
             this.render()
-        })
-
-        html.find('[data-action=accept]').on('click', async event => {
-            await setTokenData(this.document, this.#currentData)
-            this.close({ resolve: true })
         })
     }
 }

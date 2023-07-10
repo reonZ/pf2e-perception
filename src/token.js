@@ -1,5 +1,5 @@
 import { PerceptionMenu } from './apps/perception-menu.js'
-import { VISIBILITY_VALUES } from './constants.js'
+import { VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { lineIntersectRect, lineIntersectWall, pointToTokenPointsIntersectWall } from './geometry.js'
 import { MODULE_ID, getFlag, getSetting, getStandardSetting, unsetFlag } from './module.js'
 import { getValidTokens } from './scene.js'
@@ -7,7 +7,7 @@ import { getValidTokens } from './scene.js'
 export function renderTokenHUD(hud, html) {
     if (!hud.object.actor?.isOfType('creature')) return
     html.find('.col.left').append(`<div class="control-icon" data-action="pf2e-perception"><i class="fa-solid fa-eye"></i></div>`)
-    html.find('[data-action=pf2e-perception]').on('click', event => PerceptionMenu.openMenu(hud.object))
+    html.find('[data-action=pf2e-perception]').on('click', event => PerceptionMenu.openMenu({ token: hud.object }))
 }
 
 export function pasteToken(originals, sources) {
@@ -36,8 +36,8 @@ export async function setTokenData(token, data) {
             continue
         }
         const token = data[tokenId]
-        if (token.visibility === 'observed') delete token.visibility
-        if (token.cover === 'none') delete token.cover
+        if (token.visibility === defaultValues.visibility) delete token.visibility
+        if (token.cover === defaultValues.cover) delete token.cover
         if (!token.visibility && !token.cover) delete data[tokenId]
     }
 
