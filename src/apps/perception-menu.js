@@ -9,14 +9,16 @@ const COVERS = ['none', 'lesser', 'standard', 'greater', 'greater-prone']
 
 export class PerceptionMenu extends Application {
     #token
+    #resolve
     #selected
     #currentData
     #hoverTokenListener
 
-    constructor({ token, selected, cover }, options = {}) {
+    constructor({ token, selected, cover, resolve }, options = {}) {
         options.title = localize('menu.title', { name: token.name })
         super(options)
 
+        this.#resolve = resolve
         this.#token = token instanceof TokenDocument ? token.object : token
 
         this.#hoverTokenListener = (token, hover) => {
@@ -44,6 +46,7 @@ export class PerceptionMenu extends Application {
 
     close(options = {}) {
         Hooks.off('hoverToken', this.#hoverTokenListener)
+        this.#resolve?.(options.resolve ?? false)
         super.close(options)
     }
 
@@ -54,15 +57,18 @@ export class PerceptionMenu extends Application {
         })
     }
 
-    static openMenu(token, options = {}) {
+    static async openMenu(token, options = {}) {
         const actor = token?.actor
         if (!actor) return
 
         const id = `${MODULE_ID}-${actor.uuid}`
         const win = Object.values(ui.windows).find(x => x.id === id)
 
-        if (win) win.bringToTop()
-        else new PerceptionMenu({ ...options, token }, { id }).render(true)
+        if (win) win.close()
+
+        return new Promise(resolve => {
+            new PerceptionMenu({ ...options, token, resolve }, { id }).render(true)
+        })
     }
 
     get token() {
@@ -185,7 +191,7 @@ export class PerceptionMenu extends Application {
 
         html.find('[data-action=accept]').on('click', async event => {
             await setTokenData(this.document, this.#currentData)
-            this.close()
+            this.close({ resolve: true })
         })
     }
 }
