@@ -1,0 +1,64 @@
+<div class="buttons">
+    <button data-action="use-selection"><i class="fa-solid fa-expand"></i> {{i18n 'use-selection'}}</button>
+    <button data-action="select-all"><i class="fa-solid fa-users"></i> {{i18n 'select-all'}}</button>
+</div>
+<div class="options">
+    <div>
+        <select name="visibility">
+            <option value=""></option>
+            {{selectOptions @root.visibilities nameAttr="value" labelAttr="label"}}
+        </select>
+    </div>
+    <div>
+        <select name="cover">
+            <option value=""></option>
+            {{selectOptions @root.covers nameAttr="value" labelAttr="label"}}
+        </select>
+    </div>
+    <div class="name">{{i18n 'selected'}}</div>
+</div>
+<hr>
+<div class="tokens">
+    {{> tokens type='enemies'}}
+    {{> tokens type='neutral'}}
+    {{> tokens type='allies'}}
+</div>
+<hr>
+<div class="buttons">
+    <button data-action="accept"><i class="fa-solid fa-check"></i> {{i18n 'accept'}}</button>
+    <button data-action="reset"><i class="fa-solid fa-rotate-left"></i> {{i18n 'reset'}}</button>
+</div>
+
+{{#*inline 'tokens'}}
+{{#with (lookup this type) as |tokens|}}
+{{#if tokens.length}}
+<section>
+    <header>
+        <div class="type">{{@root.i18n ../type}}</div>
+        <div class="all">
+            <a data-action="select-all"><i class="fa-solid fa-users"></i></a>
+        </div>
+    </header>
+    {{#each tokens as |token|}}
+    <div class="token {{#if token.selected}}ui-selected{{/if}}" data-token-id="{{token.id}}">
+        <div class="visibility">
+            <select name="visibility"
+                class="{{#if (ne token.visibility token.originalVisibility)}}changed{{/if}}{{#if (ne token.visibility @root.default.visibility)}} custom{{/if}}"
+                data-original="{{token.originalVisibility}}">
+                {{selectOptions @root.visibilities selected=token.visibility nameAttr="value" labelAttr="label"}}
+            </select>
+        </div>
+        <div class="cover">
+            <select name="cover"
+                class="{{#if (ne token.cover token.originalCover)}}changed{{/if}}{{#if (ne token.cover @root.default.cover)}} custom{{/if}}"
+                data-original="{{token.originalCover}}">
+                {{selectOptions @root.covers selected=token.cover nameAttr="value" labelAttr="label"}}
+            </select>
+        </div>
+        <div class="name">{{token.name}}</div>
+    </div>
+    {{/each}}
+</section>
+{{/if}}
+{{/with}}
+{{/inline}}

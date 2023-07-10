@@ -1,0 +1,22 @@
+<div class="pf2e-perception covers">
+    <div class="hint">
+        {{#if hasTargets}}
+        {{{i18n 'dialog.cover.hint.targets'}}}
+        {{else}}
+        {{{i18n 'dialog.cover.hint.no-target'}}}
+        {{/if}}
+    </div>
+    <button type="button" data-level="lesser">{{i18n 'cover.lesser'}}</button>
+    <button type="button" data-level="standard">{{i18n 'cover.standard'}}</button>
+    <button type="button" data-level="greater">{{i18n 'cover.greater'}}</button>
+    {{#if isProne}}
+    <button type="button" data-level="greater-prone">{{i18n 'cover.greater-prone'}}</button>
+    {{/if}}
+    {{#if hasCovers}}
+    <hr>
+    {{#if hasTargetCover}}
+    <button type="button" data-level="remove">{{i18n 'dialog.cover.remove'}}</button>
+    {{/if}}
+    <button type="button" data-level="remove-all">{{i18n 'dialog.cover.remove-all'}}</button>
+    {{/if}}
+</div>

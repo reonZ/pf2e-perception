@@ -1,0 +1,10 @@
+.git/
+node_modules/
+releases/
+ignore.txt
+release.mjs
+package*.json
+*.code-workspace
+tsconfig.json
+jsconfig.json
+webpack*.*

@@ -1,0 +1,79 @@
+[id^=pf2e-perception-] .window-content .buttons {
+  display: flex;
+  gap: 0.3em;
+}
+[id^=pf2e-perception-] .window-content .buttons button {
+  border: none;
+  line-height: 1.5;
+  height: 1.6em;
+  background: rgba(255, 255, 255, 0.4588235294);
+  white-space: nowrap;
+}
+[id^=pf2e-perception-] .window-content .buttons:first-child {
+  margin-bottom: 0.5em;
+}
+[id^=pf2e-perception-] .window-content .buttons:last-child {
+  margin-top: 0.5em;
+}
+[id^=pf2e-perception-] .window-content hr {
+  width: 100%;
+}
+[id^=pf2e-perception-] .window-content .options,
+[id^=pf2e-perception-] .window-content .token {
+  display: flex;
+  gap: 0.3em;
+}
+[id^=pf2e-perception-] .window-content .options select,
+[id^=pf2e-perception-] .window-content .token select {
+  height: auto;
+  border: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  width: 8em;
+}
+[id^=pf2e-perception-] .window-content .options select:focus,
+[id^=pf2e-perception-] .window-content .token select:focus {
+  box-shadow: none;
+}
+[id^=pf2e-perception-] .window-content .options .name,
+[id^=pf2e-perception-] .window-content .token .name {
+  flex-grow: 1;
+  white-space: nowrap;
+}
+[id^=pf2e-perception-] .window-content .tokens {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+[id^=pf2e-perception-] .window-content .tokens section {
+  display: flex;
+  flex-direction: column;
+}
+[id^=pf2e-perception-] .window-content .tokens section:only-of-type header {
+  display: none;
+}
+[id^=pf2e-perception-] .window-content .tokens section header {
+  text-align: center;
+  position: relative;
+}
+[id^=pf2e-perception-] .window-content .tokens section header .type {
+  font-weight: bold;
+}
+[id^=pf2e-perception-] .window-content .tokens section header .all {
+  position: absolute;
+  top: 0;
+  right: 0.3em;
+}
+[id^=pf2e-perception-] .window-content .tokens section .token[data-token-id]:is(:hover, .hover) {
+  background: rgba(0, 0, 0, 0.0901960784);
+}
+[id^=pf2e-perception-] .window-content .tokens section .token.ui-selected .name, [id^=pf2e-perception-] .window-content .tokens section .token.ui-selecting .name {
+  text-shadow: 0 0 8px var(--color-shadow-primary);
+}
+[id^=pf2e-perception-] .window-content .tokens section .token select.changed {
+  box-shadow: inset 0 0 3px var(--color-shadow-primary);
+}
+[id^=pf2e-perception-] .window-content .tokens section .token select:not(.changed).custom {
+  font-weight: bold;
+}

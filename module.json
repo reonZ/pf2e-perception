@@ -1,0 +1,53 @@
+{
+    "id": "pf2e-perception",
+    "title": "PF2e Perception",
+    "author": "Idle",
+    "description": "",
+    "authors": [
+        {
+            "name": "Idle",
+            "discord": "Idle#3251"
+        }
+    ],
+    "esmodules": ["scripts/main.js"],
+    "scripts": ["libs/jquery-ui.min.js"],
+    "compatibility": {
+        "minimum": "11.305",
+        "verified": "11"
+    },
+    "version": "1.0.0",
+    "manifestPlusVersion": "1.2.0",
+    "url": "https://github.com/reonZ/pf2e-perception",
+    "readme": "https://github.com/reonZ/pf2e-perception/blob/master/README.md",
+    "manifest": "https://raw.githubusercontent.com/reonZ/pf2e-perception/master/module.json",
+    "download": "https://github.com/reonZ/pf2e-perception/releases/download/1.0.0/module.zip",
+    "changelog": "https://github.com/reonZ/pf2e-perception/blob/master/CHANGELOG.md",
+    "bugs": "https://github.com/reonZ/pf2e-perception/issues",
+    "styles": ["styles/global.css", "styles/menu.css"],
+    "languages": [
+        {
+            "lang": "en",
+            "name": "English",
+            "path": "lang/en.json"
+        }
+    ],
+    "relationships": {
+        "systems": [
+            {
+                "id": "pf2e",
+                "type": "system",
+                "manifest": "https://raw.githubusercontent.com/foundryvtt/pf2e/master/system.json",
+                "compatibility": {
+                    "minimum": "5.1.1"
+                }
+            }
+        ],
+        "requires": [
+            {
+                "id": "lib-wrapper",
+                "type": "module",
+                "manifest": "https://raw.githubusercontent.com/ruipin/fvtt-lib-wrapper/master/module.json"
+            }
+        ]
+    }
+}
