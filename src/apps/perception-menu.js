@@ -31,20 +31,7 @@ export class PerceptionMenu extends Application {
         }
 
         this.#currentData = this.#getTokenData(true)
-
-        if (validation) {
-            let { property = 'cover', value = defaultValues[property], selected = true } = validation
-
-            if (selected === true) selected = getValidTokens(token).map(t => t.id)
-            else selected = validateTokens(token, selected)
-
-            for (const tokenId of selected) {
-                setProperty(this.#currentData, `${tokenId}.${property}`, value)
-            }
-
-            this.#selected = selected
-            this.#validation = property
-        }
+        this.#validation = validation
 
         Hooks.on('hoverToken', this.#hoverTokenListener)
     }
@@ -63,10 +50,13 @@ export class PerceptionMenu extends Application {
     }
 
     static async openMenu(params = {}, options = {}) {
-        const actor = params.token?.actor
-        if (!actor) return
+        if (params.token instanceof TokenDocument) params.token = params.token.object
+        if (!params.token) {
+            ui.notifications.error(localize('menu.no-token'))
+            return
+        }
 
-        options.id = `${MODULE_ID}-${actor.uuid}`
+        options.id = `${MODULE_ID}-${params.token.document.uuid}`
 
         const win = Object.values(ui.windows).find(x => x.id === options.id)
         if (win) win.close()
@@ -102,17 +92,42 @@ export class PerceptionMenu extends Application {
         let allies = []
         let enemies = []
         let neutral = []
-        let hasTokens = false
+        let skipAllies = false
 
         let tokens = getValidTokens(this.token)
-        if (this.#validation) tokens = tokens.filter(t => this.#selected.includes(t.id))
+
+        if (['cover', 'visibility'].includes(this.#validation?.property)) {
+            let { property, value, selected = [] } = this.#validation
+            const processValue = typeof value === 'function' ? value : () => value
+
+            const scene = this.scene
+            const propertyList = property === 'cover' ? COVERS : VISIBILITIES
+
+            if (selected.length) selected = validateTokens(this.#token, selected)
+            else {
+                selected = tokens.filter(t => t.actor.alliance !== alliance).map(t => t.id)
+                skipAllies = true
+            }
+
+            for (const tokenId of selected) {
+                const token = scene.tokens.get(tokenId)
+
+                const fullProperty = `${tokenId}.${property}`
+                const currentValue = getProperty(this.#currentData, fullProperty) ?? defaultValues[property]
+
+                let processedValue = processValue(token, currentValue)
+                if (!propertyList.includes(processedValue)) processedValue = currentValue
+
+                if (currentValue === processedValue) continue
+                setProperty(this.#currentData, fullProperty, processedValue)
+            }
+
+            this.#selected = skipAllies || selected.length === tokens.length ? [] : selected
+        }
 
         for (const { id, name, actor } of tokens) {
             const current = this.#currentData[id] ?? {}
             const original = originalData[id] ?? {}
-
-            if (this.#validation && current[this.#validation] === (original[this.#validation] ?? defaultValues[this.#validation]))
-                continue
 
             const token = {
                 id,
@@ -126,12 +141,10 @@ export class PerceptionMenu extends Application {
 
             if (opposition) {
                 const actorAlliance = actor.alliance
-                if (actorAlliance === alliance) allies.push(token)
+                if (!skipAllies && actorAlliance === alliance) allies.push(token)
                 else if (actorAlliance === opposition) enemies.push(token)
-                else neutral.push(token)
+                else if (actorAlliance === null) neutral.push(token)
             } else neutral.push(token)
-
-            hasTokens = true
         }
 
         return {
@@ -142,8 +155,8 @@ export class PerceptionMenu extends Application {
             visibilities: VISIBILITIES.map(value => ({ value, label: localize(`menu.visibility.${value}`) })),
             covers: isProne(this.actor) ? covers : covers.slice(0, -1),
             default: defaultValues,
-            validation: this.#validation,
-            hasTokens,
+            validation: this.#validation?.property,
+            hasTokens: allies.length || enemies.length || neutral.length,
         }
     }
 
@@ -185,8 +198,8 @@ export class PerceptionMenu extends Application {
             } else this.render()
         })
 
-        html.find('[data-action=accept]').on('click', async event => {
-            await setTokenData(this.document, this.#currentData)
+        html.find('[data-action=accept]').on('click', event => {
+            setTokenData(this.document, this.#currentData)
             this.close({ resolve: true })
         })
 

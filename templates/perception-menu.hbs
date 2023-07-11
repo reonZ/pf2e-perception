@@ -68,9 +68,9 @@
         <div class="original {{#if (ne token.originalCover @root.default.cover)}}custom{{/if}}">
             {{@root.i18n (concat 'cover.' token.originalCover)}}
         </div>
-        {{else if (eq @root.validation 'cover')}}
+        {{else if (eq @root.validation 'visibility')}}
         <div class="original {{#if (ne token.originalVisibility @root.default.visibility)}}custom{{/if}}">
-            {{@root.i18n (concat 'visibility.' token.originalVisibility)}}
+            {{@root.i18n (concat 'menu.visibility.' token.originalVisibility)}}
         </div>
         {{/if}}
 

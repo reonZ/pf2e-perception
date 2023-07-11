@@ -1,19 +1,62 @@
 import { getActorToken, getCoverEffect, isProne } from './actor.js'
-import { PerceptionMenu } from './apps/perception-menu.js'
-import { createTokenMessage } from './chat.js'
+import { createTokenMessage, openCoverValidationMenu, openVisibilityValidationMenu } from './chat.js'
 import { defaultValues } from './constants.js'
 import { createCoverSource } from './effect.js'
-import { getSetting, localize, setFlag, templatePath } from './module.js'
+import { getSetting, localize, templatePath } from './module.js'
 import { validateTokens } from './scene.js'
 import { clearTokenData, getTokenData, setTokenData } from './token.js'
 import { getPrototype } from './utils.js'
 
 export function setupActions() {
-    const takeCover = game.pf2e.actions.get('take-cover')
-    const BaseAction = getPrototype(takeCover, 2)
-    const BaseActionVariant = getPrototype(takeCover.toActionVariant(), 2)
+    const hide = game.pf2e.actions.get('hide')
+    const BaseAction = getPrototype(hide, 2)
+    const BaseActionVariant = getPrototype(hide.toActionVariant(), 2)
+    const SingleCheckAction = getPrototype(hide, 1)
+    const SingleCheckActionVariant = getPrototype(hide.toActionVariant(), 1)
 
     setupCover(BaseAction, BaseActionVariant)
+    setupHide(SingleCheckAction, SingleCheckActionVariant)
+}
+
+function setupHide(SingleCheckAction, SingleCheckActionVariant) {
+    class HideVariant extends SingleCheckActionVariant {
+        async use(options = {}) {
+            const action = game.i18n.localize('PF2E.Actions.Hide.Title')
+            const token = getSelectedToken(options, action)
+            if (!token) return
+
+            const result = await super.use(options)
+
+            if (game.user.isGM) {
+                const roll = result[0].roll.total
+                const selected = result[0].message.getFlag('pf2e', 'context.selected')
+                openVisibilityValidationMenu({ token, roll, selected })
+            }
+
+            return result
+        }
+    }
+
+    class Hide extends SingleCheckAction {
+        constructor() {
+            super({
+                cost: 1,
+                description: `PF2E.Actions.Hide.Description`,
+                name: `PF2E.Actions.Hide.Title`,
+                rollOptions: ['action:hide'],
+                slug: 'hide',
+                statistic: 'stealth',
+                traits: ['secret'],
+                notes: [{ outcome: ['success', 'criticalSuccess'], text: `PF2E.Actions.Hide.Notes.success` }],
+            })
+        }
+
+        toActionVariant(data) {
+            return new HideVariant(this, data)
+        }
+    }
+
+    game.pf2e.actions.set('hide', new Hide())
 }
 
 function setupCover(BaseAction, BaseActionVariant) {
@@ -41,15 +84,16 @@ function setupCover(BaseAction, BaseActionVariant) {
         }
     }
 
-    game.pf2e.actions.set('take-cover', new TakeCover(BaseAction, BaseActionVariant))
+    game.pf2e.actions.set('take-cover', new TakeCover())
 }
 
 async function takeCover(token) {
     const actor = token.actor
     const cover = getCoverEffect(actor)
-    if (cover) return cover.delete()
 
     const targets = validateTokens(token, game.user.targets.ids)
+    if (cover && !targets.length) return cover.delete()
+
     const data = getTokenData(token) ?? {}
     const covers = Object.entries(data).reduce((covers, [tokenId, { cover }]) => {
         if (cover) covers[tokenId] = cover
@@ -73,34 +117,32 @@ async function takeCover(token) {
                 const { level } = event.currentTarget.dataset
                 const skip = getSetting('skip-cover')
 
-                const process = async (selected, cover) => {
-                    const flavor = cover === defaultValues.cover ? (selected === true ? 'remove-all' : 'remove') : 'take'
+                const process = async (cover, selected) => {
+                    selected = selected ? targets : undefined
+
+                    const flavor = cover === defaultValues.cover ? (selected ? 'remove' : 'remove-all') : 'take'
                     const message = await createTokenMessage({
                         content: localize(`message.cover.${flavor}`, { cover: localize(`cover.${cover}`) }),
                         flags: { selected, cover, skipWait: skip },
                         token,
-                        secret: !token.document.hasPlayerOwner,
+                        // secret: !token.document.hasPlayerOwner,
                     })
 
                     if (skip) {
-                        if (cover === defaultValues.cover && selected === true) return clearTokenData(token)
+                        if (cover === defaultValues.cover && !selected) return clearTokenData(token)
                         const data = deepClone(getTokenData(token)) ?? {}
                         for (const tokenId of targets) {
                             setProperty(data, `${tokenId}.cover`, cover)
                         }
                         return setTokenData(token, data)
                     } else if (game.user.isGM) {
-                        const validated = await PerceptionMenu.openMenu({
-                            token,
-                            validation: { property: 'cover', value: cover, selected },
-                        })
-                        if (validated) setFlag(message, 'validated', true)
+                        openCoverValidationMenu({ token, value: cover, selected })
                     }
                 }
 
-                if (level === 'remove-all') process(true, defaultValues.cover)
-                else if (level === 'remove') process(targets, defaultValues.cover)
-                else if (targets.length) process(targets, level)
+                if (level === 'remove-all') process(defaultValues.cover)
+                else if (level === 'remove') process(defaultValues.cover, true)
+                else if (targets.length) process(level, true)
                 else {
                     const source = createCoverSource(level)
                     actor.createEmbeddedDocuments('Item', [source])

@@ -50,7 +50,8 @@
                 "undetected": "Undetected by",
                 "unnoticed": "Unnoticed by"
             },
-            "nothing": "No changes to be made"
+            "nothing": "No changes to be made",
+            "no-token": "Cannot find associated token"
         },
         "cover": {
             "none": "No Cover from",
@@ -93,6 +94,17 @@
                 "player": {
                     "wait": "Wait for a GM to validate..",
                     "validated": "Covers have been validated"
+                }
+            },
+            "visibility": {
+                "gm": {
+                    "validate": "Validate Visibility",
+                    "validated": "Visibility Validated",
+                    "check": "Check Selected"
+                },
+                "player": {
+                    "wait": "Wait for a GM to validate..",
+                    "validated": "Visibility has been validated"
                 }
             }
         },

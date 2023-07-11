@@ -86,29 +86,22 @@
                     &[data-token-id]:is(:hover, .hover) {
                         background: #00000017;
                     }
-                }
-            }
 
-            &:not(.validation) {
-                section {
-                    .token {
-                        &.ui-selected,
-                        &.ui-selecting {
-                            .name {
-                                text-shadow: 0 0 8px var(--color-shadow-primary);
-                            }
+                    &.ui-selected,
+                    &.ui-selecting {
+                        .name {
+                            text-shadow: 0 0 8px var(--color-shadow-primary);
+                        }
+                    }
+
+                    select,
+                    .original {
+                        &.changed {
+                            box-shadow: inset 0 0 3px var(--color-shadow-primary);
                         }
 
-                        select {
-                            &.changed {
-                                box-shadow: inset 0 0 3px var(--color-shadow-primary);
-                            }
-                        }
-
-                        select {
-                            &:not(.changed).custom {
-                                font-weight: bold;
-                            }
+                        &.custom {
+                            font-weight: bold;
                         }
                     }
                 }

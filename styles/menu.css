@@ -74,12 +74,14 @@
 [id^=pf2e-perception-] .window-content .tokens section .token[data-token-id]:is(:hover, .hover) {
   background: rgba(0, 0, 0, 0.0901960784);
 }
-[id^=pf2e-perception-] .window-content .tokens:not(.validation) section .token.ui-selected .name, [id^=pf2e-perception-] .window-content .tokens:not(.validation) section .token.ui-selecting .name {
+[id^=pf2e-perception-] .window-content .tokens section .token.ui-selected .name, [id^=pf2e-perception-] .window-content .tokens section .token.ui-selecting .name {
   text-shadow: 0 0 8px var(--color-shadow-primary);
 }
-[id^=pf2e-perception-] .window-content .tokens:not(.validation) section .token select.changed {
+[id^=pf2e-perception-] .window-content .tokens section .token select.changed,
+[id^=pf2e-perception-] .window-content .tokens section .token .original.changed {
   box-shadow: inset 0 0 3px var(--color-shadow-primary);
 }
-[id^=pf2e-perception-] .window-content .tokens:not(.validation) section .token select:not(.changed).custom {
+[id^=pf2e-perception-] .window-content .tokens section .token select.custom,
+[id^=pf2e-perception-] .window-content .tokens section .token .original.custom {
   font-weight: bold;
 }

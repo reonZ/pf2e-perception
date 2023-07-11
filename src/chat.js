@@ -1,4 +1,5 @@
 import { PerceptionMenu } from './apps/perception-menu.js'
+import { VISIBILITY_VALUES, attackCheckRoll } from './constants.js'
 import { MODULE_ID, getFlag, getFlags, localize, setFlag } from './module.js'
 import { rollAltedCheck } from './roll.js'
 
@@ -7,9 +8,10 @@ export function renderChatMessage(message, html) {
     if (!token) return
 
     const { rollCheck, context, check, visibility, cover, selected, skipWait, validated } = getFlags(message)
+    const pf2eContext = message.getFlag('pf2e', 'context')
 
     if (game.user.isGM) {
-        if (context && check && !rollCheck) {
+        if (attackCheckRoll.includes(context?.type) && check && !rollCheck) {
             html.find('[data-action=success-message]').on('click', () => {
                 let content = localize('message.flat-check.success')
                 content += createChatButton({
@@ -22,24 +24,21 @@ export function renderChatMessage(message, html) {
             html.find('[data-action=failure-message]').on('click', () => {
                 createTokenMessage({ content: localize('message.flat-check.failure'), token })
             })
-        } else if (cover && selected) {
-            let label = localize(`message.cover.gm.${skipWait ? 'check' : validated ? 'validated' : 'validate'}`)
-            if (!skipWait && validated) label += '<i class="fa-solid fa-check" style="color: green; margin-left: 0.3em;"></i>'
-
-            const button = createChatButton({
-                action: 'validate-covers',
-                icon: 'fa-solid fa-list',
-                label,
-            })
-
+        } else if (cover) {
+            const button = createValidateButton({ property: 'cover', skipWait, validated })
             html.find('.message-content').append(button)
-            html.find('[data-action=validate-covers]').on('click', async () => {
-                const validated = await PerceptionMenu.openMenu({
-                    token,
-                    validation: { property: 'cover', value: cover, selected },
-                })
-                if (validated && !getFlag(message, 'validated')) setFlag(message, 'validated', true)
+            html.find('[data-action=validate-cover]').on('click', () => {
+                openCoverValidationMenu({ token, value: cover, selected })
             })
+        } else if (pf2eContext?.type === 'skill-check') {
+            if (pf2eContext.options.includes('action:hide')) {
+                const button = createValidateButton({ property: 'visibility', skipWait, validated })
+                html.find('.message-header .flavor-text').append(button)
+                html.find('[data-action=validate-visibility]').on('click', async () => {
+                    const roll = message.rolls[0].total
+                    openVisibilityValidationMenu({ token, roll, selected: pf2eContext.selected })
+                })
+            }
         }
     } else {
         if (visibility) {
@@ -48,10 +47,16 @@ export function renderChatMessage(message, html) {
                 localize('message.flat-check.blind', { visibility: game.i18n.localize(`PF2E.condition.${visibility}.name`) })
             )
         } else if (cover && !skipWait) {
-            let hint = localize(`message.cover.player.${validated ? 'validated' : 'wait'}`)
-            if (validated) hint = '<i class="fa-solid fa-check" style="color: green;"></i> ' + hint
-            hint = `<i style="display: block; font-size: .9em; text-align: end;">${hint}</i>`
+            const hint = waitHint('cover', validated)
+            console.log(hint)
             html.find('.message-content').append(hint)
+        } else if (pf2eContext?.type === 'skill-check' && token.hasPlayerOwner) {
+            if (pf2eContext.options.includes('action:hide')) {
+                html.find('.message-header .message-sender').text(token.name)
+                let flavor = message.getFlag('pf2e', 'modifierName')
+                flavor += waitHint('visibility', validated)
+                html.find('.message-header .flavor-text').html(flavor)
+            }
         }
     }
 
@@ -64,8 +69,53 @@ export function renderChatMessage(message, html) {
     }
 }
 
+function validateMessage(message) {
+    if (!getFlag(message, 'validated')) setFlag(message, 'validated', true)
+}
+
+export async function openVisibilityValidationMenu({ token, selected, roll }) {
+    const validated = await PerceptionMenu.openMenu({
+        token,
+        validation: {
+            property: 'visibility',
+            value: (token, value) => {
+                const dc = token.actor.perception.dc.value
+                if (roll >= dc && VISIBILITY_VALUES[value] < VISIBILITY_VALUES.hidden) return 'hidden'
+                else if (roll < dc && VISIBILITY_VALUES[value] >= VISIBILITY_VALUES.hidden) return 'observed'
+                else return value
+            },
+            selected,
+        },
+    })
+    if (validated) validateMessage(message)
+}
+
+export async function openCoverValidationMenu({ token, value, selected }) {
+    const validated = await PerceptionMenu.openMenu({
+        token,
+        validation: { property: 'cover', value, selected },
+    })
+    if (validated) validateMessage(message)
+}
+
+function waitHint(property, validated) {
+    let hint = localize(`message.${property}.player.${validated ? 'validated' : 'wait'}`)
+    if (validated) hint = '<i class="fa-solid fa-check" style="color: green;"></i> ' + hint
+    return `<i style="display: block; font-size: .9em; text-align: end;">${hint}</i>`
+}
+
+function createValidateButton({ skipWait, validated, property }) {
+    let label = localize(`message.${property}.gm.${skipWait ? 'check' : validated ? 'validated' : 'validate'}`)
+    if (!skipWait && validated) label += '<i class="fa-solid fa-check" style="color: green; margin-left: 0.3em;"></i>'
+    return createChatButton({
+        action: `validate-${property}`,
+        icon: 'fa-solid fa-list',
+        label,
+    })
+}
+
 export function createChatButton({ action, icon, label }) {
-    let button = `<button type="button" style="margin-bottom: 5px;" data-action="${action}">`
+    let button = `<button type="button" style="margin: 0 0 5px; padding: 0;" data-action="${action}">`
     if (icon) button += `<i class="${icon}"></i> ${label}</button>`
     else button += label
     return button
