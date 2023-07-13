@@ -8,8 +8,6 @@ import { getVisibility } from './token.js'
 import { omit } from './utils.js'
 
 export async function checkRoll(wrapped, ...args) {
-    console.log(args)
-
     const context = args[1]
     if (!context) return wrapped(...args)
 

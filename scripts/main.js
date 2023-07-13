@@ -734,7 +734,6 @@
 
   // src/roll.js
   async function checkRoll(wrapped, ...args) {
-    console.log(args);
     const context = args[1];
     if (!context)
       return wrapped(...args);
@@ -1501,7 +1500,7 @@
   function basicSightCanDetect(wrapped, visionSource, target) {
     if (!wrapped(visionSource, target))
       return false;
-    return !isValidTarget(target) || !isUndetected(target, "basicSight", VISIBILITY_VALUES.hidden);
+    return !isValidTarget(target) || !isUndetected(target, "basicSight") && !isHidden(target);
   }
   __name(basicSightCanDetect, "basicSightCanDetect");
   function hearingCanDetect(wrapped, visionSource, target) {
@@ -1522,17 +1521,31 @@
     return !!(target instanceof Token && target.actor);
   }
   __name(isValidTarget, "isValidTarget");
-  function isUndetected(target, mode, threshold = VISIBILITY_VALUES.undetected) {
-    const tokens = game.user.isGM ? canvas.tokens.controlled : target.scene.tokens.filter((t) => t.isOwner);
-    const filtered = tokens.filter((t) => t.detectionModes.some((d) => d.id === mode));
-    for (const origin of filtered) {
+  function reachesThreshold(target, tokens, threshold) {
+    for (const origin of tokens) {
       const visibility = getTokenData(target, origin.id, "visibility");
       if (VISIBILITY_VALUES[visibility] >= threshold)
         return true;
     }
     return false;
   }
+  __name(reachesThreshold, "reachesThreshold");
+  function isUndetected(target, mode) {
+    const tokens = game.user.isGM ? canvas.tokens.controlled : target.scene.tokens.filter((t) => t.isOwner);
+    const filtered = tokens.filter((t) => t.detectionModes.some((d) => d.id === mode));
+    return reachesThreshold(target, filtered, VISIBILITY_VALUES.undetected);
+  }
   __name(isUndetected, "isUndetected");
+  function isHidden(target) {
+    let tokens = canvas.tokens.controlled;
+    if (!game.user.isGM && !tokens.length) {
+      tokens = target.scene.tokens.filter((t) => t.isOwner);
+      if (tokens.length !== 1)
+        return false;
+    }
+    return reachesThreshold(target, tokens, VISIBILITY_VALUES.hidden);
+  }
+  __name(isHidden, "isHidden");
 
   // src/settings.js
   function registerSettings() {
