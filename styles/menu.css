@@ -85,3 +85,7 @@
 [id^=pf2e-perception-] .window-content .tokens section .token .original.custom {
   font-weight: bold;
 }
+[id^=pf2e-perception-] .window-content .nothing {
+  text-align: center;
+  margin-bottom: 0.4em;
+}

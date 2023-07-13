@@ -13,7 +13,7 @@ export function omit(object, names) {
 export function getPrototype(obj, depth = 1) {
     const prototype = Object.getPrototypeOf(obj)
     if (depth > 1) return getPrototype(prototype, depth - 1)
-    return prototype.constructor
+    return prototype
 }
 
 export function sortByName(a, b) {

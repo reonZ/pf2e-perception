@@ -45,3 +45,6 @@ Hooks.on('updateToken', updateToken)
 Hooks.on('renderChatMessage', renderChatMessage)
 
 Hooks.on('renderSceneConfig', renderSceneConfig)
+
+// TODO sneak
+// TODO add setting to only show selected/changes in validation menu

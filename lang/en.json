@@ -26,32 +26,51 @@
             "target": {
                 "name": "Allow Combat Target",
                 "hint": "When enabled, all creatures in the combat tracker can be targeted, even those that are not currently visible on the board. This is useful when a player wants to try to attack a creature that is undetected."
+            },
+            "validation": {
+                "name": "Display Validation Tokens",
+                "hint": "Which tokens should be displayed in the validation menu.",
+                "choices": {
+                    "all": "All Valid Tokens",
+                    "selected": "Selected Tokens Only",
+                    "changed": "Tokens With Changes Only"
+                }
             }
         },
         "menu": {
-            "title": {
-                "perception": "{name} - Perception Menu",
-                "validation": "{name} - Validation Menu"
+            "perception": {
+                "title": "{name} - Perception Menu",
+                "use-selection": "Selected Tokens",
+                "select-all": "Select All",
+                "selected": "Selected",
+                "nothing": "No valid tokens on the board",
+                "reset": "Reset"
+            },
+            "validation": {
+                "title": "{name} - Validation Menu",
+                "nothing": "No changes to be made",
+                "cancel": "Cancel"
             },
             "allies": "Allies",
             "neutral": "Neutral",
             "enemies": "Enemies",
-            "selected": "Selected",
-            "select-all": "Select All",
-            "use-selection": "Selected Tokens",
             "accept": "Accept",
-            "reset": "Reset",
-            "cancel": "Cancel",
             "close": "Close",
-            "visibility": {
-                "observed": "Observed by",
-                "concealed": "Concealed from",
-                "hidden": "Hidden from",
-                "undetected": "Undetected by",
-                "unnoticed": "Unnoticed by"
-            },
-            "nothing": "No changes to be made",
             "no-token": "Cannot find associated token"
+        },
+        "visibility": {
+            "observed": "Observed by",
+            "concealed": "Concealed from",
+            "hidden": "Hidden from",
+            "undetected": "Undetected by",
+            "unnoticed": "Unnoticed by",
+            "reversed": {
+                "observed": "Is Observed",
+                "concealed": "Is Concealed",
+                "hidden": "Is Hidden",
+                "undetected": "Is Undetected",
+                "unnoticed": "Is Unnoticed"
+            }
         },
         "cover": {
             "none": "No Cover from",
@@ -68,6 +87,11 @@
                     "targets": "<strong>Targets:</strong> the selected cover level will be conditionally added toward all the targets",
                     "no-target": "<strong>No Target:</strong> the system cover effect will be added to the actor with the selected level"
                 }
+            },
+            "seek": {
+                "hint": "Create a template to scan the area and seek for hidden/undetected creatures",
+                "accept": "Accept",
+                "cancel": "Cancel"
             }
         },
         "message": {
@@ -113,6 +137,9 @@
             "must-one": "One token/actor must be selected to use the <strong>{action}</strong> action.",
             "must-creature": "Only a creature can use the <strong>{action}</strong> action.",
             "take-cover": "Take Cover"
+        },
+        "template": {
+            "scene": "You can only place templates on the scene the token is in."
         }
     }
 }

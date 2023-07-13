@@ -20,9 +20,9 @@ export function getValidTokens(token) {
 }
 
 export function validateTokens(token, tokens) {
-    const valid = getValidTokens(token).map(t => t.id)
+    const validToken = getValidTokens(token).map(t => t.id)
     return tokens.filter(t => {
         const id = t instanceof Token || t instanceof TokenDocument ? t.id : t
-        return valid.includes(id)
+        return validToken.includes(id)
     })
 }

@@ -1,5 +1,5 @@
-import { PerceptionMenu } from './apps/perception-menu.js'
-import { VISIBILITY_VALUES, attackCheckRoll } from './constants.js'
+import { CoverValidationMenu, HideValidationMenu, SeekValidationMenu } from './apps/validation.js'
+import { attackCheckRoll } from './constants.js'
 import { MODULE_ID, getFlag, getFlags, localize, setFlag } from './module.js'
 import { rollAltedCheck } from './roll.js'
 
@@ -28,15 +28,30 @@ export function renderChatMessage(message, html) {
             const button = createValidateButton({ property: 'cover', skipWait, validated })
             html.find('.message-content').append(button)
             html.find('[data-action=validate-cover]').on('click', () => {
-                openCoverValidationMenu({ token, value: cover, selected })
+                CoverValidationMenu.openMenu({ token, selected, value: cover, message })
             })
         } else if (pf2eContext?.type === 'skill-check') {
             if (pf2eContext.options.includes('action:hide')) {
-                const button = createValidateButton({ property: 'visibility', skipWait, validated })
-                html.find('.message-header .flavor-text').append(button)
-                html.find('[data-action=validate-visibility]').on('click', async () => {
-                    const roll = message.rolls[0].total
-                    openVisibilityValidationMenu({ token, roll, selected: pf2eContext.selected })
+                addVisibilityValidationButton({
+                    token,
+                    html,
+                    message,
+                    skipWait,
+                    validated,
+                    selected: pf2eContext.selected,
+                    ValidationMenu: HideValidationMenu,
+                })
+            }
+        } else if (pf2eContext?.type === 'perception-check') {
+            if (pf2eContext.options.includes('action:seek') && pf2eContext.selected) {
+                addVisibilityValidationButton({
+                    token,
+                    html,
+                    message,
+                    skipWait,
+                    validated,
+                    selected: pf2eContext.selected,
+                    ValidationMenu: SeekValidationMenu,
                 })
             }
         }
@@ -48,14 +63,14 @@ export function renderChatMessage(message, html) {
             )
         } else if (cover && !skipWait) {
             const hint = waitHint('cover', validated)
-            console.log(hint)
             html.find('.message-content').append(hint)
         } else if (pf2eContext?.type === 'skill-check' && token.hasPlayerOwner) {
             if (pf2eContext.options.includes('action:hide')) {
-                html.find('.message-header .message-sender').text(token.name)
-                let flavor = message.getFlag('pf2e', 'modifierName')
-                flavor += waitHint('visibility', validated)
-                html.find('.message-header .flavor-text').html(flavor)
+                addBlindSkillCheckFlavor({ token, message, html, validated })
+            }
+        } else if (pf2eContext?.type === 'perception-check' && token.hasPlayerOwner) {
+            if (pf2eContext.options.includes('action:seek') && pf2eContext.selected) {
+                addBlindSkillCheckFlavor({ token, message, html, validated })
             }
         }
     }
@@ -69,39 +84,30 @@ export function renderChatMessage(message, html) {
     }
 }
 
-function validateMessage(message) {
+export function validateMessage(message) {
     if (!getFlag(message, 'validated')) setFlag(message, 'validated', true)
 }
 
-export async function openVisibilityValidationMenu({ token, selected, roll }) {
-    const validated = await PerceptionMenu.openMenu({
-        token,
-        validation: {
-            property: 'visibility',
-            value: (token, value) => {
-                const dc = token.actor.perception.dc.value
-                if (roll >= dc && VISIBILITY_VALUES[value] < VISIBILITY_VALUES.hidden) return 'hidden'
-                else if (roll < dc && VISIBILITY_VALUES[value] >= VISIBILITY_VALUES.hidden) return 'observed'
-                else return value
-            },
-            selected,
-        },
-    })
-    if (validated) validateMessage(message)
-}
-
-export async function openCoverValidationMenu({ token, value, selected }) {
-    const validated = await PerceptionMenu.openMenu({
-        token,
-        validation: { property: 'cover', value, selected },
-    })
-    if (validated) validateMessage(message)
+function addBlindSkillCheckFlavor({ html, token, message, validated }) {
+    html.find('.message-header .message-sender').text(token.name)
+    let flavor = message.getFlag('pf2e', 'modifierName')
+    flavor += waitHint('visibility', validated)
+    html.find('.message-header .flavor-text').html(flavor)
 }
 
 function waitHint(property, validated) {
     let hint = localize(`message.${property}.player.${validated ? 'validated' : 'wait'}`)
     if (validated) hint = '<i class="fa-solid fa-check" style="color: green;"></i> ' + hint
     return `<i style="display: block; font-size: .9em; text-align: end;">${hint}</i>`
+}
+
+function addVisibilityValidationButton({ skipWait, validated, html, message, ValidationMenu, token, selected }) {
+    const button = createValidateButton({ property: 'visibility', skipWait, validated })
+    html.find('.message-header .flavor-text').append(button)
+    html.find('[data-action=validate-visibility]').on('click', async () => {
+        const roll = message.rolls[0].total
+        ValidationMenu.openMenu({ token, message, roll, selected })
+    })
 }
 
 function createValidateButton({ skipWait, validated, property }) {

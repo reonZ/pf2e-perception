@@ -1,0 +1,58 @@
+{{#if hasTokens}}
+<div class="tokens">
+    {{> tokens type='enemies'}}
+    {{> tokens type='neutral'}}
+    {{> tokens type='allies'}}
+</div>
+
+<div class="buttons">
+    <button data-action="accept"><i class="fa-solid fa-check"></i> {{i18n 'menu.accept'}}</button>
+    <button data-action="cancel"><i class="fa-solid fa-xmark"></i> {{i18n 'menu.validation.cancel'}}</button>
+</div>
+
+
+{{else}}
+<div class="nothing">{{i18n 'menu.validation.nothing'}}</div>
+<div class="button">
+    <button data-action="close"><i class="fa-solid fa-xmark"></i> {{i18n 'menu.close'}}</button>
+</div>
+{{/if}}
+
+
+
+
+{{#*inline 'tokens'}}
+{{#with (lookup this type) as |tokens|}}
+{{#if tokens.length}}
+<section>
+    <header>
+        <div class="type">{{@root.i18n 'menu' ../type}}</div>
+    </header>
+    {{#each tokens as |token|}}
+    <div class="token {{#if (and token.selected @root.showSelected)}}ui-selected{{/if}}" data-token-id="{{token.id}}">
+        {{#if @root.isReversed}}
+        <div class="name">{{token.name}}</div>
+        {{/if}}
+        <div class="original {{#if token.originalCustom}}custom{{/if}}">
+            {{#if @root.isReversed}}
+            {{@root.i18n @root.property 'reversed' token.original}}
+            {{else}}
+            {{@root.i18n @root.property token.original}}
+            {{/if}}
+        </div>
+        <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        <div class="current">
+            <select name="{{@root.property}}" data-original="{{token.original}}"
+                class="{{#if (and token.changed @root.showChanges)}}changed{{/if}}{{#if token.custom}} custom{{/if}}">
+                {{selectOptions @root.options selected=token.current nameAttr="value" labelAttr="label"}}
+            </select>
+        </div>
+        {{#unless @root.isReversed}}
+        <div class="name">{{token.name}}</div>
+        {{/unless}}
+    </div>
+    {{/each}}
+</section>
+{{/if}}
+{{/with}}
+{{/inline}}

@@ -9,6 +9,10 @@ export const VISIBILITY_VALUES = {
     unnoticed: 4,
 }
 
+export const VISIBILITIES = ['observed', 'concealed', 'hidden', 'undetected', 'unnoticed']
+
+export const COVERS = ['none', 'lesser', 'standard', 'greater', 'greater-prone']
+
 export const COVER_VALUES = {
     [undefined]: 0,
     none: 0,
@@ -25,4 +29,4 @@ export const defaultValues = {
 
 export const attackCheckRoll = ['attack-roll', 'spell-attack-roll']
 
-export const validCheckRoll = [...attackCheckRoll, 'skill-check']
+export const validCheckRoll = [...attackCheckRoll, 'skill-check', 'perception-check']

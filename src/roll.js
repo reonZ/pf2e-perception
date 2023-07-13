@@ -1,14 +1,19 @@
+import { getActorToken } from './actor.js'
 import { createChatButton } from './chat.js'
 import { VISIBILITY_VALUES, attackCheckRoll, validCheckRoll } from './constants.js'
 import { MODULE_ID, localize } from './module.js'
+import { validateTokens } from './scene.js'
+import { getTokenTemplateTokens } from './template.js'
 import { getVisibility } from './token.js'
 import { omit } from './utils.js'
 
 export async function checkRoll(wrapped, ...args) {
+    console.log(args)
+
     const context = args[1]
     if (!context) return wrapped(...args)
 
-    const { actor, rollMode = 'roll', createMessage = 'true', type, token, target, isReroll, skipPerceptionChecks } = context
+    const { actor, createMessage = 'true', type, token, target, isReroll, skipPerceptionChecks } = context
     const originToken = token ?? getActorToken(actor)
     const targetToken = target?.token
     const isAttackRoll = attackCheckRoll.includes(type)
@@ -16,7 +21,6 @@ export async function checkRoll(wrapped, ...args) {
     if (
         isReroll ||
         skipPerceptionChecks ||
-        rollMode !== 'roll' ||
         !createMessage ||
         !originToken ||
         !validCheckRoll.includes(type) ||
@@ -70,13 +74,23 @@ export async function checkRoll(wrapped, ...args) {
             : {}
 
         await roll.toMessage({ flavor, speaker, flags }, { rollMode: isUndetected ? 'blindroll' : 'roll' })
-        if (isSuccess && !isUndetected) return wrapped(...args)
-    } else {
-        if (context.options.has('action:hide')) {
-            args[1].selected = game.user.targets.ids
-        }
-        return await wrapped(...args)
+        if (!isSuccess || isUndetected) return
+    } else if (context.options.has('action:hide')) {
+        args[1].selected = game.user.targets.ids
+    } else if (context.options.has('action:seek')) {
+        const alliance = originToken.actor.alliance
+        const highlighted = getTokenTemplateTokens(originToken)
+        if (!highlighted) return wrapped(...args)
+
+        args[1].selected = validateTokens(originToken, highlighted)
+            .filter(t => {
+                const otherAlliance = t.actor.alliance
+                return !t.document.hidden && (!otherAlliance || otherAlliance !== alliance)
+            })
+            .map(t => t.id)
     }
+
+    return wrapped(...args)
 }
 
 export function rollAltedCheck(event, context, check) {

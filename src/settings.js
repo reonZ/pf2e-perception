@@ -19,6 +19,14 @@ export function registerSettings() {
     })
 
     register('skip-cover', Boolean, true)
+
+    register('validation', String, 'all', {
+        choices: {
+            all: path('validation', 'choices.all'),
+            selected: path('validation', 'choices.selected'),
+            changed: path('validation', 'choices.changed'),
+        },
+    })
 }
 
 function path(setting, key) {

@@ -1,4 +1,4 @@
-import { PerceptionMenu } from './apps/perception-menu.js'
+import { PerceptionMenu } from './apps/perception.js'
 import { VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { lineIntersectRect, lineIntersectWall, pointToTokenPointsIntersectWall } from './geometry.js'
 import { MODULE_ID, getFlag, getSetting, getStandardSetting, unsetFlag } from './module.js'
@@ -19,6 +19,7 @@ export function pasteToken(originals, sources) {
 export function getTokenData(token, ...path) {
     path.unshift('data')
     token = token instanceof Token ? token.document : token
+    const data = getFlag(token, path.join('.'))
     return getFlag(token, path.join('.'))
 }
 

@@ -1,21 +1,128 @@
 import { getActorToken, getCoverEffect, isProne } from './actor.js'
-import { createTokenMessage, openCoverValidationMenu, openVisibilityValidationMenu } from './chat.js'
+import { CoverValidationMenu, HideValidationMenu, SeekValidationMenu } from './apps/validation.js'
+import { createTokenMessage } from './chat.js'
 import { defaultValues } from './constants.js'
 import { createCoverSource } from './effect.js'
 import { getSetting, localize, templatePath } from './module.js'
 import { validateTokens } from './scene.js'
+import { createSeekTemplate, deleteTokenTemplate } from './template.js'
 import { clearTokenData, getTokenData, setTokenData } from './token.js'
 import { getPrototype } from './utils.js'
 
 export function setupActions() {
     const hide = game.pf2e.actions.get('hide')
-    const BaseAction = getPrototype(hide, 2)
-    const BaseActionVariant = getPrototype(hide.toActionVariant(), 2)
-    const SingleCheckAction = getPrototype(hide, 1)
-    const SingleCheckActionVariant = getPrototype(hide.toActionVariant(), 1)
+    const BaseAction = getPrototype(hide, 2).constructor
+    const BaseActionVariant = getPrototype(hide.toActionVariant(), 2).constructor
+    const SingleCheckAction = getPrototype(hide, 1).constructor
+    const SingleCheckActionVariant = getPrototype(hide.toActionVariant(), 1).constructor
 
     setupCover(BaseAction, BaseActionVariant)
     setupHide(SingleCheckAction, SingleCheckActionVariant)
+    setupSeek(SingleCheckAction, SingleCheckActionVariant)
+}
+
+function setupSeek(SingleCheckAction, SingleCheckActionVariant) {
+    class SeekVariant extends SingleCheckActionVariant {
+        async use(options = {}) {
+            const action = game.i18n.localize('PF2E.Actions.Seek.Title')
+            const token = getSelectedToken(options, action)
+            if (!token) return
+
+            if (!(await seek(token))) return deleteTokenTemplate(token)
+
+            options.actors = [token.actor]
+            const result = await super.use(options)
+
+            if (game.user.isGM) {
+                const { selected } = result[0].message.getFlag('pf2e', 'context')
+                if (selected) openVisibilityValidationMenu({ token, result, ValidationMenu: SeekValidationMenu })
+            }
+
+            return result
+        }
+    }
+
+    class Seek extends SingleCheckAction {
+        constructor() {
+            super({
+                cost: 1,
+                description: 'PF2E.Actions.Seek.Description',
+                name: 'PF2E.Actions.Seek.Title',
+                notes: [
+                    { outcome: ['criticalSuccess'], text: 'PF2E.Actions.Seek.Notes.criticalSuccess' },
+                    { outcome: ['success'], text: 'PF2E.Actions.Seek.Notes.success' },
+                ],
+                rollOptions: ['action:seek'],
+                slug: 'seek',
+                statistic: 'perception',
+                traits: ['concentrate', 'secret'],
+            })
+        }
+
+        toActionVariant(data) {
+            return new SeekVariant(this, data)
+        }
+    }
+
+    game.pf2e.actions.set('seek', new Seek())
+}
+
+async function seek(token) {
+    const unit = game.i18n.localize('PF2E.Foot')
+
+    let content = '<p style="margin: 0 0.3em; text-align: center;">'
+    content += `${localize('dialog.seek.hint')}</p><p>`
+
+    content += createButton(
+        'create-cone',
+        'fa-thin fa-cubes',
+        game.i18n.format('PF2E.TemplateLabel', {
+            size: 30,
+            unit,
+            shape: game.i18n.localize(CONFIG.PF2E.areaTypes.cone),
+        })
+    )
+
+    content += createButton(
+        'create-burst',
+        'fa-thin fa-cubes',
+        game.i18n.format('PF2E.TemplateLabel', {
+            size: 15,
+            unit,
+            shape: game.i18n.localize(CONFIG.PF2E.areaTypes.burst),
+        })
+    )
+
+    content += '</p>'
+
+    return Dialog.wait(
+        {
+            title: `${token.name} - ${game.i18n.localize('PF2E.Actions.Seek.Title')}`,
+            content,
+            buttons: {
+                ok: {
+                    icon: '<i class="fa-solid fa-check"></i>',
+                    label: localize('dialog.seek.accept'),
+                    callback: () => true,
+                },
+                no: {
+                    icon: '<i class="fa-solid fa-xmark"></i>',
+                    label: localize('dialog.seek.cancel'),
+                    callback: html => false,
+                },
+            },
+            close: () => false,
+            render: html => {
+                const content = html.filter('.dialog-content')
+                content.find('[data-action=create-cone], [data-action=create-burst]').on('click', event => {
+                    const { action } = event.currentTarget.dataset
+                    deleteTokenTemplate(token)
+                    createSeekTemplate(action === 'create-cone' ? 'cone' : 'burst', token)
+                })
+            },
+        },
+        { width: 300, left: 10 }
+    )
 }
 
 function setupHide(SingleCheckAction, SingleCheckActionVariant) {
@@ -25,12 +132,11 @@ function setupHide(SingleCheckAction, SingleCheckActionVariant) {
             const token = getSelectedToken(options, action)
             if (!token) return
 
+            options.actors = [token.actor]
             const result = await super.use(options)
 
             if (game.user.isGM) {
-                const roll = result[0].roll.total
-                const selected = result[0].message.getFlag('pf2e', 'context.selected')
-                openVisibilityValidationMenu({ token, roll, selected })
+                openVisibilityValidationMenu({ token, result, ValidationMenu: HideValidationMenu })
             }
 
             return result
@@ -125,7 +231,6 @@ async function takeCover(token) {
                         content: localize(`message.cover.${flavor}`, { cover: localize(`cover.${cover}`) }),
                         flags: { selected, cover, skipWait: skip },
                         token,
-                        // secret: !token.document.hasPlayerOwner,
                     })
 
                     if (skip) {
@@ -136,7 +241,7 @@ async function takeCover(token) {
                         }
                         return setTokenData(token, data)
                     } else if (game.user.isGM) {
-                        openCoverValidationMenu({ token, value: cover, selected })
+                        CoverValidationMenu.openMenu({ token, selected, value: cover, message })
                     }
                 }
 
@@ -180,4 +285,17 @@ function getSelectedToken(options, action) {
     }
 
     return token
+}
+
+function createButton(action, icon, label) {
+    return `<button type="button" data-action="${action}" style="margin: 0 0 5px; padding: 0;">
+    <i class="${icon}"></i> ${label}</button>
+</button>`
+}
+
+function openVisibilityValidationMenu({ token, result, ValidationMenu }) {
+    const roll = result[0].roll.total
+    const message = result[0].message
+    const selected = message.getFlag('pf2e', 'context.selected')
+    ValidationMenu.openMenu({ token, roll, selected, message })
 }
