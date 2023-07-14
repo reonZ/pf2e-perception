@@ -28,7 +28,7 @@ export async function checkRoll(wrapped, ...args) {
 
     if (isAttackRoll) {
         const visibility = getVisibility(targetToken, originToken)
-        if (!visibility) return wrapped(...args)
+        if (!visibility || originToken.actor.hasLowLightVision) return wrapped(...args)
 
         const dc = visibility === 'concealed' ? 5 : 11
         const roll = await new Roll('1d20').evaluate({ async: true })
