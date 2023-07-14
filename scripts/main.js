@@ -12,7 +12,7 @@
     undetected: 3,
     unnoticed: 4
   };
-  var VISIBILITIES = ["observed", "concealed", "hidden", "undetected", "unnoticed"];
+  var VISIBILITIES = ["observed", "hidden", "undetected", "unnoticed"];
   var COVERS = ["none", "lesser", "standard", "greater", "greater-prone"];
   var COVER_VALUES = {
     [void 0]: 0,

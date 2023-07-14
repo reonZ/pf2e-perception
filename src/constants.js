@@ -9,7 +9,7 @@ export const VISIBILITY_VALUES = {
     unnoticed: 4,
 }
 
-export const VISIBILITIES = ['observed', 'concealed', 'hidden', 'undetected', 'unnoticed']
+export const VISIBILITIES = ['observed', 'hidden', 'undetected', 'unnoticed']
 
 export const COVERS = ['none', 'lesser', 'standard', 'greater', 'greater-prone']
 
