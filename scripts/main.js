@@ -12,7 +12,7 @@
     undetected: 3,
     unnoticed: 4
   };
-  var VISIBILITIES = ["observed", "hidden", "undetected", "unnoticed"];
+  var VISIBILITIES = ["observed", "concealed", "hidden", "undetected", "unnoticed"];
   var COVERS = ["none", "lesser", "standard", "greater", "greater-prone"];
   var COVER_VALUES = {
     [void 0]: 0,
@@ -63,10 +63,6 @@
     return game.settings.get(MODULE_ID, setting);
   }
   __name(getSetting, "getSetting");
-  function getStandardSetting(scene) {
-    return getFlag(scene, "standard") ?? getSetting("standard");
-  }
-  __name(getStandardSetting, "getStandardSetting");
 
   // src/effect.js
   function createFlatFootedSource(visibility) {
@@ -164,6 +160,14 @@
     });
   }
   __name(validateTokens, "validateTokens");
+  function getStandardSetting(scene) {
+    return getFlag(scene, "standard") ?? getSetting("standard");
+  }
+  __name(getStandardSetting, "getStandardSetting");
+  function getConcealedSetting(scene) {
+    return getFlag(scene, "concealed") ?? getSetting("concealed");
+  }
+  __name(getConcealedSetting, "getConcealedSetting");
 
   // src/utils.js
   function omit(object, names) {
@@ -411,7 +415,13 @@
 
   // src/geometry.js
   var EDGES = ["topEdge", "rightEdge", "bottomEdge", "leftEdge"];
-  var POINTS = [
+  var RECT_CORNERS = [
+    { x: 0, y: 0 },
+    { x: 1, y: 0 },
+    { x: 0, y: 1 },
+    { x: 1, y: 1 }
+  ];
+  var RECT_SPREAD = [
     { x: 0.25, y: 0.25 },
     { x: 0.5, y: 0.25 },
     { x: 0.75, y: 0.25 },
@@ -435,23 +445,60 @@
     return CONFIG.Canvas.polygonBackends.move.testCollision(origin, target, { type: "move", mode: "any" });
   }
   __name(lineIntersectWall, "lineIntersectWall");
-  function pointToTokenPointsIntersectWall(origin, token, nb) {
+  function pointToTokenIntersectWall(origin, token) {
     const rect = token.bounds;
-    let intersected = 0;
-    for (const point of POINTS) {
+    for (const point of RECT_SPREAD) {
       const coords = getRectPoint(point, rect);
       if (lineIntersectWall(origin, coords))
-        intersected++;
-      if (intersected === nb)
         return true;
     }
     return false;
   }
-  __name(pointToTokenPointsIntersectWall, "pointToTokenPointsIntersectWall");
+  __name(pointToTokenIntersectWall, "pointToTokenIntersectWall");
   function getRectPoint(point, rect) {
     return { x: rect.x + rect.width * point.x, y: rect.y + rect.height * point.y };
   }
   __name(getRectPoint, "getRectPoint");
+
+  // src/lighting.js
+  function isConcealed(token, rect) {
+    if (token.document.hasStatusEffect(CONFIG.specialStatusEffects.INVISIBLE))
+      return false;
+    const scene = token.scene;
+    if (!scene.tokenVision || scene.darkness < scene.globalLightThreshold || !getConcealedSetting(scene))
+      return false;
+    return !inBrightLight(token, rect);
+  }
+  __name(isConcealed, "isConcealed");
+  function inBrightLight(token, rect) {
+    for (const light of canvas.effects.lightSources) {
+      if (!light.active || light.data.bright === 0)
+        continue;
+      if (light.object === token)
+        return true;
+      if (!inBrightRange(light.object.center, rect, light.data.bright))
+        continue;
+      if (light.data.walls === false)
+        return true;
+      for (const point of RECT_SPREAD) {
+        const { x, y } = getRectPoint(point, rect);
+        if (light.shape.contains(x, y))
+          return true;
+      }
+    }
+    return false;
+  }
+  __name(inBrightLight, "inBrightLight");
+  function inBrightRange(origin, rect, bright) {
+    for (const point of RECT_CORNERS) {
+      const rectPoint = getRectPoint(point, rect);
+      const distance = new Ray(origin, rectPoint).distance;
+      if (distance < bright)
+        return true;
+    }
+    return false;
+  }
+  __name(inBrightRange, "inBrightRange");
 
   // src/token.js
   function renderTokenHUD(hud, html) {
@@ -481,24 +528,35 @@
   __name(clearTokenData, "clearTokenData");
   async function setTokenData(token, data) {
     const valid = getValidTokens(token).map((t) => t.id);
+    const updates = {};
     for (const tokenId in data) {
       if (!valid.includes(tokenId)) {
         delete data[tokenId];
         continue;
       }
-      const token2 = data[tokenId];
-      if (token2.visibility === defaultValues.visibility)
-        delete token2.visibility;
-      if (token2.cover === defaultValues.cover)
-        delete token2.cover;
-      if (!token2.visibility && !token2.cover)
-        delete data[tokenId];
+      const current = data[tokenId];
+      const original = getTokenData(token, tokenId) ?? {};
+      if (current.visibility === defaultValues.visibility)
+        delete current.visibility;
+      if (current.cover === defaultValues.cover)
+        delete current.cover;
+      if (original.cover === current.cover && original.visibility === current.visibility)
+        continue;
+      if (!current.visibility && !current.cover) {
+        updates[`flags.${MODULE_ID}.data.-=${tokenId}`] = true;
+      } else {
+        for (const property of ["cover", "visibility"]) {
+          if (original[property] === current[property])
+            continue;
+          if (!current[property])
+            updates[`flags.${MODULE_ID}.data.${tokenId}.-=${property}`] = true;
+          else
+            updates[`flags.${MODULE_ID}.data.${tokenId}.${property}`] = current[property];
+        }
+      }
     }
     token = token instanceof Token ? token.document : token;
-    if (isEmpty(data))
-      return clearTokenData(token);
-    else
-      return token.update({ [`flags.${MODULE_ID}.data`]: data }, { diff: false, recursive: false });
+    return token.update(updates);
   }
   __name(setTokenData, "setTokenData");
   function hasStandardCover(origin, target) {
@@ -509,7 +567,7 @@
     if (standard === "center")
       return lineIntersectWall(origin.center, target.center);
     else if (standard === "points")
-      return pointToTokenPointsIntersectWall(origin.center, target, 2);
+      return pointToTokenIntersectWall(origin.center, target);
   }
   __name(hasStandardCover, "hasStandardCover");
   function hasLesserCover(originToken, targetToken) {
@@ -536,17 +594,35 @@
       }
     })();
     const visibility = getTokenData(origin, target.id, "visibility");
-    return VISIBILITY_VALUES[systemVisibility] > VISIBILITY_VALUES[visibility] ? systemVisibility : visibility;
+    const mergedVisibility = VISIBILITY_VALUES[systemVisibility] > VISIBILITY_VALUES[visibility] ? systemVisibility : visibility;
+    if (VISIBILITY_VALUES[mergedVisibility] < VISIBILITY_VALUES.concealed) {
+      if (getGlobalConcealed(origin))
+        return "concealed";
+    }
+    return mergedVisibility;
   }
   __name(getVisibility, "getVisibility");
+  function getGlobalConcealed(token) {
+    token = token instanceof Token ? token.document : token;
+    return getFlag(token, "concealed");
+  }
+  __name(getGlobalConcealed, "getGlobalConcealed");
   function updateToken(token, data) {
     const flags = data.flags?.["pf2e-perception"];
-    if (!flags)
-      return;
-    if (flags.data || flags["-=data"] !== void 0)
+    if (flags && (flags.data || flags["-=data"] !== void 0)) {
       token.object.renderFlags.set({ refreshVisibility: true });
+    }
   }
   __name(updateToken, "updateToken");
+  function preUpdateToken(token, data) {
+    if ("x" in data || "y" in data) {
+      const rect = mergeObject(token.bounds, data);
+      const concealed = isConcealed(token.object, rect);
+      setProperty(data, `flags.${MODULE_ID}.concealed`, concealed);
+      console.log("is concealed", concealed);
+    }
+  }
+  __name(preUpdateToken, "preUpdateToken");
 
   // src/actor.js
   function getSelfRollOptions(wrapped, prefix) {
@@ -745,7 +821,9 @@
       return wrapped(...args);
     if (isAttackRoll) {
       const visibility = getVisibility(targetToken, originToken);
-      if (!visibility || originToken.actor.hasLowLightVision)
+      if (!visibility)
+        return wrapped(...args);
+      if (visibility === "concealed" && originToken.actor.hasLowLightVision)
         return wrapped(...args);
       const dc = visibility === "concealed" ? 5 : 11;
       const roll = await new Roll("1d20").evaluate({ async: true });
@@ -1161,7 +1239,7 @@
         const token = scene.tokens.get(tokenId);
         if (!token)
           continue;
-        if (data.visibility === "observed")
+        if (data.visibility === defaultValues.visibility)
           delete data.visibility;
         const original = getTokenData(token, thisId);
         if (original?.visibility === data.visibility)
@@ -1569,6 +1647,7 @@
         changed: path("validation", "choices.changed")
       }
     });
+    register("concealed", Boolean, true);
   }
   __name(registerSettings, "registerSettings");
   function path(setting, key) {
@@ -1612,6 +1691,7 @@
   });
   Hooks.on("pasteToken", pasteToken);
   Hooks.on("updateToken", updateToken);
+  Hooks.on("preUpdateToken", preUpdateToken);
   Hooks.on("renderChatMessage", renderChatMessage);
   Hooks.on("renderSceneConfig", renderSceneConfig);
 })();

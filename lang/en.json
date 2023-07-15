@@ -35,6 +35,11 @@
                     "selected": "Selected Tokens Only",
                     "changed": "Tokens With Changes Only"
                 }
+            },
+            "concealed": {
+                "name": "Automate Concealment",
+                "hint": "Should the module automatically check for concealment when a token move on the board. This setting can also be set on a per-scene basis.",
+                "short": "Should the module automatically check for concealment when a token move on the board."
             }
         },
         "menu": {

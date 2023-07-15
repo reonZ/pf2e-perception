@@ -195,7 +195,7 @@ class ReverseVisibilityValidationMenu extends VisibilityValidationMenu {
             const token = scene.tokens.get(tokenId)
             if (!token) continue
 
-            if (data.visibility === 'observed') delete data.visibility
+            if (data.visibility === defaultValues.visibility) delete data.visibility
 
             const original = getTokenData(token, thisId)
             if (original?.visibility === data.visibility) continue

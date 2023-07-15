@@ -27,6 +27,8 @@ export function registerSettings() {
             changed: path('validation', 'choices.changed'),
         },
     })
+
+    register('concealed', Boolean, true)
 }
 
 function path(setting, key) {

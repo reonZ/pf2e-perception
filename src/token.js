@@ -1,8 +1,9 @@
 import { PerceptionMenu } from './apps/perception.js'
 import { VISIBILITY_VALUES, defaultValues } from './constants.js'
-import { lineIntersectRect, lineIntersectWall, pointToTokenPointsIntersectWall } from './geometry.js'
-import { MODULE_ID, getFlag, getSetting, getStandardSetting, unsetFlag } from './module.js'
-import { getValidTokens } from './scene.js'
+import { lineIntersectRect, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
+import { isConcealed } from './lighting.js'
+import { MODULE_ID, getFlag, getSetting, unsetFlag } from './module.js'
+import { getStandardSetting, getValidTokens } from './scene.js'
 
 export function renderTokenHUD(hud, html) {
     if (!hud.object.actor?.isOfType('creature')) return
@@ -30,22 +31,35 @@ export async function clearTokenData(token) {
 
 export async function setTokenData(token, data) {
     const valid = getValidTokens(token).map(t => t.id)
+    const updates = {}
 
     for (const tokenId in data) {
         if (!valid.includes(tokenId)) {
             delete data[tokenId]
             continue
         }
-        const token = data[tokenId]
-        if (token.visibility === defaultValues.visibility) delete token.visibility
-        if (token.cover === defaultValues.cover) delete token.cover
-        if (!token.visibility && !token.cover) delete data[tokenId]
+
+        const current = data[tokenId]
+        const original = getTokenData(token, tokenId) ?? {}
+
+        if (current.visibility === defaultValues.visibility) delete current.visibility
+        if (current.cover === defaultValues.cover) delete current.cover
+
+        if (original.cover === current.cover && original.visibility === current.visibility) continue
+
+        if (!current.visibility && !current.cover) {
+            updates[`flags.${MODULE_ID}.data.-=${tokenId}`] = true
+        } else {
+            for (const property of ['cover', 'visibility']) {
+                if (original[property] === current[property]) continue
+                if (!current[property]) updates[`flags.${MODULE_ID}.data.${tokenId}.-=${property}`] = true
+                else updates[`flags.${MODULE_ID}.data.${tokenId}.${property}`] = current[property]
+            }
+        }
     }
 
     token = token instanceof Token ? token.document : token
-
-    if (isEmpty(data)) return clearTokenData(token)
-    else return token.update({ [`flags.${MODULE_ID}.data`]: data }, { diff: false, recursive: false })
+    return token.update(updates)
 }
 
 export function hasStandardCover(origin, target) {
@@ -54,7 +68,7 @@ export function hasStandardCover(origin, target) {
 
     const standard = getSetting('standard-type')
     if (standard === 'center') return lineIntersectWall(origin.center, target.center)
-    else if (standard === 'points') return pointToTokenPointsIntersectWall(origin.center, target, 2)
+    else if (standard === 'points') return pointToTokenIntersectWall(origin.center, target)
     // else return allTokenCornersToPointIntersectWall(origin, target.center)
 }
 
@@ -80,12 +94,35 @@ export function getVisibility(origin, target) {
             if (originActor.hasCondition(visibility)) return visibility
         }
     })()
+
     const visibility = getTokenData(origin, target.id, 'visibility')
-    return VISIBILITY_VALUES[systemVisibility] > VISIBILITY_VALUES[visibility] ? systemVisibility : visibility
+    const mergedVisibility = VISIBILITY_VALUES[systemVisibility] > VISIBILITY_VALUES[visibility] ? systemVisibility : visibility
+
+    if (VISIBILITY_VALUES[mergedVisibility] < VISIBILITY_VALUES.concealed) {
+        if (getGlobalConcealed(origin)) return 'concealed'
+    }
+
+    return mergedVisibility
+}
+
+function getGlobalConcealed(token) {
+    token = token instanceof Token ? token.document : token
+    return getFlag(token, 'concealed')
 }
 
 export function updateToken(token, data) {
     const flags = data.flags?.['pf2e-perception']
-    if (!flags) return
-    if (flags.data || flags['-=data'] !== undefined) token.object.renderFlags.set({ refreshVisibility: true })
+
+    if (flags && (flags.data || flags['-=data'] !== undefined)) {
+        token.object.renderFlags.set({ refreshVisibility: true })
+    }
+}
+
+export function preUpdateToken(token, data) {
+    if ('x' in data || 'y' in data) {
+        const rect = mergeObject(token.bounds, data)
+        const concealed = isConcealed(token.object, rect)
+        setProperty(data, `flags.${MODULE_ID}.concealed`, concealed)
+        console.log('is concealed', concealed)
+    }
 }

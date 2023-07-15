@@ -7,7 +7,7 @@ import { MODULE_ID, getSetting } from './module.js'
 import { checkRoll } from './roll.js'
 import { renderSceneConfig } from './scene.js'
 import { registerSettings } from './settings.js'
-import { pasteToken, renderTokenHUD, updateToken } from './token.js'
+import { pasteToken, preUpdateToken, renderTokenHUD, updateToken } from './token.js'
 
 const CHECK_ROLL = 'game.pf2e.Check.roll'
 
@@ -41,10 +41,10 @@ Hooks.once('setup', () => {
 Hooks.on('pasteToken', pasteToken)
 
 Hooks.on('updateToken', updateToken)
+Hooks.on('preUpdateToken', preUpdateToken)
 
 Hooks.on('renderChatMessage', renderChatMessage)
 
 Hooks.on('renderSceneConfig', renderSceneConfig)
 
 // TODO sneak
-// TODO add setting to only show selected/changes in validation menu

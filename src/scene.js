@@ -1,4 +1,4 @@
-import { getStandardSetting, localize } from './module.js'
+import { getFlag, getSetting, localize } from './module.js'
 
 export function renderSceneConfig(config, html) {
     const tab = html.find('.tab[data-tab="basic"]')
@@ -25,4 +25,12 @@ export function validateTokens(token, tokens) {
         const id = t instanceof Token || t instanceof TokenDocument ? t.id : t
         return validToken.includes(id)
     })
+}
+
+export function getStandardSetting(scene) {
+    return getFlag(scene, 'standard') ?? getSetting('standard')
+}
+
+export function getConcealedSetting(scene) {
+    return getFlag(scene, 'concealed') ?? getSetting('concealed')
 }

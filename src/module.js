@@ -33,7 +33,3 @@ export function getFlags(doc) {
 export function getSetting(setting) {
     return game.settings.get(MODULE_ID, setting)
 }
-
-export function getStandardSetting(scene) {
-    return getFlag(scene, 'standard') ?? getSetting('standard')
-}
