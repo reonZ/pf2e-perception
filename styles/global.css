@@ -15,3 +15,38 @@
 .pf2e-perception.covers button {
   margin-block: 0.1em;
 }
+
+.pf2e-conditionals {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  height: -moz-fit-content;
+  height: fit-content;
+  display: flex;
+}
+.pf2e-conditionals .conditional {
+  position: relative;
+}
+.pf2e-conditionals .conditional:not(:only-child):first-child {
+  transform: rotateZ(-25deg);
+}
+.pf2e-conditionals .conditional:nth-child(2) {
+  transform: rotateZ(25deg);
+}
+.pf2e-conditionals .conditional img {
+  width: 26px;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  display: block;
+  border: 1px solid var(--tertiary);
+}
+.pf2e-conditionals .conditional::after {
+  content: "";
+  position: absolute;
+  top: calc(100% - 5px);
+  left: 50%;
+  margin-left: -10px;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 20px solid black;
+  z-index: -1;
+}

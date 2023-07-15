@@ -2,7 +2,7 @@ import { PerceptionMenu } from './apps/perception.js'
 import { VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { lineIntersectRect, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { isConcealed } from './lighting.js'
-import { MODULE_ID, getFlag, getSetting, unsetFlag } from './module.js'
+import { MODULE_ID, getFlag, getSetting, templatePath, unsetFlag } from './module.js'
 import { getStandardSetting, getValidTokens } from './scene.js'
 
 export function renderTokenHUD(hud, html) {
@@ -114,4 +114,47 @@ export function updateToken(token, data, context, userId) {
     if (flags && (flags.data || flags['-=data'] !== undefined)) {
         token.object.renderFlags.set({ refreshVisibility: true })
     }
+}
+
+export function hoverToken(origin, hovered) {
+    if (!hovered) return clearConditionals()
+
+    const tokens = getValidTokens(origin)
+    for (const target of tokens) {
+        showConditionals(target, origin)
+    }
+}
+
+export function deleteToken(token) {
+    clearConditionals(token)
+}
+
+export function clearConditionals(token) {
+    const tokenId = token?.id
+    if (!tokenId) return $('.pf2e-conditionals').remove()
+    $(`.pf2e-conditionals[data-hover-id=${token.id}]`).remove()
+    $(`.pf2e-conditionals[data-token-id=${token.id}]`).remove()
+}
+
+export async function showConditionals(origin, target) {
+    origin = origin instanceof Token ? origin : origin.object
+    if (!origin.visible || !origin.actor.isOfType('creature')) return
+
+    const data = getTokenData(origin, target.id)
+    if (isEmpty(data)) return
+
+    const scale = origin.worldTransform.a
+    const coords = canvas.clientCoordinatesFromCanvas(origin.document._source)
+
+    let content = `<div class="pf2e-conditionals" data-hover-id="${origin.id}" data-token-id="${target.id}" `
+    content += `style="top: ${coords.y}px; left: ${coords.x + (origin.hitArea.width * scale) / 2}px;">`
+
+    Object.entries(data).map(([property, value]) => {
+        const img = property === 'cover' ? 'modules/pf2e-perception/images/cover' : `systems/pf2e/icons/conditions/${value}`
+        content += `<div class="conditional"><img src="../../../${img}.webp"></img></div>`
+    })
+
+    content += '</div>'
+
+    $(document.body).append(content)
 }

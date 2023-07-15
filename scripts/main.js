@@ -615,6 +615,46 @@
     }
   }
   __name(updateToken, "updateToken");
+  function hoverToken(origin, hovered) {
+    if (!hovered)
+      return clearConditionals();
+    const tokens = getValidTokens(origin);
+    for (const target of tokens) {
+      showConditionals(target, origin);
+    }
+  }
+  __name(hoverToken, "hoverToken");
+  function deleteToken(token) {
+    clearConditionals(token);
+  }
+  __name(deleteToken, "deleteToken");
+  function clearConditionals(token) {
+    const tokenId = token?.id;
+    if (!tokenId)
+      return $(".pf2e-conditionals").remove();
+    $(`.pf2e-conditionals[data-hover-id=${token.id}]`).remove();
+    $(`.pf2e-conditionals[data-token-id=${token.id}]`).remove();
+  }
+  __name(clearConditionals, "clearConditionals");
+  async function showConditionals(origin, target) {
+    origin = origin instanceof Token ? origin : origin.object;
+    if (!origin.visible || !origin.actor.isOfType("creature"))
+      return;
+    const data = getTokenData(origin, target.id);
+    if (isEmpty(data))
+      return;
+    const scale = origin.worldTransform.a;
+    const coords = canvas.clientCoordinatesFromCanvas(origin.document._source);
+    let content = `<div class="pf2e-conditionals" data-hover-id="${origin.id}" data-token-id="${target.id}" `;
+    content += `style="top: ${coords.y}px; left: ${coords.x + origin.hitArea.width * scale / 2}px;">`;
+    Object.entries(data).map(([property, value]) => {
+      const img = property === "cover" ? "modules/pf2e-perception/images/cover" : `systems/pf2e/icons/conditions/${value}`;
+      content += `<div class="conditional"><img src="../../../${img}.webp"></img></div>`;
+    });
+    content += "</div>";
+    $(document.body).append(content);
+  }
+  __name(showConditionals, "showConditionals");
 
   // src/actor.js
   function getSelfRollOptions(wrapped, prefix) {
@@ -1681,8 +1721,11 @@
     if (!game.user.isGM && getSetting("target"))
       allowCombatTarget(true);
   });
+  Hooks.on("hoverToken", hoverToken);
   Hooks.on("pasteToken", pasteToken);
   Hooks.on("updateToken", updateToken);
+  Hooks.on("deleteToken", deleteToken);
+  Hooks.on("canvasPan", () => clearConditionals());
   Hooks.on("renderChatMessage", renderChatMessage);
   Hooks.on("renderSceneConfig", renderSceneConfig);
 })();
