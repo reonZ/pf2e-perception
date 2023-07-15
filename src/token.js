@@ -80,7 +80,7 @@ export function hasLesserCover(originToken, targetToken) {
 
     for (const tokenDocument of originToken.scene.tokens) {
         const token = tokenDocument.object
-        if (token === originToken || token === targetToken) continue
+        if (tokenDocument.hidden || token === originToken || token === targetToken) continue
         if (lineIntersectRect(origin, target, token.bounds)) return true
     }
 
