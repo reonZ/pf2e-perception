@@ -40,18 +40,6 @@ export function pointToTokenIntersectWall(origin, token) {
     return false
 }
 
-// export function allTokenCornersToPointIntersectWall(token, target) {
-//     const rect = token.bounds
-//     let intersected = 0
-
-//     for (const point of CORNERS) {
-//         const coords = getRectPoint(point, rect)
-//         if (lineIntersectWall(coords, target)) intersected++
-//     }
-
-//     return intersected === 4
-// }
-
 export function getRectPoint(point, rect) {
     return { x: rect.x + rect.width * point.x, y: rect.y + rect.height * point.y }
 }

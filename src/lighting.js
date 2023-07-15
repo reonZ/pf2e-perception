@@ -1,16 +1,26 @@
 import { RECT_CORNERS, RECT_SPREAD, getRectPoint } from './geometry.js'
 import { getConcealedSetting } from './scene.js'
 
-export function isConcealed(token, rect) {
+export function isConcealed(token) {
+    token = token instanceof Token ? token : token.object
+
     if (token.document.hasStatusEffect(CONFIG.specialStatusEffects.INVISIBLE)) return false
 
     const scene = token.scene
-    if (!scene.tokenVision || scene.darkness < scene.globalLightThreshold || !getConcealedSetting(scene)) return false
+    if (
+        scene !== canvas.scene ||
+        !scene.tokenVision ||
+        scene.darkness < scene.globalLightThreshold ||
+        !getConcealedSetting(scene)
+    )
+        return false
 
-    return !inBrightLight(token, rect)
+    return !inBrightLight(token)
 }
 
-function inBrightLight(token, rect) {
+function inBrightLight(token) {
+    const rect = token.bounds
+
     for (const light of canvas.effects.lightSources) {
         if (!light.active || light.data.bright === 0) continue
 

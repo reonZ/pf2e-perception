@@ -69,6 +69,7 @@ function createTemplate({ type, distance, traits, fillColor, width, token }) {
     new CONFIG.MeasuredTemplate.objectClass(templateDoc).drawPreview()
 }
 
+// TODO remove once it is in the system
 function getTokens(template, { collisionOrigin, collisionType = 'move' } = {}) {
     if (!canvas.scene) return []
     const { grid, dimensions } = canvas

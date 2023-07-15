@@ -87,10 +87,13 @@ export function hasLesserCover(originToken, targetToken) {
     return false
 }
 
-export function getVisibility(origin, target) {
+export function getVisibility(origin, target, checkConcealed = false) {
     const systemVisibility = (() => {
         const originActor = origin.actor
-        for (const visibility of ['unnoticed', 'undetected', 'hidden', 'concealed']) {
+        const visibilities = ['unnoticed', 'undetected', 'hidden']
+        if (checkConcealed) visibilities.push('concealed')
+
+        for (const visibility of visibilities) {
             if (originActor.hasCondition(visibility)) return visibility
         }
     })()
@@ -98,31 +101,17 @@ export function getVisibility(origin, target) {
     const visibility = getTokenData(origin, target.id, 'visibility')
     const mergedVisibility = VISIBILITY_VALUES[systemVisibility] > VISIBILITY_VALUES[visibility] ? systemVisibility : visibility
 
-    if (VISIBILITY_VALUES[mergedVisibility] < VISIBILITY_VALUES.concealed) {
-        if (getGlobalConcealed(origin)) return 'concealed'
+    if (checkConcealed && VISIBILITY_VALUES[mergedVisibility] < VISIBILITY_VALUES.concealed && !target.actor.hasLowLightVision) {
+        const concealed = isConcealed(origin)
+        if (concealed) return 'concealed'
     }
 
     return mergedVisibility
 }
 
-function getGlobalConcealed(token) {
-    token = token instanceof Token ? token.document : token
-    return getFlag(token, 'concealed')
-}
-
-export function updateToken(token, data) {
+export function updateToken(token, data, context, userId) {
     const flags = data.flags?.['pf2e-perception']
-
     if (flags && (flags.data || flags['-=data'] !== undefined)) {
         token.object.renderFlags.set({ refreshVisibility: true })
-    }
-}
-
-export function preUpdateToken(token, data) {
-    if ('x' in data || 'y' in data) {
-        const rect = mergeObject(token.bounds, data)
-        const concealed = isConcealed(token.object, rect)
-        setProperty(data, `flags.${MODULE_ID}.concealed`, concealed)
-        console.log('is concealed', concealed)
     }
 }

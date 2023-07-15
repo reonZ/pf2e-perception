@@ -461,16 +461,18 @@
   __name(getRectPoint, "getRectPoint");
 
   // src/lighting.js
-  function isConcealed(token, rect) {
+  function isConcealed(token) {
+    token = token instanceof Token ? token : token.object;
     if (token.document.hasStatusEffect(CONFIG.specialStatusEffects.INVISIBLE))
       return false;
     const scene = token.scene;
-    if (!scene.tokenVision || scene.darkness < scene.globalLightThreshold || !getConcealedSetting(scene))
+    if (scene !== canvas.scene || !scene.tokenVision || scene.darkness < scene.globalLightThreshold || !getConcealedSetting(scene))
       return false;
-    return !inBrightLight(token, rect);
+    return !inBrightLight(token);
   }
   __name(isConcealed, "isConcealed");
-  function inBrightLight(token, rect) {
+  function inBrightLight(token) {
+    const rect = token.bounds;
     for (const light of canvas.effects.lightSources) {
       if (!light.active || light.data.bright === 0)
         continue;
@@ -585,44 +587,34 @@
     return false;
   }
   __name(hasLesserCover, "hasLesserCover");
-  function getVisibility(origin, target) {
+  function getVisibility(origin, target, checkConcealed = false) {
     const systemVisibility = (() => {
       const originActor = origin.actor;
-      for (const visibility2 of ["unnoticed", "undetected", "hidden", "concealed"]) {
+      const visibilities = ["unnoticed", "undetected", "hidden"];
+      if (checkConcealed)
+        visibilities.push("concealed");
+      for (const visibility2 of visibilities) {
         if (originActor.hasCondition(visibility2))
           return visibility2;
       }
     })();
     const visibility = getTokenData(origin, target.id, "visibility");
     const mergedVisibility = VISIBILITY_VALUES[systemVisibility] > VISIBILITY_VALUES[visibility] ? systemVisibility : visibility;
-    if (VISIBILITY_VALUES[mergedVisibility] < VISIBILITY_VALUES.concealed) {
-      if (getGlobalConcealed(origin))
+    if (checkConcealed && VISIBILITY_VALUES[mergedVisibility] < VISIBILITY_VALUES.concealed && !target.actor.hasLowLightVision) {
+      const concealed = isConcealed(origin);
+      if (concealed)
         return "concealed";
     }
     return mergedVisibility;
   }
   __name(getVisibility, "getVisibility");
-  function getGlobalConcealed(token) {
-    token = token instanceof Token ? token.document : token;
-    return getFlag(token, "concealed");
-  }
-  __name(getGlobalConcealed, "getGlobalConcealed");
-  function updateToken(token, data) {
+  function updateToken(token, data, context, userId) {
     const flags = data.flags?.["pf2e-perception"];
     if (flags && (flags.data || flags["-=data"] !== void 0)) {
       token.object.renderFlags.set({ refreshVisibility: true });
     }
   }
   __name(updateToken, "updateToken");
-  function preUpdateToken(token, data) {
-    if ("x" in data || "y" in data) {
-      const rect = mergeObject(token.bounds, data);
-      const concealed = isConcealed(token.object, rect);
-      setProperty(data, `flags.${MODULE_ID}.concealed`, concealed);
-      console.log("is concealed", concealed);
-    }
-  }
-  __name(preUpdateToken, "preUpdateToken");
 
   // src/actor.js
   function getSelfRollOptions(wrapped, prefix) {
@@ -820,7 +812,7 @@
     if (isReroll || skipPerceptionChecks || !createMessage || !originToken || !validCheckRoll.includes(type) || isAttackRoll && !targetToken)
       return wrapped(...args);
     if (isAttackRoll) {
-      const visibility = getVisibility(targetToken, originToken);
+      const visibility = getVisibility(targetToken, originToken, true);
       if (!visibility)
         return wrapped(...args);
       if (visibility === "concealed" && originToken.actor.hasLowLightVision)
@@ -1691,7 +1683,6 @@
   });
   Hooks.on("pasteToken", pasteToken);
   Hooks.on("updateToken", updateToken);
-  Hooks.on("preUpdateToken", preUpdateToken);
   Hooks.on("renderChatMessage", renderChatMessage);
   Hooks.on("renderSceneConfig", renderSceneConfig);
 })();
