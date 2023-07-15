@@ -615,19 +615,22 @@
     }
   }
   __name(updateToken, "updateToken");
-  function hoverToken(origin, hovered) {
-    if (!hovered)
-      return clearConditionals();
-    const tokens = getValidTokens(origin);
-    for (const target of tokens) {
-      showConditionals(target, origin);
-    }
+  function hoverToken(token, hovered) {
+    if (hovered)
+      showAllConditionals(token);
+    else
+      clearConditionals(token);
   }
   __name(hoverToken, "hoverToken");
   function deleteToken(token) {
     clearConditionals(token);
   }
   __name(deleteToken, "deleteToken");
+  function controlToken(token) {
+    clearConditionals(token);
+    Hooks.once("sightRefresh", () => token.hover && showAllConditionals(token));
+  }
+  __name(controlToken, "controlToken");
   function clearConditionals(token) {
     const tokenId = token?.id;
     if (!tokenId)
@@ -636,6 +639,13 @@
     $(`.pf2e-conditionals[data-token-id=${token.id}]`).remove();
   }
   __name(clearConditionals, "clearConditionals");
+  function showAllConditionals(token) {
+    const tokens = getValidTokens(token);
+    for (const target of tokens) {
+      showConditionals(target, token);
+    }
+  }
+  __name(showAllConditionals, "showAllConditionals");
   async function showConditionals(origin, target) {
     origin = origin instanceof Token ? origin : origin.object;
     if (!origin.visible || !origin.actor.isOfType("creature"))
@@ -1725,6 +1735,7 @@
   Hooks.on("pasteToken", pasteToken);
   Hooks.on("updateToken", updateToken);
   Hooks.on("deleteToken", deleteToken);
+  Hooks.on("controlToken", controlToken);
   Hooks.on("canvasPan", () => clearConditionals());
   Hooks.on("renderChatMessage", renderChatMessage);
   Hooks.on("renderSceneConfig", renderSceneConfig);

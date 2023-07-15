@@ -116,17 +116,18 @@ export function updateToken(token, data, context, userId) {
     }
 }
 
-export function hoverToken(origin, hovered) {
-    if (!hovered) return clearConditionals()
-
-    const tokens = getValidTokens(origin)
-    for (const target of tokens) {
-        showConditionals(target, origin)
-    }
+export function hoverToken(token, hovered) {
+    if (hovered) showAllConditionals(token)
+    else clearConditionals(token)
 }
 
 export function deleteToken(token) {
     clearConditionals(token)
+}
+
+export function controlToken(token) {
+    clearConditionals(token)
+    Hooks.once('sightRefresh', () => token.hover && showAllConditionals(token))
 }
 
 export function clearConditionals(token) {
@@ -134,6 +135,13 @@ export function clearConditionals(token) {
     if (!tokenId) return $('.pf2e-conditionals').remove()
     $(`.pf2e-conditionals[data-hover-id=${token.id}]`).remove()
     $(`.pf2e-conditionals[data-token-id=${token.id}]`).remove()
+}
+
+export function showAllConditionals(token) {
+    const tokens = getValidTokens(token)
+    for (const target of tokens) {
+        showConditionals(target, token)
+    }
 }
 
 export async function showConditionals(origin, target) {
