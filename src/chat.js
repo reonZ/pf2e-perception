@@ -39,7 +39,7 @@ export function renderChatMessage(message, html) {
         flavor.append(hint)
 
         if (isGM) {
-            const addButton = type => {
+            for (const type of ['success', 'failure']) {
                 flavor.append(
                     createChatButton({
                         action: `${type}-message`,
@@ -51,9 +51,6 @@ export function renderChatMessage(message, html) {
                     setFlag(message, 'validated', type === 'success')
                 })
             }
-
-            if (pf2eContext.isSuccess) addButton('success')
-            addButton('failure')
         }
     } else if (pf2eContext?.type === 'skill-check') {
         if (isGM) {
@@ -111,10 +108,8 @@ function createWaitHint(property, validated) {
 }
 
 function createHint(hint, validated) {
-    if (validated !== undefined) {
-        const color = validated ? 'green' : 'red'
-        hint = `<i class="fa-solid fa-check" style="color: ${color};"></i> ` + hint
-    }
+    if (validated === true) hint = '<i class="fa-solid fa-check" style="color: green;"></i> ' + hint
+    else if (validated === false) hint = '<i class="fa-solid fa-xmark" style="color: red;"></i> ' + hint
     return `<i style="display: block; font-size: .9em; text-align: end;">${hint}</i>`
 }
 
