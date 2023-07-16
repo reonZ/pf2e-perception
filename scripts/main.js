@@ -170,15 +170,6 @@
   __name(getConcealedSetting, "getConcealedSetting");
 
   // src/utils.js
-  function omit(object, names) {
-    const set = new Set(names);
-    return Object.entries(object).reduce((acc, [name, value]) => {
-      if (!set.has(name))
-        acc[name] = value;
-      return acc;
-    }, {});
-  }
-  __name(omit, "omit");
   function getPrototype(obj, depth = 1) {
     const prototype = Object.getPrototypeOf(obj);
     if (depth > 1)
@@ -579,7 +570,7 @@
     const target = targetToken.center;
     for (const tokenDocument of originToken.scene.tokens) {
       const token = tokenDocument.object;
-      if (token === originToken || token === targetToken)
+      if (tokenDocument.hidden || token === originToken || token === targetToken)
         continue;
       if (lineIntersectRect(origin, target, token.bounds))
         return true;
@@ -733,6 +724,149 @@
   }
   __name(getConditionalCover, "getConditionalCover");
 
+  // src/chat.js
+  function renderChatMessage(message, html) {
+    const token = message.token;
+    if (!token)
+      return;
+    const { cover, selected, skipWait, validated } = getFlags(message);
+    const pf2eContext = message.getFlag("pf2e", "context");
+    if (game.user.isGM) {
+      if (pf2eContext?.visibility) {
+        const addButton = /* @__PURE__ */ __name((type) => {
+          html.find(".message-header .flavor-text").append(
+            createChatButton({
+              action: `${type}-message`,
+              icon: "fa-solid fa-message",
+              label: localize("message.flat-check.button", type)
+            })
+          );
+          html.find(`[data-action=${type}-message]`).on("click", () => {
+            createTokenMessage({ content: localize(`message.flat-check.${type}`), token });
+            if (type === "success")
+              validateMessage(message);
+          });
+        }, "addButton");
+        if (pf2eContext.isSuccess)
+          addButton("success");
+        addButton("failure");
+      } else if (cover) {
+        const button = createValidateButton({ property: "cover", skipWait, validated });
+        html.find(".message-content").append(button);
+        html.find("[data-action=validate-cover]").on("click", () => {
+          CoverValidationMenu.openMenu({ token, selected, value: cover, message });
+        });
+      } else if (pf2eContext?.type === "skill-check") {
+        if (pf2eContext.options.includes("action:hide")) {
+          addVisibilityValidationButton({
+            token,
+            html,
+            message,
+            skipWait,
+            validated,
+            selected: pf2eContext.selected,
+            ValidationMenu: HideValidationMenu
+          });
+        }
+      } else if (pf2eContext?.type === "perception-check") {
+        if (pf2eContext.options.includes("action:seek") && pf2eContext.selected) {
+          addVisibilityValidationButton({
+            token,
+            html,
+            message,
+            skipWait,
+            validated,
+            selected: pf2eContext.selected,
+            ValidationMenu: SeekValidationMenu
+          });
+        }
+      }
+    } else {
+      if (pf2eContext?.visibility) {
+        html.find(".message-header .message-sender").text(token.name);
+        html.find(".message-header .flavor-text").html(
+          localize("message.flat-check.blind", {
+            visibility: game.i18n.localize(`PF2E.condition.${pf2eContext.visibility}.name`)
+          })
+        );
+      } else if (cover && !skipWait) {
+        const hint = waitHint("cover", validated);
+        html.find(".message-content").append(hint);
+      } else if (pf2eContext?.type === "skill-check" && token.hasPlayerOwner) {
+        if (pf2eContext.options.includes("action:hide")) {
+          addBlindSkillCheckFlavor({ token, message, html, validated });
+        }
+      } else if (pf2eContext?.type === "perception-check" && token.hasPlayerOwner) {
+        if (pf2eContext.options.includes("action:seek") && pf2eContext.selected) {
+          addBlindSkillCheckFlavor({ token, message, html, validated });
+        }
+      }
+    }
+    if (pf2eContext?.visibility && !validated) {
+      html.find(".message-buttons").remove();
+    }
+  }
+  __name(renderChatMessage, "renderChatMessage");
+  function validateMessage(message) {
+    if (!getFlag(message, "validated"))
+      setFlag(message, "validated", true);
+  }
+  __name(validateMessage, "validateMessage");
+  function addBlindSkillCheckFlavor({ html, token, message, validated }) {
+    html.find(".message-header .message-sender").text(token.name);
+    let flavor = message.getFlag("pf2e", "modifierName");
+    flavor += waitHint("visibility", validated);
+    html.find(".message-header .flavor-text").html(flavor);
+  }
+  __name(addBlindSkillCheckFlavor, "addBlindSkillCheckFlavor");
+  function waitHint(property, validated) {
+    let hint = localize(`message.${property}.player.${validated ? "validated" : "wait"}`);
+    if (validated)
+      hint = '<i class="fa-solid fa-check" style="color: green;"></i> ' + hint;
+    return `<i style="display: block; font-size: .9em; text-align: end;">${hint}</i>`;
+  }
+  __name(waitHint, "waitHint");
+  function addVisibilityValidationButton({ skipWait, validated, html, message, ValidationMenu: ValidationMenu2, token, selected }) {
+    const button = createValidateButton({ property: "visibility", skipWait, validated });
+    html.find(".message-header .flavor-text").append(button);
+    html.find("[data-action=validate-visibility]").on("click", async () => {
+      const roll = message.rolls[0].total;
+      ValidationMenu2.openMenu({ token, message, roll, selected });
+    });
+  }
+  __name(addVisibilityValidationButton, "addVisibilityValidationButton");
+  function createValidateButton({ skipWait, validated, property }) {
+    let label = localize(`message.${property}.gm.${skipWait ? "check" : validated ? "validated" : "validate"}`);
+    if (!skipWait && validated)
+      label += '<i class="fa-solid fa-check" style="color: green; margin-left: 0.3em;"></i>';
+    return createChatButton({
+      action: `validate-${property}`,
+      icon: "fa-solid fa-list",
+      label
+    });
+  }
+  __name(createValidateButton, "createValidateButton");
+  function createChatButton({ action, icon, label }) {
+    let button = `<button type="button" style="margin: 0 0 5px; padding: 0;" data-action="${action}">`;
+    if (icon)
+      button += `<i class="${icon}"></i> ${label}</button>`;
+    else
+      button += label;
+    return button;
+  }
+  __name(createChatButton, "createChatButton");
+  async function createTokenMessage({ content, token, flags, secret }) {
+    const data = { content, speaker: ChatMessage.getSpeaker({ token: token instanceof Token ? token.document : token }) };
+    if (flags)
+      setProperty(data, `flags.${MODULE_ID}`, flags);
+    if (secret) {
+      data.type = CONST.CHAT_MESSAGE_TYPES.WHISPER;
+      data.whisper = ChatMessage.getWhisperRecipients("gm");
+    }
+    return ChatMessage.create(data);
+  }
+  __name(createTokenMessage, "createTokenMessage");
+
   // src/template.js
   var templateConversion = {
     burst: "circle",
@@ -849,268 +983,6 @@
     return containedTokens;
   }
   __name(getTokens, "getTokens");
-
-  // src/roll.js
-  async function checkRoll(wrapped, ...args) {
-    const context = args[1];
-    if (!context)
-      return wrapped(...args);
-    const { actor, createMessage = "true", type, token, target, isReroll, skipPerceptionChecks } = context;
-    const originToken = token ?? getActorToken(actor);
-    const targetToken = target?.token;
-    const isAttackRoll = attackCheckRoll.includes(type);
-    if (isReroll || skipPerceptionChecks || !createMessage || !originToken || !validCheckRoll.includes(type) || isAttackRoll && !targetToken)
-      return wrapped(...args);
-    if (isAttackRoll) {
-      const visibility = getVisibility(targetToken, originToken, true);
-      if (!visibility)
-        return wrapped(...args);
-      if (visibility === "concealed" && originToken.actor.hasLowLightVision)
-        return wrapped(...args);
-      const dc = visibility === "concealed" ? 5 : 11;
-      const roll = await new Roll("1d20").evaluate({ async: true });
-      const total = roll.total;
-      const isSuccess = total >= dc;
-      const isUndetected2 = VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected;
-      const success = isSuccess ? 2 : 1;
-      let flavor = `${game.i18n.localize("PF2E.FlatCheck")}:`;
-      flavor += `<strong> ${game.i18n.localize(`PF2E.condition.${visibility}.name`)}</strong>`;
-      flavor += (await game.pf2e.Check.createResultFlavor({
-        target,
-        degree: {
-          value: success,
-          unadjusted: success,
-          adjustment: null,
-          dieResult: total,
-          rollTotal: total,
-          dc: { value: dc }
-        }
-      })).outerHTML;
-      if (isUndetected2) {
-        const addButton = /* @__PURE__ */ __name((type2) => {
-          flavor += createChatButton({
-            action: `${type2}-message`,
-            icon: "fa-solid fa-message",
-            label: localize("message.flat-check.button", type2)
-          });
-        }, "addButton");
-        if (isSuccess)
-          addButton("success");
-        addButton("failure");
-      }
-      const speaker = ChatMessage.getSpeaker({ token: originToken });
-      const flags = isUndetected2 ? createMessageFlag({ check: args[0], context: args[1], visibility, skipPerceptionChecks: true }) : {};
-      await roll.toMessage({ flavor, speaker, flags }, { rollMode: isUndetected2 ? "blindroll" : "roll" });
-      if (!isSuccess || isUndetected2)
-        return;
-    } else if (context.options.has("action:hide")) {
-      args[1].selected = game.user.targets.ids;
-    } else if (context.options.has("action:seek")) {
-      const alliance = originToken.actor.alliance;
-      const highlighted = getTokenTemplateTokens(originToken);
-      if (!highlighted)
-        return wrapped(...args);
-      args[1].selected = validateTokens(originToken, highlighted).filter((t) => {
-        const otherAlliance = t.actor.alliance;
-        return !t.document.hidden && (!otherAlliance || otherAlliance !== alliance);
-      }).map((t) => t.id);
-    }
-    return wrapped(...args);
-  }
-  __name(checkRoll, "checkRoll");
-  function rollAltedCheck(event, context, check) {
-    context = recreateContext(context);
-    if (!context)
-      return;
-    check = new game.pf2e.CheckModifier(check.slug, { modifiers: check.modifiers });
-    game.pf2e.Check.roll(check, context, event);
-  }
-  __name(rollAltedCheck, "rollAltedCheck");
-  function recreateContext(context) {
-    const scene = game.scenes.get(context.scene);
-    if (!scene)
-      return;
-    const actor = game.actors.get(context.actor);
-    const token = scene.tokens.get(context.token);
-    const target = {
-      actor: game.actors.get(context.target?.actor),
-      token: scene.tokens.get(context.target?.token)
-    };
-    if (!actor || !token || !target.actor || !target.token)
-      return null;
-    return {
-      ...context,
-      item: context.item ? actor.items.get(context.item) : void 0,
-      actor,
-      token,
-      target,
-      options: new Set(context.options)
-    };
-  }
-  __name(recreateContext, "recreateContext");
-  function createMessageFlag({ check, context, visibility, skipPerceptionChecks }) {
-    return {
-      [MODULE_ID]: {
-        visibility,
-        context: {
-          ...context,
-          skipPerceptionChecks,
-          item: context.item?.id,
-          actor: context.actor.id,
-          token: context.token.id,
-          scene: context.token.scene.id,
-          target: context.target ? { actor: context.target.actor.id, token: context.target.token.id } : null,
-          dc: context.dc ? omit(context.dc, ["statistic"]) : null,
-          options: Array.from(context.options)
-        },
-        check: check ? {
-          slug: check.slug,
-          modifiers: check.modifiers.map((modifier) => modifier.toObject())
-        } : void 0
-      }
-    };
-  }
-  __name(createMessageFlag, "createMessageFlag");
-
-  // src/chat.js
-  function renderChatMessage(message, html) {
-    const token = message.token;
-    if (!token)
-      return;
-    const { rollCheck, context, check, visibility, cover, selected, skipWait, validated } = getFlags(message);
-    const pf2eContext = message.getFlag("pf2e", "context");
-    if (game.user.isGM) {
-      if (attackCheckRoll.includes(context?.type) && check && !rollCheck) {
-        html.find("[data-action=success-message]").on("click", () => {
-          let content = localize("message.flat-check.success");
-          content += createChatButton({
-            action: "roll-check",
-            icon: "fa-solid fa-dice-d20",
-            label: localize("message.flat-check.button", context.type)
-          });
-          createTokenMessage({ content, token, flags: { context, check, rollCheck: true } });
-        });
-        html.find("[data-action=failure-message]").on("click", () => {
-          createTokenMessage({ content: localize("message.flat-check.failure"), token });
-        });
-      } else if (cover) {
-        const button = createValidateButton({ property: "cover", skipWait, validated });
-        html.find(".message-content").append(button);
-        html.find("[data-action=validate-cover]").on("click", () => {
-          CoverValidationMenu.openMenu({ token, selected, value: cover, message });
-        });
-      } else if (pf2eContext?.type === "skill-check") {
-        if (pf2eContext.options.includes("action:hide")) {
-          addVisibilityValidationButton({
-            token,
-            html,
-            message,
-            skipWait,
-            validated,
-            selected: pf2eContext.selected,
-            ValidationMenu: HideValidationMenu
-          });
-        }
-      } else if (pf2eContext?.type === "perception-check") {
-        if (pf2eContext.options.includes("action:seek") && pf2eContext.selected) {
-          addVisibilityValidationButton({
-            token,
-            html,
-            message,
-            skipWait,
-            validated,
-            selected: pf2eContext.selected,
-            ValidationMenu: SeekValidationMenu
-          });
-        }
-      }
-    } else {
-      if (visibility) {
-        html.find(".message-header .message-sender").text(token.name);
-        html.find(".message-header .flavor-text").html(
-          localize("message.flat-check.blind", { visibility: game.i18n.localize(`PF2E.condition.${visibility}.name`) })
-        );
-      } else if (cover && !skipWait) {
-        const hint = waitHint("cover", validated);
-        html.find(".message-content").append(hint);
-      } else if (pf2eContext?.type === "skill-check" && token.hasPlayerOwner) {
-        if (pf2eContext.options.includes("action:hide")) {
-          addBlindSkillCheckFlavor({ token, message, html, validated });
-        }
-      } else if (pf2eContext?.type === "perception-check" && token.hasPlayerOwner) {
-        if (pf2eContext.options.includes("action:seek") && pf2eContext.selected) {
-          addBlindSkillCheckFlavor({ token, message, html, validated });
-        }
-      }
-    }
-    if (rollCheck) {
-      if (token.isOwner) {
-        html.find("[data-action=roll-check]").on("click", (event) => rollAltedCheck(event, context, check));
-      } else {
-        html.find("[data-action=roll-check]").remove();
-      }
-    }
-  }
-  __name(renderChatMessage, "renderChatMessage");
-  function validateMessage(message) {
-    if (!getFlag(message, "validated"))
-      setFlag(message, "validated", true);
-  }
-  __name(validateMessage, "validateMessage");
-  function addBlindSkillCheckFlavor({ html, token, message, validated }) {
-    html.find(".message-header .message-sender").text(token.name);
-    let flavor = message.getFlag("pf2e", "modifierName");
-    flavor += waitHint("visibility", validated);
-    html.find(".message-header .flavor-text").html(flavor);
-  }
-  __name(addBlindSkillCheckFlavor, "addBlindSkillCheckFlavor");
-  function waitHint(property, validated) {
-    let hint = localize(`message.${property}.player.${validated ? "validated" : "wait"}`);
-    if (validated)
-      hint = '<i class="fa-solid fa-check" style="color: green;"></i> ' + hint;
-    return `<i style="display: block; font-size: .9em; text-align: end;">${hint}</i>`;
-  }
-  __name(waitHint, "waitHint");
-  function addVisibilityValidationButton({ skipWait, validated, html, message, ValidationMenu: ValidationMenu2, token, selected }) {
-    const button = createValidateButton({ property: "visibility", skipWait, validated });
-    html.find(".message-header .flavor-text").append(button);
-    html.find("[data-action=validate-visibility]").on("click", async () => {
-      const roll = message.rolls[0].total;
-      ValidationMenu2.openMenu({ token, message, roll, selected });
-    });
-  }
-  __name(addVisibilityValidationButton, "addVisibilityValidationButton");
-  function createValidateButton({ skipWait, validated, property }) {
-    let label = localize(`message.${property}.gm.${skipWait ? "check" : validated ? "validated" : "validate"}`);
-    if (!skipWait && validated)
-      label += '<i class="fa-solid fa-check" style="color: green; margin-left: 0.3em;"></i>';
-    return createChatButton({
-      action: `validate-${property}`,
-      icon: "fa-solid fa-list",
-      label
-    });
-  }
-  __name(createValidateButton, "createValidateButton");
-  function createChatButton({ action, icon, label }) {
-    let button = `<button type="button" style="margin: 0 0 5px; padding: 0;" data-action="${action}">`;
-    if (icon)
-      button += `<i class="${icon}"></i> ${label}</button>`;
-    else
-      button += label;
-    return button;
-  }
-  __name(createChatButton, "createChatButton");
-  async function createTokenMessage({ content, token, flags, secret }) {
-    const data = { content, speaker: ChatMessage.getSpeaker({ token: token instanceof Token ? token.document : token }) };
-    if (flags)
-      setProperty(data, `flags.${MODULE_ID}`, flags);
-    if (secret) {
-      data.type = CONST.CHAT_MESSAGE_TYPES.WHISPER;
-      data.whisper = ChatMessage.getWhisperRecipients("gm");
-    }
-    return ChatMessage.create(data);
-  }
-  __name(createTokenMessage, "createTokenMessage");
 
   // src/apps/validation.js
   var ValidationMenu = class extends BaseMenu {
@@ -1666,6 +1538,70 @@
     return reachesThreshold(target, tokens, VISIBILITY_VALUES.hidden);
   }
   __name(isHidden, "isHidden");
+
+  // src/roll.js
+  async function checkRoll(wrapped, ...args) {
+    const context = args[1];
+    if (!context)
+      return wrapped(...args);
+    const { actor, createMessage = "true", type, token, target, isReroll } = context;
+    const originToken = token ?? getActorToken(actor);
+    const targetToken = target?.token;
+    const isAttackRoll = attackCheckRoll.includes(type);
+    if (isReroll || !createMessage || !originToken || !validCheckRoll.includes(type) || isAttackRoll && !targetToken)
+      return wrapped(...args);
+    if (isAttackRoll) {
+      const visibility = getVisibility(targetToken, originToken, true);
+      if (!visibility)
+        return wrapped(...args);
+      if (visibility === "concealed" && originToken.actor.hasLowLightVision)
+        return wrapped(...args);
+      const dc = visibility === "concealed" ? 5 : 11;
+      const roll = await new Roll("1d20").evaluate({ async: true });
+      const total = roll.total;
+      const isSuccess = total >= dc;
+      const isUndetected2 = VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected;
+      const success = isSuccess ? 2 : 1;
+      let flavor = `${game.i18n.localize("PF2E.FlatCheck")}:`;
+      flavor += `<strong> ${game.i18n.localize(`PF2E.condition.${visibility}.name`)}</strong>`;
+      flavor += (await game.pf2e.Check.createResultFlavor({
+        target,
+        degree: {
+          value: success,
+          unadjusted: success,
+          adjustment: null,
+          dieResult: total,
+          rollTotal: total,
+          dc: { value: dc }
+        }
+      })).outerHTML;
+      const messageData = {
+        flavor,
+        speaker: ChatMessage.getSpeaker({ token: originToken })
+      };
+      if (isUndetected2) {
+        context.options.add("secret");
+        context.isSuccess = isSuccess;
+        context.visibility = visibility;
+      }
+      await roll.toMessage(messageData, { rollMode: isUndetected2 ? game.user.isGM ? "gmroll" : "blindroll" : "roll" });
+      if (!isUndetected2 && !isSuccess)
+        return;
+    } else if (context.options.has("action:hide")) {
+      context.selected = game.user.targets.ids;
+    } else if (context.options.has("action:seek")) {
+      const alliance = originToken.actor.alliance;
+      const highlighted = getTokenTemplateTokens(originToken);
+      if (!highlighted)
+        return wrapped(...args);
+      context.selected = validateTokens(originToken, highlighted).filter((t) => {
+        const otherAlliance = t.actor.alliance;
+        return !t.document.hidden && (!otherAlliance || otherAlliance !== alliance);
+      }).map((t) => t.id);
+    }
+    return wrapped(...args);
+  }
+  __name(checkRoll, "checkRoll");
 
   // src/settings.js
   function registerSettings() {

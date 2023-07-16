@@ -1,29 +1,30 @@
 import { CoverValidationMenu, HideValidationMenu, SeekValidationMenu } from './apps/validation.js'
-import { attackCheckRoll } from './constants.js'
 import { MODULE_ID, getFlag, getFlags, localize, setFlag } from './module.js'
-import { rollAltedCheck } from './roll.js'
 
 export function renderChatMessage(message, html) {
     const token = message.token
     if (!token) return
 
-    const { rollCheck, context, check, visibility, cover, selected, skipWait, validated } = getFlags(message)
+    const { cover, selected, skipWait, validated } = getFlags(message)
     const pf2eContext = message.getFlag('pf2e', 'context')
 
     if (game.user.isGM) {
-        if (attackCheckRoll.includes(context?.type) && check && !rollCheck) {
-            html.find('[data-action=success-message]').on('click', () => {
-                let content = localize('message.flat-check.success')
-                content += createChatButton({
-                    action: 'roll-check',
-                    icon: 'fa-solid fa-dice-d20',
-                    label: localize('message.flat-check.button', context.type),
+        if (pf2eContext?.visibility) {
+            const addButton = type => {
+                html.find('.message-header .flavor-text').append(
+                    createChatButton({
+                        action: `${type}-message`,
+                        icon: 'fa-solid fa-message',
+                        label: localize('message.flat-check.button', type),
+                    })
+                )
+                html.find(`[data-action=${type}-message]`).on('click', () => {
+                    createTokenMessage({ content: localize(`message.flat-check.${type}`), token })
+                    if (type === 'success') validateMessage(message)
                 })
-                createTokenMessage({ content, token, flags: { context, check, rollCheck: true } })
-            })
-            html.find('[data-action=failure-message]').on('click', () => {
-                createTokenMessage({ content: localize('message.flat-check.failure'), token })
-            })
+            }
+            if (pf2eContext.isSuccess) addButton('success')
+            addButton('failure')
         } else if (cover) {
             const button = createValidateButton({ property: 'cover', skipWait, validated })
             html.find('.message-content').append(button)
@@ -56,10 +57,12 @@ export function renderChatMessage(message, html) {
             }
         }
     } else {
-        if (visibility) {
+        if (pf2eContext?.visibility) {
             html.find('.message-header .message-sender').text(token.name)
             html.find('.message-header .flavor-text').html(
-                localize('message.flat-check.blind', { visibility: game.i18n.localize(`PF2E.condition.${visibility}.name`) })
+                localize('message.flat-check.blind', {
+                    visibility: game.i18n.localize(`PF2E.condition.${pf2eContext.visibility}.name`),
+                })
             )
         } else if (cover && !skipWait) {
             const hint = waitHint('cover', validated)
@@ -75,12 +78,8 @@ export function renderChatMessage(message, html) {
         }
     }
 
-    if (rollCheck) {
-        if (token.isOwner) {
-            html.find('[data-action=roll-check]').on('click', event => rollAltedCheck(event, context, check))
-        } else {
-            html.find('[data-action=roll-check]').remove()
-        }
+    if (pf2eContext?.visibility && !validated) {
+        html.find('.message-buttons').remove()
     }
 }
 

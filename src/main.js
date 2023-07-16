@@ -51,3 +51,4 @@ Hooks.on('renderChatMessage', renderChatMessage)
 Hooks.on('renderSceneConfig', renderSceneConfig)
 
 // TODO sneak
+// TODO add concealed setting in scene config
