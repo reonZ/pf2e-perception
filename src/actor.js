@@ -45,7 +45,7 @@ export function getCoverEffect(actor, selection = false) {
     return selection ? findChoiceSetRule(effect)?.selection.level : effect
 }
 
-function getConditionalCover(origin, target, options) {
+export function getConditionalCover(origin, target, options, debug = false) {
     const ranged = options.includes('item:ranged')
     const prone = ranged ? isProne(target.actor) : false
 
@@ -62,11 +62,11 @@ function getConditionalCover(origin, target, options) {
     if (
         COVER_VALUES[cover] < COVER_VALUES.standard &&
         COVER_VALUES[systemCover] < COVER_VALUES.standard &&
-        hasStandardCover(origin, target)
+        hasStandardCover(origin, target, debug)
     ) {
         cover = 'standard'
     } else if (!cover && !systemCover && isCoverable && origin.distanceTo(target) > 5) {
-        cover = getCreatureCover(origin, target)
+        cover = getCreatureCover(origin, target, debug)
     }
 
     if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return 'greater-prone'

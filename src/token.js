@@ -1,6 +1,6 @@
 import { PerceptionMenu } from './apps/perception.js'
 import { VISIBILITY_VALUES, defaultValues } from './constants.js'
-import { getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
+import { clearDebug, drawDebugLine, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { isConcealed } from './lighting.js'
 import { MODULE_ID, getFlag, getSetting, unsetFlag } from './module.js'
 import { getSceneSetting, getValidTokens } from './scene.js'
@@ -62,16 +62,16 @@ export async function setTokenData(token, data) {
     return token.update(updates)
 }
 
-export function hasStandardCover(origin, target) {
+export function hasStandardCover(origin, target, debug = false) {
     const scene = origin.scene
     console.log(getSceneSetting(scene, 'standard'))
     if (!getSceneSetting(scene, 'standard')) return false
 
-    // clearDebug()
+    if (debug) clearDebug()
 
     const standard = getSetting('standard-type')
-    if (standard === 'center') return lineIntersectWall(origin.center, target.center)
-    else if (standard === 'points') return pointToTokenIntersectWall(origin.center, target)
+    if (standard === 'center') return lineIntersectWall(origin.center, target.center, debug)
+    else if (standard === 'points') return pointToTokenIntersectWall(origin.center, target, debug)
     // else return allTokenCornersToPointIntersectWall(origin, target.center)
 }
 
@@ -84,30 +84,35 @@ const SIZES = {
     grg: 5,
 }
 
-export function getCreatureCover(originToken, targetToken) {
+export function getCreatureCover(originToken, targetToken, debug = false) {
     const setting = getSetting('lesser')
     if (setting === 'none') return undefined
 
     let cover = undefined
     const origin = originToken.center
     const target = targetToken.center
-    const originSize = SIZES[originToken.actor.size]
-    const targetSize = SIZES[targetToken.actor.size]
-    const tokens = originToken.scene.tokens
 
-    // clearDebug()
-    // drawDebugLine(origin, target)
+    if (debug) {
+        clearDebug()
+        drawDebugLine(origin, target)
+    }
 
     const isExtraLarge = token => {
         const size = SIZES[token.actor.size]
         return size - originSize >= 2 && size - targetSize >= 2
     }
-    const hasExtraLarge = originSize < SIZES.huge && targetSize < SIZES.huge && tokens.some(isExtraLarge)
+
+    const originSize = SIZES[originToken.actor.size]
+    const targetSize = SIZES[targetToken.actor.size]
+
+    const tokens = originToken.scene.tokens.contents.sort((a, b) => SIZES[b.actor.size] - SIZES[a.actor.size])
+
+    let extralarges = originSize < SIZES.huge && targetSize < SIZES.huge && tokens.filter(isExtraLarge).length
 
     const margin = setting === 'ten' ? 0.1 : setting === 'twenty' ? 0.2 : 0
 
     const intersectsEdge = edge => {
-        // drawDebugLine(edge.A, edge.B, 'red')
+        if (debug) drawDebugLine(edge.A, edge.B, 'red')
         return lineSegmentIntersects(origin, target, edge.A, edge.B)
     }
     const intersectsWith =
@@ -125,11 +130,9 @@ export function getCreatureCover(originToken, targetToken) {
         if (tokenDocument.hidden || token === originToken || token === targetToken) continue
 
         const edges = getRectEdges(token.bounds, margin)
-        if (!intersectsWith(edges)) continue
 
-        if (!hasExtraLarge) return 'lesser'
-        else if (isExtraLarge(tokenDocument)) return 'standard'
-        else cover = 'lesser'
+        if (intersectsWith(edges)) return extralarges ? 'standard' : 'lesser'
+        else if (isExtraLarge(tokenDocument)) extralarges--
     }
 
     return cover

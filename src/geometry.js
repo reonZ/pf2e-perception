@@ -27,16 +27,16 @@ export function getRectEdges(rect, margin) {
     }
 }
 
-export function lineIntersectWall(origin, target) {
-    // drawDebugLine(origin, target)
+export function lineIntersectWall(origin, target, debug = false) {
+    if (debug) drawDebugLine(origin, target)
     return CONFIG.Canvas.polygonBackends.move.testCollision(origin, target, { type: 'move', mode: 'any' })
 }
 
-export function pointToTokenIntersectWall(origin, token) {
+export function pointToTokenIntersectWall(origin, token, debug = false) {
     const rect = token.bounds
     for (const point of RECT_SPREAD) {
         const coords = getRectPoint(point, rect)
-        if (lineIntersectWall(origin, coords)) return true
+        if (lineIntersectWall(origin, coords, debug)) return true
     }
     return false
 }

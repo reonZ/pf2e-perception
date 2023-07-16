@@ -18,7 +18,7 @@ export function isConcealed(token) {
     return !inBrightLight(token)
 }
 
-function inBrightLight(token) {
+export function inBrightLight(token) {
     const rect = token.bounds
 
     for (const light of canvas.effects.lightSources) {

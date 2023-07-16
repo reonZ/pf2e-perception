@@ -1,13 +1,29 @@
 import { setupActions } from './action.js'
-import { getContextualClone, getSelfRollOptions } from './actor.js'
+import { getActorToken, getConditionalCover, getContextualClone, getCoverEffect, getSelfRollOptions, isProne } from './actor.js'
 import { renderChatMessage } from './chat.js'
 import { allowCombatTarget } from './combat.js'
 import { basicSightCanDetect, feelTremorCanDetect, hearingCanDetect } from './detection.js'
+import { clearDebug, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
+import { inBrightLight, isConcealed } from './lighting.js'
 import { MODULE_ID, getSetting } from './module.js'
 import { checkRoll } from './roll.js'
-import { renderSceneConfig } from './scene.js'
+import { getSceneSetting, getValidTokens, renderSceneConfig, validateTokens } from './scene.js'
 import { registerSettings } from './settings.js'
-import { clearConditionals, controlToken, deleteToken, hoverToken, pasteToken, renderTokenHUD, updateToken } from './token.js'
+import {
+    clearConditionals,
+    controlToken,
+    deleteToken,
+    getCreatureCover,
+    getTokenData,
+    getVisibility,
+    hasStandardCover,
+    hoverToken,
+    pasteToken,
+    renderTokenHUD,
+    showAllConditionals,
+    showConditionals,
+    updateToken,
+} from './token.js'
 
 const CHECK_ROLL = 'game.pf2e.Check.roll'
 
@@ -36,6 +52,40 @@ Hooks.once('setup', () => {
     libWrapper.register(MODULE_ID, FEEL_TREMOR_CAN_DETECT, feelTremorCanDetect)
 
     if (!game.user.isGM && getSetting('target')) allowCombatTarget(true)
+})
+
+Hooks.once('ready', () => {
+    game.modules.get(MODULE_ID).api = {
+        geometry: {
+            clearDebug,
+            lineIntersectWall,
+            pointToTokenIntersectWall,
+        },
+        token: {
+            getCreatureCover,
+            getVisibility,
+            clearConditionals,
+            showConditionals,
+            showAllConditionals,
+            hasStandardCover,
+            getTokenData,
+        },
+        lighting: {
+            isConcealed,
+            inBrightLight,
+        },
+        actor: {
+            getActorToken,
+            isProne,
+            getCoverEffect,
+            getConditionalCover,
+        },
+        scene: {
+            getValidTokens,
+            validateTokens,
+            getSceneSetting,
+        },
+    }
 })
 
 Hooks.on('hoverToken', hoverToken)
