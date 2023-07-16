@@ -1,4 +1,9 @@
-const EDGES = ['topEdge', 'rightEdge', 'bottomEdge', 'leftEdge']
+const RECT_EDGES = [
+    { A: { x: 0.1, y: 0.1 }, B: { x: 0.9, y: 0.1 } },
+    { A: { x: 0.9, y: 0.1 }, B: { x: 0.9, y: 0.9 } },
+    { A: { x: 0.9, y: 0.9 }, B: { x: 0.1, y: 0.9 } },
+    { A: { x: 0.1, y: 0.9 }, B: { x: 0.1, y: 0.1 } },
+]
 
 export const RECT_CORNERS = [
     { x: 0, y: 0 },
@@ -20,9 +25,10 @@ export const RECT_SPREAD = [
 ]
 
 export function lineIntersectRect(origin, target, rect) {
-    for (const edgeName of EDGES) {
-        const edge = rect[edgeName]
-        if (lineSegmentIntersects(origin, target, edge.A, edge.B)) return true
+    for (const edge of RECT_EDGES) {
+        const A = getRectPoint(edge.A, rect)
+        const B = getRectPoint(edge.B, rect)
+        if (lineSegmentIntersects(origin, target, A, B)) return true
     }
     return false
 }
