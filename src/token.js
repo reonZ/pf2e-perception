@@ -84,20 +84,26 @@ const SIZES = {
 export function getCreatureCover(originToken, targetToken) {
     if (!getSetting('lesser')) return undefined
 
+    let cover = undefined
     const origin = originToken.center
     const target = targetToken.center
     const originSize = SIZES[originToken.actor.size]
     const targetSize = SIZES[targetToken.actor.size]
+    const tokens = originToken.scene.tokens
 
-    let cover = undefined
+    const isExtraLarge = token => {
+        const size = SIZES[token.actor.size]
+        return size - originSize >= 2 && size - targetSize >= 2
+    }
+    const hasExtraLarge = originSize < SIZES.huge && targetSize < SIZES.huge && tokens.some(isExtraLarge)
 
-    for (const tokenDocument of originToken.scene.tokens) {
+    for (const tokenDocument of tokens) {
         const token = tokenDocument.object
         if (tokenDocument.hidden || token === originToken || token === targetToken) continue
         if (!lineIntersectRect(origin, target, token.bounds)) continue
 
-        const size = SIZES[tokenDocument.actor.size]
-        if (size - originSize >= 2 && size - targetSize >= 2) return 'standard'
+        if (!hasExtraLarge) return 'lesser'
+        else if (isExtraLarge(tokenDocument)) return 'standard'
         else cover = 'lesser'
     }
 
