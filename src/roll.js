@@ -1,5 +1,6 @@
 import { getActorToken } from './actor.js'
 import { VISIBILITY_VALUES, attackCheckRoll, validCheckRoll } from './constants.js'
+import { MODULE_ID } from './module.js'
 import { validateTokens } from './scene.js'
 import { getTokenTemplateTokens } from './template.js'
 import { getVisibility } from './token.js'
@@ -55,6 +56,14 @@ export async function checkRoll(wrapped, ...args) {
             context.options.add('secret')
             context.isSuccess = isSuccess
             context.visibility = visibility
+
+            let blindCheck = `${game.i18n.localize('PF2E.FlatCheck')}:`
+            blindCheck += `<strong> ${game.i18n.localize(`PF2E.condition.undetected.name`)}</strong>`
+            messageData.flags = {
+                [MODULE_ID]: {
+                    blindCheck,
+                },
+            }
         }
 
         await roll.toMessage(messageData, { rollMode: isUndetected ? (game.user.isGM ? 'gmroll' : 'blindroll') : 'roll' })

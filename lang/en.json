@@ -101,15 +101,15 @@
         },
         "message": {
             "flat-check": {
-                "blind": "Is Trying to hit something <strong>{visibility}</strong>",
                 "button": {
                     "attack-roll": "Attack Roll",
                     "spell-attack-roll": "Spell Attack Roll",
                     "failure": "Failure Message",
                     "success": "Success Message"
                 },
-                "failure": "Wasn't able to hit anything.",
-                "success": "Was able to hit something."
+                "blind": "Is Trying to hit something undetected",
+                "failure": "Wasn't able to hit anything",
+                "success": "Was able to hit something"
             },
             "cover": {
                 "take": "Takes cover ({cover}) from a selection of tokens on the board",

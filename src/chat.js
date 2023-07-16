@@ -5,13 +5,42 @@ export function renderChatMessage(message, html) {
     const token = message.token
     if (!token) return
 
-    const { cover, selected, skipWait, validated } = getFlags(message)
+    const isGM = game.user.isGM
+    const hasPlayerOwner = token.hasPlayerOwner
+    const { cover, selected, skipWait, validated, blindCheck } = getFlags(message)
     const pf2eContext = message.getFlag('pf2e', 'context')
 
-    if (game.user.isGM) {
-        if (pf2eContext?.visibility) {
+    if (blindCheck && !isGM && hasPlayerOwner) {
+        html.find('.message-header .message-sender').text(token.name)
+        html.find('.message-header .flavor-text').html(blindCheck)
+    } else if (cover) {
+        if (isGM) {
+            const button = createValidateButton({ property: 'cover', skipWait, validated })
+            html.find('.message-content').append(button)
+            html.find('[data-action=validate-cover]').on('click', () => {
+                CoverValidationMenu.openMenu({ token, selected, value: cover, message })
+            })
+        } else if (!skipWait) {
+            const hint = createWaitHint('cover', validated)
+            html.find('.message-content').append(hint)
+        }
+    } else if (pf2eContext?.visibility) {
+        if (!validated) html.find('.message-buttons').remove()
+
+        const flavor = html.find('.message-header .flavor-text')
+
+        if (!isGM && hasPlayerOwner) {
+            html.find('.message-header .message-sender').text(token.name)
+            flavor.empty()
+        }
+
+        const msg = localize(`message.flat-check.${validated === undefined ? 'blind' : validated ? 'success' : 'failure'}`)
+        const hint = createHint(msg, validated)
+        flavor.append(hint)
+
+        if (isGM) {
             const addButton = type => {
-                html.find('.message-header .flavor-text').append(
+                flavor.append(
                     createChatButton({
                         action: `${type}-message`,
                         icon: 'fa-solid fa-message',
@@ -19,19 +48,15 @@ export function renderChatMessage(message, html) {
                     })
                 )
                 html.find(`[data-action=${type}-message]`).on('click', () => {
-                    createTokenMessage({ content: localize(`message.flat-check.${type}`), token })
-                    if (type === 'success') validateMessage(message)
+                    setFlag(message, 'validated', type === 'success')
                 })
             }
+
             if (pf2eContext.isSuccess) addButton('success')
             addButton('failure')
-        } else if (cover) {
-            const button = createValidateButton({ property: 'cover', skipWait, validated })
-            html.find('.message-content').append(button)
-            html.find('[data-action=validate-cover]').on('click', () => {
-                CoverValidationMenu.openMenu({ token, selected, value: cover, message })
-            })
-        } else if (pf2eContext?.type === 'skill-check') {
+        }
+    } else if (pf2eContext?.type === 'skill-check') {
+        if (isGM) {
             if (pf2eContext.options.includes('action:hide')) {
                 addVisibilityValidationButton({
                     token,
@@ -43,7 +68,13 @@ export function renderChatMessage(message, html) {
                     ValidationMenu: HideValidationMenu,
                 })
             }
-        } else if (pf2eContext?.type === 'perception-check') {
+        } else if (hasPlayerOwner) {
+            if (pf2eContext.options.includes('action:hide')) {
+                addBlindSkillCheckFlavor({ token, message, html, validated })
+            }
+        }
+    } else if (pf2eContext?.type === 'perception-check') {
+        if (isGM) {
             if (pf2eContext.options.includes('action:seek') && pf2eContext.selected) {
                 addVisibilityValidationButton({
                     token,
@@ -55,31 +86,11 @@ export function renderChatMessage(message, html) {
                     ValidationMenu: SeekValidationMenu,
                 })
             }
-        }
-    } else {
-        if (pf2eContext?.visibility) {
-            html.find('.message-header .message-sender').text(token.name)
-            html.find('.message-header .flavor-text').html(
-                localize('message.flat-check.blind', {
-                    visibility: game.i18n.localize(`PF2E.condition.${pf2eContext.visibility}.name`),
-                })
-            )
-        } else if (cover && !skipWait) {
-            const hint = waitHint('cover', validated)
-            html.find('.message-content').append(hint)
-        } else if (pf2eContext?.type === 'skill-check' && token.hasPlayerOwner) {
-            if (pf2eContext.options.includes('action:hide')) {
-                addBlindSkillCheckFlavor({ token, message, html, validated })
-            }
-        } else if (pf2eContext?.type === 'perception-check' && token.hasPlayerOwner) {
+        } else if (hasPlayerOwner) {
             if (pf2eContext.options.includes('action:seek') && pf2eContext.selected) {
                 addBlindSkillCheckFlavor({ token, message, html, validated })
             }
         }
-    }
-
-    if (pf2eContext?.visibility && !validated) {
-        html.find('.message-buttons').remove()
     }
 }
 
@@ -90,13 +101,20 @@ export function validateMessage(message) {
 function addBlindSkillCheckFlavor({ html, token, message, validated }) {
     html.find('.message-header .message-sender').text(token.name)
     let flavor = message.getFlag('pf2e', 'modifierName')
-    flavor += waitHint('visibility', validated)
+    flavor += createWaitHint('visibility', validated)
     html.find('.message-header .flavor-text').html(flavor)
 }
 
-function waitHint(property, validated) {
-    let hint = localize(`message.${property}.player.${validated ? 'validated' : 'wait'}`)
-    if (validated) hint = '<i class="fa-solid fa-check" style="color: green;"></i> ' + hint
+function createWaitHint(property, validated) {
+    const hint = localize(`message.${property}.player.${validated ? 'validated' : 'wait'}`)
+    return createHint(hint, validated)
+}
+
+function createHint(hint, validated) {
+    if (validated !== undefined) {
+        const color = validated ? 'green' : 'red'
+        hint = `<i class="fa-solid fa-check" style="color: ${color};"></i> ` + hint
+    }
     return `<i style="display: block; font-size: .9em; text-align: end;">${hint}</i>`
 }
 
