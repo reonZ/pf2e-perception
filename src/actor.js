@@ -1,6 +1,6 @@
 import { COVER_UUID, COVER_VALUES, VISIBILITY_VALUES } from './constants.js'
 import { createCoverSource, createFlatFootedSource, findChoiceSetRule } from './effect.js'
-import { getTokenData, getVisibility, hasLesserCover, hasStandardCover } from './token.js'
+import { getTokenData, getVisibility, getCreatureCover, hasStandardCover } from './token.js'
 
 export function getSelfRollOptions(wrapped, prefix) {
     const result = wrapped(prefix)
@@ -57,13 +57,17 @@ function getConditionalCover(origin, target, options) {
     if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return 'greater-prone'
     if (!prone && cover === 'greater-prone') cover = undefined
 
+    const isCoverable = ranged || options.includes('item:trait:reach') || options.includes('item:type:spell')
+
     if (
         COVER_VALUES[cover] < COVER_VALUES.standard &&
         COVER_VALUES[systemCover] < COVER_VALUES.standard &&
         hasStandardCover(origin, target)
     ) {
         cover = 'standard'
-    } else if (!cover && !systemCover && hasLesserCover(origin, target)) cover = 'lesser'
+    } else if (!cover && !systemCover && isCoverable && origin.distanceTo(target) > 5) {
+        cover = getCreatureCover(origin, target)
+    }
 
     if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return 'greater-prone'
 

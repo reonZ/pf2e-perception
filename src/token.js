@@ -72,19 +72,36 @@ export function hasStandardCover(origin, target) {
     // else return allTokenCornersToPointIntersectWall(origin, target.center)
 }
 
-export function hasLesserCover(originToken, targetToken) {
-    if (!getSetting('lesser')) return false
+const SIZES = {
+    tiny: 0,
+    sm: 1,
+    med: 2,
+    lg: 3,
+    huge: 4,
+    grg: 5,
+}
+
+export function getCreatureCover(originToken, targetToken) {
+    if (!getSetting('lesser')) return undefined
 
     const origin = originToken.center
     const target = targetToken.center
+    const originSize = SIZES[originToken.actor.size]
+    const targetSize = SIZES[targetToken.actor.size]
+
+    let cover = undefined
 
     for (const tokenDocument of originToken.scene.tokens) {
         const token = tokenDocument.object
         if (tokenDocument.hidden || token === originToken || token === targetToken) continue
-        if (lineIntersectRect(origin, target, token.bounds)) return true
+        if (!lineIntersectRect(origin, target, token.bounds)) continue
+
+        const size = SIZES[tokenDocument.actor.size]
+        if (size - originSize >= 2 && size - targetSize >= 2) return 'standard'
+        else cover = 'lesser'
     }
 
-    return false
+    return cover
 }
 
 export function getVisibility(origin, target, checkConcealed = false) {

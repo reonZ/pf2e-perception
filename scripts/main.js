@@ -563,21 +563,37 @@
       return pointToTokenIntersectWall(origin.center, target);
   }
   __name(hasStandardCover, "hasStandardCover");
-  function hasLesserCover(originToken, targetToken) {
+  var SIZES = {
+    tiny: 0,
+    sm: 1,
+    med: 2,
+    lg: 3,
+    huge: 4,
+    grg: 5
+  };
+  function getCreatureCover(originToken, targetToken) {
     if (!getSetting("lesser"))
-      return false;
+      return void 0;
     const origin = originToken.center;
     const target = targetToken.center;
+    const originSize = SIZES[originToken.actor.size];
+    const targetSize = SIZES[targetToken.actor.size];
+    let cover = void 0;
     for (const tokenDocument of originToken.scene.tokens) {
       const token = tokenDocument.object;
       if (tokenDocument.hidden || token === originToken || token === targetToken)
         continue;
-      if (lineIntersectRect(origin, target, token.bounds))
-        return true;
+      if (!lineIntersectRect(origin, target, token.bounds))
+        continue;
+      const size = SIZES[tokenDocument.actor.size];
+      if (size - originSize >= 2 && size - targetSize >= 2)
+        return "standard";
+      else
+        cover = "lesser";
     }
-    return false;
+    return cover;
   }
-  __name(hasLesserCover, "hasLesserCover");
+  __name(getCreatureCover, "getCreatureCover");
   function getVisibility(origin, target, checkConcealed = false) {
     const systemVisibility = (() => {
       const originActor = origin.actor;
@@ -714,10 +730,12 @@
       return "greater-prone";
     if (!prone && cover === "greater-prone")
       cover = void 0;
+    const isCoverable = ranged || options.includes("item:trait:reach") || options.includes("item:type:spell");
     if (COVER_VALUES[cover] < COVER_VALUES.standard && COVER_VALUES[systemCover] < COVER_VALUES.standard && hasStandardCover(origin, target)) {
       cover = "standard";
-    } else if (!cover && !systemCover && hasLesserCover(origin, target))
-      cover = "lesser";
+    } else if (!cover && !systemCover && isCoverable && origin.distanceTo(target) > 5) {
+      cover = getCreatureCover(origin, target);
+    }
     if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser)
       return "greater-prone";
     return COVER_VALUES[cover] > COVER_VALUES[systemCover] ? cover : void 0;
