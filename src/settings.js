@@ -6,7 +6,15 @@ export function registerSettings() {
         onChange: allowCombatTarget,
     })
 
-    register('lesser', Boolean, true)
+    register('lesser', String, 'ten', {
+        choices: {
+            none: path('lesser', 'choices.none'),
+            cross: path('lesser', 'choices.cross'),
+            zero: path('lesser', 'choices.zero'),
+            ten: path('lesser', 'choices.ten'),
+            twenty: path('lesser', 'choices.twenty'),
+        },
+    })
 
     register('standard', Boolean, true)
 

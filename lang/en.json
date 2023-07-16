@@ -2,8 +2,15 @@
     "pf2e-perception": {
         "settings": {
             "lesser": {
-                "name": "Automate Lesser Cover",
-                "hint": "Should the module automatically check for lesser covers on the board."
+                "name": "Automate Creature Cover",
+                "hint": "Should the module automatically check for creature covers on the board.",
+                "choices": {
+                    "none": "Disabled",
+                    "cross": "Must intersect 2 opposite sides",
+                    "zero": "Intersect any side",
+                    "ten": "Intersect any side with 10% margin",
+                    "twenty": "Intersect any side with 20% margin"
+                }
             },
             "standard": {
                 "name": "Automate Standard Cover",

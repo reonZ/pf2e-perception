@@ -1,8 +1,8 @@
 import { PerceptionMenu } from './apps/perception.js'
 import { VISIBILITY_VALUES, defaultValues } from './constants.js'
-import { lineIntersectRect, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
+import { getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { isConcealed } from './lighting.js'
-import { MODULE_ID, getFlag, getSetting, templatePath, unsetFlag } from './module.js'
+import { MODULE_ID, getFlag, getSetting, unsetFlag } from './module.js'
 import { getStandardSetting, getValidTokens } from './scene.js'
 
 export function renderTokenHUD(hud, html) {
@@ -66,6 +66,8 @@ export function hasStandardCover(origin, target) {
     const scene = origin.scene
     if (!getStandardSetting(scene)) return false
 
+    // clearDebug()
+
     const standard = getSetting('standard-type')
     if (standard === 'center') return lineIntersectWall(origin.center, target.center)
     else if (standard === 'points') return pointToTokenIntersectWall(origin.center, target)
@@ -82,7 +84,8 @@ const SIZES = {
 }
 
 export function getCreatureCover(originToken, targetToken) {
-    if (!getSetting('lesser')) return undefined
+    const setting = getSetting('lesser')
+    if (setting === 'none') return undefined
 
     let cover = undefined
     const origin = originToken.center
@@ -91,16 +94,37 @@ export function getCreatureCover(originToken, targetToken) {
     const targetSize = SIZES[targetToken.actor.size]
     const tokens = originToken.scene.tokens
 
+    // clearDebug()
+    // drawDebugLine(origin, target)
+
     const isExtraLarge = token => {
         const size = SIZES[token.actor.size]
         return size - originSize >= 2 && size - targetSize >= 2
     }
     const hasExtraLarge = originSize < SIZES.huge && targetSize < SIZES.huge && tokens.some(isExtraLarge)
 
+    const margin = setting === 'ten' ? 0.1 : setting === 'twenty' ? 0.2 : 0
+
+    const intersectsEdge = edge => {
+        // drawDebugLine(edge.A, edge.B, 'red')
+        return lineSegmentIntersects(origin, target, edge.A, edge.B)
+    }
+    const intersectsWith =
+        setting === 'cross'
+            ? edges => {
+                  return (
+                      (intersectsEdge(edges.top) && intersectsEdge(edges.bottom)) ||
+                      (intersectsEdge(edges.left) && intersectsEdge(edges.right))
+                  )
+              }
+            : edges => Object.values(edges).some(edge => intersectsEdge(edge))
+
     for (const tokenDocument of tokens) {
         const token = tokenDocument.object
         if (tokenDocument.hidden || token === originToken || token === targetToken) continue
-        if (!lineIntersectRect(origin, target, token.bounds)) continue
+
+        const edges = getRectEdges(token.bounds, margin)
+        if (!intersectsWith(edges)) continue
 
         if (!hasExtraLarge) return 'lesser'
         else if (isExtraLarge(tokenDocument)) return 'standard'

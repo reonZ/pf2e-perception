@@ -9,6 +9,8 @@ export async function checkRoll(wrapped, ...args) {
     const context = args[1]
     if (!context) return wrapped(...args)
 
+    if (Array.isArray(context.options)) context.options = new Set(context.options)
+
     const { actor, createMessage = 'true', type, token, target, isReroll } = context
     const originToken = token ?? getActorToken(actor)
     const targetToken = target?.token

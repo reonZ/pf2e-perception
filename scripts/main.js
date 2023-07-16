@@ -405,7 +405,6 @@
   __name(PerceptionMenu, "PerceptionMenu");
 
   // src/geometry.js
-  var EDGES = ["topEdge", "rightEdge", "bottomEdge", "leftEdge"];
   var RECT_CORNERS = [
     { x: 0, y: 0 },
     { x: 1, y: 0 },
@@ -423,15 +422,16 @@
     { x: 0.5, y: 0.75 },
     { x: 0.75, y: 0.75 }
   ];
-  function lineIntersectRect(origin, target, rect) {
-    for (const edgeName of EDGES) {
-      const edge = rect[edgeName];
-      if (lineSegmentIntersects(origin, target, edge.A, edge.B))
-        return true;
-    }
-    return false;
+  function getRectEdges(rect, margin) {
+    const opposite = 1 - margin;
+    return {
+      top: { A: getRectPoint({ x: margin, y: margin }, rect), B: getRectPoint({ x: opposite, y: margin }, rect) },
+      right: { A: getRectPoint({ x: opposite, y: margin }, rect), B: getRectPoint({ x: opposite, y: opposite }, rect) },
+      bottom: { A: getRectPoint({ x: opposite, y: opposite }, rect), B: getRectPoint({ x: margin, y: opposite }, rect) },
+      left: { A: getRectPoint({ x: margin, y: opposite }, rect), B: getRectPoint({ x: margin, y: margin }, rect) }
+    };
   }
-  __name(lineIntersectRect, "lineIntersectRect");
+  __name(getRectEdges, "getRectEdges");
   function lineIntersectWall(origin, target) {
     return CONFIG.Canvas.polygonBackends.move.testCollision(origin, target, { type: "move", mode: "any" });
   }
@@ -572,21 +572,37 @@
     grg: 5
   };
   function getCreatureCover(originToken, targetToken) {
-    if (!getSetting("lesser"))
+    const setting = getSetting("lesser");
+    if (setting === "none")
       return void 0;
+    let cover = void 0;
     const origin = originToken.center;
     const target = targetToken.center;
     const originSize = SIZES[originToken.actor.size];
     const targetSize = SIZES[targetToken.actor.size];
-    let cover = void 0;
-    for (const tokenDocument of originToken.scene.tokens) {
+    const tokens = originToken.scene.tokens;
+    const isExtraLarge = /* @__PURE__ */ __name((token) => {
+      const size = SIZES[token.actor.size];
+      return size - originSize >= 2 && size - targetSize >= 2;
+    }, "isExtraLarge");
+    const hasExtraLarge = originSize < SIZES.huge && targetSize < SIZES.huge && tokens.some(isExtraLarge);
+    const margin = setting === "ten" ? 0.1 : setting === "twenty" ? 0.2 : 0;
+    const intersectsEdge = /* @__PURE__ */ __name((edge) => {
+      return lineSegmentIntersects(origin, target, edge.A, edge.B);
+    }, "intersectsEdge");
+    const intersectsWith = setting === "cross" ? (edges) => {
+      return intersectsEdge(edges.top) && intersectsEdge(edges.bottom) || intersectsEdge(edges.left) && intersectsEdge(edges.right);
+    } : (edges) => Object.values(edges).some((edge) => intersectsEdge(edge));
+    for (const tokenDocument of tokens) {
       const token = tokenDocument.object;
       if (tokenDocument.hidden || token === originToken || token === targetToken)
         continue;
-      if (!lineIntersectRect(origin, target, token.bounds))
+      const edges = getRectEdges(token.bounds, margin);
+      if (!intersectsWith(edges))
         continue;
-      const size = SIZES[tokenDocument.actor.size];
-      if (size - originSize >= 2 && size - targetSize >= 2)
+      if (!hasExtraLarge)
+        return "lesser";
+      else if (isExtraLarge(tokenDocument))
         return "standard";
       else
         cover = "lesser";
@@ -1572,6 +1588,8 @@
     const context = args[1];
     if (!context)
       return wrapped(...args);
+    if (Array.isArray(context.options))
+      context.options = new Set(context.options);
     const { actor, createMessage = "true", type, token, target, isReroll } = context;
     const originToken = token ?? getActorToken(actor);
     const targetToken = target?.token;
@@ -1643,7 +1661,15 @@
     register("target", Boolean, true, {
       onChange: allowCombatTarget
     });
-    register("lesser", Boolean, true);
+    register("lesser", String, "ten", {
+      choices: {
+        none: path("lesser", "choices.none"),
+        cross: path("lesser", "choices.cross"),
+        zero: path("lesser", "choices.zero"),
+        ten: path("lesser", "choices.ten"),
+        twenty: path("lesser", "choices.twenty")
+      }
+    });
     register("standard", Boolean, true);
     register("standard-type", String, "center", {
       choices: {

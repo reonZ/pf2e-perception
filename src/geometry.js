@@ -1,10 +1,3 @@
-const RECT_EDGES = [
-    { A: { x: 0.1, y: 0.1 }, B: { x: 0.9, y: 0.1 } },
-    { A: { x: 0.9, y: 0.1 }, B: { x: 0.9, y: 0.9 } },
-    { A: { x: 0.9, y: 0.9 }, B: { x: 0.1, y: 0.9 } },
-    { A: { x: 0.1, y: 0.9 }, B: { x: 0.1, y: 0.1 } },
-]
-
 export const RECT_CORNERS = [
     { x: 0, y: 0 },
     { x: 1, y: 0 },
@@ -24,16 +17,18 @@ export const RECT_SPREAD = [
     { x: 0.75, y: 0.75 },
 ]
 
-export function lineIntersectRect(origin, target, rect) {
-    for (const edge of RECT_EDGES) {
-        const A = getRectPoint(edge.A, rect)
-        const B = getRectPoint(edge.B, rect)
-        if (lineSegmentIntersects(origin, target, A, B)) return true
+export function getRectEdges(rect, margin) {
+    const opposite = 1 - margin
+    return {
+        top: { A: getRectPoint({ x: margin, y: margin }, rect), B: getRectPoint({ x: opposite, y: margin }, rect) },
+        right: { A: getRectPoint({ x: opposite, y: margin }, rect), B: getRectPoint({ x: opposite, y: opposite }, rect) },
+        bottom: { A: getRectPoint({ x: opposite, y: opposite }, rect), B: getRectPoint({ x: margin, y: opposite }, rect) },
+        left: { A: getRectPoint({ x: margin, y: opposite }, rect), B: getRectPoint({ x: margin, y: margin }, rect) },
     }
-    return false
 }
 
 export function lineIntersectWall(origin, target) {
+    // drawDebugLine(origin, target)
     return CONFIG.Canvas.polygonBackends.move.testCollision(origin, target, { type: 'move', mode: 'any' })
 }
 
@@ -48,4 +43,13 @@ export function pointToTokenIntersectWall(origin, token) {
 
 export function getRectPoint(point, rect) {
     return { x: rect.x + rect.width * point.x, y: rect.y + rect.height * point.y }
+}
+
+export function clearDebug() {
+    canvas.controls.debug.clear()
+}
+
+export function drawDebugLine(origin, target, color = 'blue') {
+    const hex = color === 'blue' ? 0x0066cc : 0xff0000
+    canvas.controls.debug.lineStyle(4, hex).moveTo(origin.x, origin.y).lineTo(target.x, target.y)
 }
