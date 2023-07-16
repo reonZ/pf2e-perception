@@ -1,5 +1,5 @@
 import { RECT_CORNERS, RECT_SPREAD, getRectPoint } from './geometry.js'
-import { getConcealedSetting } from './scene.js'
+import { getSceneSetting } from './scene.js'
 
 export function isConcealed(token) {
     token = token instanceof Token ? token : token.object
@@ -11,7 +11,7 @@ export function isConcealed(token) {
         scene !== canvas.scene ||
         !scene.tokenVision ||
         scene.darkness < scene.globalLightThreshold ||
-        !getConcealedSetting(scene)
+        !getSceneSetting(scene, 'concealed')
     )
         return false
 

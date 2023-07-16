@@ -3,7 +3,7 @@ import { VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { isConcealed } from './lighting.js'
 import { MODULE_ID, getFlag, getSetting, unsetFlag } from './module.js'
-import { getStandardSetting, getValidTokens } from './scene.js'
+import { getSceneSetting, getValidTokens } from './scene.js'
 
 export function renderTokenHUD(hud, html) {
     if (!hud.object.actor?.isOfType('creature')) return
@@ -64,7 +64,8 @@ export async function setTokenData(token, data) {
 
 export function hasStandardCover(origin, target) {
     const scene = origin.scene
-    if (!getStandardSetting(scene)) return false
+    console.log(getSceneSetting(scene, 'standard'))
+    if (!getSceneSetting(scene, 'standard')) return false
 
     // clearDebug()
 

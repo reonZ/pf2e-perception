@@ -1,15 +1,21 @@
 import { getFlag, getSetting, localize } from './module.js'
 
 export function renderSceneConfig(config, html) {
-    const tab = html.find('.tab[data-tab="basic"]')
-    const checked = getStandardSetting(config.object)
+    let settings = ''
 
-    tab.find('hr').first().after(`<div class="form-group">
-    <label>${localize('settings.standard.name')}</label>
-    <input type="checkbox" name="flags.pf2e-perception.standard" ${checked ? 'checked' : ''}>
-    <p class="notes">${localize('settings.standard.short')}</p>
-</div><hr>`)
+    for (const setting of ['standard', 'concealed']) {
+        const checked = getSceneSetting(config.object, setting)
 
+        settings += `<div class="form-group">
+    <label>${localize(`settings.${setting}.name`)}</label>
+    <input type="checkbox" name="flags.pf2e-perception.${setting}" ${checked ? 'checked' : ''}>
+    <p class="notes">${localize(`settings.${setting}.short`)}</p>
+</div>`
+    }
+
+    settings += '<hr>'
+
+    html.find('.tab[data-tab="basic"] hr').first().after(settings)
     config.setPosition()
 }
 
@@ -27,10 +33,6 @@ export function validateTokens(token, tokens) {
     })
 }
 
-export function getStandardSetting(scene) {
-    return getFlag(scene, 'standard') ?? getSetting('standard')
-}
-
-export function getConcealedSetting(scene) {
-    return getFlag(scene, 'concealed') ?? getSetting('concealed')
+export function getSceneSetting(scene, setting) {
+    return getFlag(scene, setting) ?? getSetting(setting)
 }
