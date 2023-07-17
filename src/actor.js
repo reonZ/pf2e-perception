@@ -1,4 +1,4 @@
-import { COVER_UUID, COVER_VALUES, VISIBILITY_VALUES } from './constants.js'
+import { BLIND_FIGHT_UUID, COVER_UUID, COVER_VALUES, VISIBILITY_VALUES } from './constants.js'
 import { createCoverSource, createFlatFootedSource, findChoiceSetRule } from './effect.js'
 import { getTokenData, getVisibility, getCreatureCover, hasStandardCover } from './token.js'
 
@@ -25,7 +25,14 @@ export function getContextualClone(wrapped, rollOptions, ephemeralEffects) {
     if (conditionalCover) ephemeralEffects.push(createCoverSource(conditionalCover, true))
 
     const visibility = getVisibility(origin, target)
-    if (VISIBILITY_VALUES[visibility] > VISIBILITY_VALUES.concealed) ephemeralEffects.push(createFlatFootedSource(visibility))
+    if (VISIBILITY_VALUES[visibility] > VISIBILITY_VALUES.concealed) {
+        if (VISIBILITY_VALUES[visibility] === VISIBILITY_VALUES.hidden) {
+            const blindFight = getFeatWithUUID(target.actor, BLIND_FIGHT_UUID)
+            if (blindFight) return wrapped(rollOptions, ephemeralEffects)
+        }
+
+        ephemeralEffects.push(createFlatFootedSource(visibility))
+    }
 
     return wrapped(rollOptions, ephemeralEffects)
 }
@@ -43,6 +50,10 @@ export function isProne(actor) {
 export function getCoverEffect(actor, selection = false) {
     const effect = actor.itemTypes.effect.find(x => x.sourceId === COVER_UUID)
     return selection ? findChoiceSetRule(effect)?.selection.level : effect
+}
+
+export function getFeatWithUUID(actor, uuid) {
+    return actor.itemTypes.feat.find(f => f.sourceId === uuid)
 }
 
 export function getConditionalCover(origin, target, options, debug = false) {

@@ -4,6 +4,7 @@
 
   // src/constants.js
   var COVER_UUID = "Compendium.pf2e.other-effects.Item.I9lfZUiCwMiGogVi";
+  var BLIND_FIGHT_UUID = "Compendium.pf2e.feats-srd.Item.y2XeMe1F18lIyo59";
   var VISIBILITY_VALUES = {
     [void 0]: 0,
     observed: 0,
@@ -759,8 +760,14 @@
     if (conditionalCover)
       ephemeralEffects.push(createCoverSource(conditionalCover, true));
     const visibility = getVisibility(origin, target);
-    if (VISIBILITY_VALUES[visibility] > VISIBILITY_VALUES.concealed)
+    if (VISIBILITY_VALUES[visibility] > VISIBILITY_VALUES.concealed) {
+      if (VISIBILITY_VALUES[visibility] === VISIBILITY_VALUES.hidden) {
+        const blindFight = getFeatWithUUID(target.actor, BLIND_FIGHT_UUID);
+        if (blindFight)
+          return wrapped(rollOptions, ephemeralEffects);
+      }
       ephemeralEffects.push(createFlatFootedSource(visibility));
+    }
     return wrapped(rollOptions, ephemeralEffects);
   }
   __name(getContextualClone, "getContextualClone");
@@ -780,6 +787,10 @@
     return selection ? findChoiceSetRule(effect)?.selection.level : effect;
   }
   __name(getCoverEffect, "getCoverEffect");
+  function getFeatWithUUID(actor, uuid) {
+    return actor.itemTypes.feat.find((f) => f.sourceId === uuid);
+  }
+  __name(getFeatWithUUID, "getFeatWithUUID");
   function getConditionalCover(origin, target, options, debug = false) {
     const ranged = options.includes("item:ranged");
     const prone = ranged ? isProne(target.actor) : false;
@@ -1571,7 +1582,10 @@
         return wrapped(...args);
       if (visibility === "concealed" && originToken.actor.hasLowLightVision)
         return wrapped(...args);
-      const dc = visibility === "concealed" ? 5 : 11;
+      const blindFight = getFeatWithUUID(actor, BLIND_FIGHT_UUID);
+      if (visibility === "concealed" && blindFight)
+        return wrapped(...args);
+      const dc = visibility === "concealed" || blindFight ? 5 : 11;
       const roll = await new Roll("1d20").evaluate({ async: true });
       const total = roll.total;
       const isSuccess = total >= dc;

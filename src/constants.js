@@ -1,4 +1,5 @@
 export const COVER_UUID = 'Compendium.pf2e.other-effects.Item.I9lfZUiCwMiGogVi'
+export const BLIND_FIGHT_UUID = 'Compendium.pf2e.feats-srd.Item.y2XeMe1F18lIyo59'
 
 export const VISIBILITY_VALUES = {
     [undefined]: 0,

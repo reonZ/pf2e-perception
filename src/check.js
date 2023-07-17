@@ -1,5 +1,5 @@
-import { getActorToken } from './actor.js'
-import { COVER_UUID, VISIBILITY_VALUES, attackCheckRoll, skipConditional, validCheckRoll } from './constants.js'
+import { getActorToken, getFeatWithUUID } from './actor.js'
+import { BLIND_FIGHT_UUID, COVER_UUID, VISIBILITY_VALUES, attackCheckRoll, skipConditional, validCheckRoll } from './constants.js'
 import { MODULE_ID, getFlag, localize } from './module.js'
 import { validateTokens } from './scene.js'
 import { getTokenTemplateTokens } from './template.js'
@@ -25,7 +25,10 @@ export async function checkRoll(wrapped, ...args) {
 
         if (visibility === 'concealed' && originToken.actor.hasLowLightVision) return wrapped(...args)
 
-        const dc = visibility === 'concealed' ? 5 : 11
+        const blindFight = getFeatWithUUID(actor, BLIND_FIGHT_UUID)
+        if (visibility === 'concealed' && blindFight) return wrapped(...args)
+
+        const dc = visibility === 'concealed' || blindFight ? 5 : 11
         const roll = await new Roll('1d20').evaluate({ async: true })
         const total = roll.total
         const isSuccess = total >= dc
