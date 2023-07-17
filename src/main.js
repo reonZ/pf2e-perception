@@ -46,6 +46,13 @@ Hooks.once('init', () => {
     libWrapper.register(MODULE_ID, BASIC_SIGHT_CAN_DETECT, basicSightCanDetect)
     libWrapper.register(MODULE_ID, HEARING_CAN_DETECT, hearingCanDetect)
     libWrapper.register(MODULE_ID, FEEL_TREMOR_CAN_DETECT, feelTremorCanDetect)
+
+    const isGM = game.data.users.find(x => x._id === game.data.userId).role >= CONST.USER_ROLES.GAMEMASTER
+    if (isGM) {
+        Hooks.on('renderSceneConfig', renderSceneConfig)
+    } else {
+        Hooks.on('renderCombatTracker', renderCombatTracker)
+    }
 })
 
 Hooks.once('ready', () => {
@@ -95,7 +102,3 @@ Hooks.on('renderTokenHUD', renderTokenHUD)
 Hooks.on('canvasPan', () => clearConditionals())
 
 Hooks.on('renderChatMessage', renderChatMessage)
-
-Hooks.on('renderSceneConfig', renderSceneConfig)
-
-Hooks.on('renderCombatTracker', renderCombatTracker)

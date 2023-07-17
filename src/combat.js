@@ -2,7 +2,6 @@ import { isUndetected } from './detection.js'
 import { getSetting } from './module.js'
 
 export function renderCombatTracker(tracker, html) {
-    if (game.user.isGM) return
     if (getSetting('target')) setupToggleTarget(html)
     hideUndetected(html)
 }

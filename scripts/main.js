@@ -135,8 +135,6 @@
 
   // src/scene.js
   function renderSceneConfig(config, html) {
-    if (!game.user.isGM)
-      return;
     let settings = "";
     for (const setting of ["standard", "concealed"]) {
       const checked = getSceneSetting(config.object, setting);
@@ -537,7 +535,7 @@
     const updates = {};
     for (const tokenId in data) {
       if (!valid.includes(tokenId)) {
-        delete data[tokenId];
+        updates[`flags.${MODULE_ID}.data.-=${tokenId}`] = true;
         continue;
       }
       const current = data[tokenId];
@@ -652,6 +650,8 @@
     const flags = data.flags?.["pf2e-perception"];
     if (flags && (flags.data || flags["-=data"] !== void 0)) {
       token.object.renderFlags.set({ refreshVisibility: true });
+      if (game.user.isGM)
+        return;
       const hk = Hooks.on("refreshToken", (refreshed) => {
         if (!token.object === refreshed)
           return;
@@ -671,6 +671,8 @@
   __name(hoverToken, "hoverToken");
   function deleteToken(token) {
     clearConditionals(token);
+    if (!game.user.isGM)
+      ui.combat.render();
   }
   __name(deleteToken, "deleteToken");
   function controlToken(token) {
@@ -1218,22 +1220,23 @@
       const thisId = this.token.id;
       const updates = [];
       for (const [tokenId, data] of Object.entries(currentData)) {
-        const token = scene.tokens.get(tokenId);
-        if (!token)
-          continue;
-        if (data.visibility === defaultValues.visibility)
-          delete data.visibility;
-        const original = getTokenData(token, thisId);
-        if (original?.visibility === data.visibility)
-          continue;
         let update = { _id: tokenId };
-        if (!original.cover && !data.visibility) {
+        const token = scene.tokens.get(tokenId);
+        if (token) {
+          if (data.visibility === defaultValues.visibility)
+            delete data.visibility;
+          const original = getTokenData(token, thisId);
+          if (original?.visibility === data.visibility)
+            continue;
+          if (!original.cover && !data.visibility) {
+            update[`flags.${MODULE_ID}.data.-=${thisId}`] = true;
+          } else if (!data.visibility) {
+            update[`flags.${MODULE_ID}.data.${thisId}.-=visibility`] = true;
+          } else {
+            update[`flags.${MODULE_ID}.data.${thisId}.visibility`] = data.visibility;
+          }
+        } else
           update[`flags.${MODULE_ID}.data.-=${thisId}`] = true;
-        } else if (!data.visibility) {
-          update[`flags.${MODULE_ID}.data.${thisId}.-=visibility`] = true;
-        } else {
-          update[`flags.${MODULE_ID}.data.${thisId}.visibility`] = data.visibility;
-        }
         updates.push(update);
       }
       scene.updateEmbeddedDocuments("Token", updates);
@@ -1581,8 +1584,6 @@
 
   // src/combat.js
   function renderCombatTracker(tracker, html) {
-    if (game.user.isGM)
-      return;
     if (getSetting("target"))
       setupToggleTarget(html);
     hideUndetected(html);
@@ -1765,6 +1766,12 @@
     libWrapper.register(MODULE_ID, BASIC_SIGHT_CAN_DETECT, basicSightCanDetect);
     libWrapper.register(MODULE_ID, HEARING_CAN_DETECT, hearingCanDetect);
     libWrapper.register(MODULE_ID, FEEL_TREMOR_CAN_DETECT, feelTremorCanDetect);
+    const isGM = game.data.users.find((x) => x._id === game.data.userId).role >= CONST.USER_ROLES.GAMEMASTER;
+    if (isGM) {
+      Hooks.on("renderSceneConfig", renderSceneConfig);
+    } else {
+      Hooks.on("renderCombatTracker", renderCombatTracker);
+    }
   });
   Hooks.once("ready", () => {
     game.modules.get(MODULE_ID).api = {
@@ -1810,7 +1817,5 @@
   Hooks.on("renderTokenHUD", renderTokenHUD);
   Hooks.on("canvasPan", () => clearConditionals());
   Hooks.on("renderChatMessage", renderChatMessage);
-  Hooks.on("renderSceneConfig", renderSceneConfig);
-  Hooks.on("renderCombatTracker", renderCombatTracker);
 })();
 //# sourceMappingURL=main.js.map

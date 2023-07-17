@@ -192,22 +192,23 @@ class ReverseVisibilityValidationMenu extends VisibilityValidationMenu {
         const updates = []
 
         for (const [tokenId, data] of Object.entries(currentData)) {
-            const token = scene.tokens.get(tokenId)
-            if (!token) continue
-
-            if (data.visibility === defaultValues.visibility) delete data.visibility
-
-            const original = getTokenData(token, thisId)
-            if (original?.visibility === data.visibility) continue
-
             let update = { _id: tokenId }
-            if (!original.cover && !data.visibility) {
-                update[`flags.${MODULE_ID}.data.-=${thisId}`] = true
-            } else if (!data.visibility) {
-                update[`flags.${MODULE_ID}.data.${thisId}.-=visibility`] = true
-            } else {
-                update[`flags.${MODULE_ID}.data.${thisId}.visibility`] = data.visibility
-            }
+            const token = scene.tokens.get(tokenId)
+
+            if (token) {
+                if (data.visibility === defaultValues.visibility) delete data.visibility
+
+                const original = getTokenData(token, thisId)
+                if (original?.visibility === data.visibility) continue
+
+                if (!original.cover && !data.visibility) {
+                    update[`flags.${MODULE_ID}.data.-=${thisId}`] = true
+                } else if (!data.visibility) {
+                    update[`flags.${MODULE_ID}.data.${thisId}.-=visibility`] = true
+                } else {
+                    update[`flags.${MODULE_ID}.data.${thisId}.visibility`] = data.visibility
+                }
+            } else update[`flags.${MODULE_ID}.data.-=${thisId}`] = true
 
             updates.push(update)
         }

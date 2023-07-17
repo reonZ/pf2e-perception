@@ -35,7 +35,7 @@ export async function setTokenData(token, data) {
 
     for (const tokenId in data) {
         if (!valid.includes(tokenId)) {
-            delete data[tokenId]
+            updates[`flags.${MODULE_ID}.data.-=${tokenId}`] = true
             continue
         }
 
@@ -161,8 +161,12 @@ export function getVisibility(origin, target, checkConcealed = false) {
 
 export function updateToken(token, data, context, userId) {
     const flags = data.flags?.['pf2e-perception']
+
     if (flags && (flags.data || flags['-=data'] !== undefined)) {
         token.object.renderFlags.set({ refreshVisibility: true })
+
+        if (game.user.isGM) return
+
         const hk = Hooks.on('refreshToken', refreshed => {
             if (!token.object === refreshed) return
             Hooks.off('refreshToken', hk)
@@ -178,6 +182,7 @@ export function hoverToken(token, hovered) {
 
 export function deleteToken(token) {
     clearConditionals(token)
+    if (!game.user.isGM) ui.combat.render()
 }
 
 export function controlToken(token) {
