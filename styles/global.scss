@@ -22,6 +22,33 @@
     }
 }
 
+.dice-checks {
+    .window-content {
+        .pf2e-perception {
+            .dialog-row {
+                grid: 'mod exclude' 1fr/1fr 50px;
+                padding: 0;
+
+                .toggle {
+                    margin: 0 auto;
+                }
+
+                &.disabled {
+                    .toggle {
+                        background: rgba(0, 0, 0, 0.4);
+
+                        input[type='checkbox'] {
+                            & + label {
+                                right: 26px;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 .pf2e-conditionals {
     position: absolute;
     transform: translate(-50%, -100%);

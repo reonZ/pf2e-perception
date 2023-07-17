@@ -30,3 +30,7 @@ export const defaultValues = {
 export const attackCheckRoll = ['attack-roll', 'spell-attack-roll']
 
 export const validCheckRoll = [...attackCheckRoll, 'skill-check', 'perception-check']
+
+export const skipConditional = {
+    cover: 'conditional:cover:skip',
+}

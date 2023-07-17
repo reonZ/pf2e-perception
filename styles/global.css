@@ -16,6 +16,20 @@
   margin-block: 0.1em;
 }
 
+.dice-checks .window-content .pf2e-perception .dialog-row {
+  grid: "mod exclude" 1fr/1fr 50px;
+  padding: 0;
+}
+.dice-checks .window-content .pf2e-perception .dialog-row .toggle {
+  margin: 0 auto;
+}
+.dice-checks .window-content .pf2e-perception .dialog-row.disabled .toggle {
+  background: rgba(0, 0, 0, 0.4);
+}
+.dice-checks .window-content .pf2e-perception .dialog-row.disabled .toggle input[type=checkbox] + label {
+  right: 26px;
+}
+
 .pf2e-conditionals {
   position: absolute;
   transform: translate(-50%, -100%);

@@ -1,6 +1,6 @@
 import { getActorToken } from './actor.js'
-import { VISIBILITY_VALUES, attackCheckRoll, validCheckRoll } from './constants.js'
-import { MODULE_ID } from './module.js'
+import { COVER_UUID, VISIBILITY_VALUES, attackCheckRoll, skipConditional, validCheckRoll } from './constants.js'
+import { MODULE_ID, getFlag, localize } from './module.js'
 import { validateTokens } from './scene.js'
 import { getTokenTemplateTokens } from './template.js'
 import { getVisibility } from './token.js'
@@ -87,4 +87,64 @@ export async function checkRoll(wrapped, ...args) {
     }
 
     return wrapped(...args)
+}
+
+export function renderCheckModifiersDialog(dialog, html) {
+    const appid = html.attr('data-appid')
+
+    const { createMessage = 'true', type, token, target, isReroll, options, dc } = dialog.context
+    const originToken = token
+    const targetToken = target?.token
+    const targetActor = target?.actor
+
+    if (isReroll || !createMessage || !originToken || !targetToken || !targetActor || !attackCheckRoll.includes(type)) return
+
+    const originalCover =
+        dialog[MODULE_ID]?.originalCover ??
+        targetActor.itemTypes.effect.find(e => e.sourceId === COVER_UUID && getFlag(e, 'canSkip'))?.toObject()
+
+    if (!originalCover) return
+
+    if (!dialog[MODULE_ID]?.originalCover) setProperty(dialog, `${MODULE_ID}.originalCover`, originalCover)
+
+    const skipCover = options.has(skipConditional.cover)
+
+    html.find('.roll-mode-panel').before(`<div class="pf2e-perception">
+        <div class="dialog-row ${skipCover ? '' : 'disabled'}">
+            <span class="mod">${localize('dice-checks.covers')}</span>
+            <label class="exclude toggle">
+                <input type="checkbox" id="app-${appid}-perception-covers" ${skipCover ? 'checked' : ''} />
+                <label for="app-${appid}-perception-covers"></label>
+            </label>
+        </div>
+    </div><hr>`)
+
+    html.find(`#app-${appid}-perception-covers`).on('change', event => {
+        const checked = event.currentTarget.checked
+
+        if (checked) options.add(skipConditional.cover)
+        else options.delete(skipConditional.cover)
+
+        const items = deepClone(targetActor._source.items)
+        const index = items.findIndex(
+            i => getProperty(i, 'flags.core.sourceId') === COVER_UUID && getProperty(i, `flags.${MODULE_ID}.canSkip`)
+        )
+
+        if (checked && index !== -1) items.splice(index, 1)
+        else if (!checked && index === -1) items.push(originalCover)
+
+        target.actor = targetActor.clone({ items }, { keepId: true })
+
+        if (dc?.slug) {
+            const statistic = target.actor.getStatistic(dc.slug)?.dc
+            if (statistic) {
+                dc.value = statistic.value
+                dc.statistic = statistic
+            }
+        }
+
+        dialog.render()
+    })
+
+    dialog.setPosition()
 }

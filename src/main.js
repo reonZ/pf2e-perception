@@ -1,12 +1,12 @@
 import { setupActions } from './action.js'
 import { getActorToken, getConditionalCover, getContextualClone, getCoverEffect, getSelfRollOptions, isProne } from './actor.js'
 import { renderChatMessage } from './chat.js'
+import { checkRoll, renderCheckModifiersDialog } from './check.js'
 import { renderCombatTracker } from './combat.js'
 import { basicSightCanDetect, feelTremorCanDetect, hearingCanDetect, isUndetected } from './detection.js'
 import { clearDebug, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { inBrightLight, isConcealed } from './lighting.js'
-import { MODULE_ID, getSetting } from './module.js'
-import { checkRoll } from './roll.js'
+import { MODULE_ID } from './module.js'
 import { getSceneSetting, getValidTokens, renderSceneConfig, validateTokens } from './scene.js'
 import { registerSettings } from './settings.js'
 import {
@@ -102,3 +102,5 @@ Hooks.on('renderTokenHUD', renderTokenHUD)
 Hooks.on('canvasPan', () => clearConditionals())
 
 Hooks.on('renderChatMessage', renderChatMessage)
+
+Hooks.on('renderCheckModifiersDialog', renderCheckModifiersDialog)

@@ -1,5 +1,5 @@
 import { COVER_UUID, COVER_VALUES } from './constants.js'
-import { localize } from './module.js'
+import { MODULE_ID, localize } from './module.js'
 
 export function createFlatFootedSource(visibility) {
     const name = game.i18n.localize(`PF2E.condition.${visibility}.name`)
@@ -7,7 +7,7 @@ export function createFlatFootedSource(visibility) {
     return condition.toObject()
 }
 
-export function createCoverSource(cover) {
+export function createCoverSource(cover, canSkip = false) {
     const bonus = COVER_VALUES[cover]
 
     return {
@@ -59,7 +59,10 @@ export function createCoverSource(cover) {
             slug: 'effect-cover',
         },
         type: 'effect',
-        flags: { core: { sourceId: COVER_UUID } },
+        flags: {
+            core: { sourceId: COVER_UUID },
+            [MODULE_ID]: { canSkip },
+        },
     }
 }
 
