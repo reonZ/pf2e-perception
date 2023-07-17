@@ -36,6 +36,8 @@ export function registerSettings() {
     })
 
     register('concealed', Boolean, true)
+
+    register('encounter', Boolean, false)
 }
 
 function path(setting, key) {

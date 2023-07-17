@@ -22,7 +22,21 @@ export function renderSceneConfig(config, html) {
 export function getValidTokens(token) {
     token = token instanceof Token ? token.document : token
     if (!(token instanceof TokenDocument)) return []
-    return token.scene.tokens.filter(t => t !== token && t.actor?.isOfType('creature'))
+
+    let tokens = token.scene.tokens.filter(t => t !== token && t.actor?.isOfType('creature'))
+
+    if (getSetting('encounter')) {
+        const combat = game.combats.active
+        if (!combat) return tokens
+
+        return tokens.filter(t => {
+            const actor = t.actor
+            const traits = actor.traits
+            return actor.type === 'familiar' || traits.has('minion') || traits.has('eidolon') || combat.getCombatantByToken(t.id)
+        })
+    }
+
+    return tokens
 }
 
 export function validateTokens(token, tokens) {

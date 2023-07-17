@@ -2,7 +2,7 @@ import { setupActions } from './action.js'
 import { getActorToken, getConditionalCover, getContextualClone, getCoverEffect, getSelfRollOptions, isProne } from './actor.js'
 import { renderChatMessage } from './chat.js'
 import { checkRoll, renderCheckModifiersDialog } from './check.js'
-import { renderCombatTracker } from './combat.js'
+import { renderCombatTracker, renderCombatTrackerConfig } from './combat.js'
 import { basicSightCanDetect, feelTremorCanDetect, hearingCanDetect, isUndetected } from './detection.js'
 import { clearDebug, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { inBrightLight, isConcealed } from './lighting.js'
@@ -50,6 +50,8 @@ Hooks.once('init', () => {
     const isGM = game.data.users.find(x => x._id === game.data.userId).role >= CONST.USER_ROLES.GAMEMASTER
     if (isGM) {
         Hooks.on('renderSceneConfig', renderSceneConfig)
+        Hooks.on('renderTokenHUD', renderTokenHUD)
+        Hooks.on('renderCombatTrackerConfig', renderCombatTrackerConfig)
     } else {
         Hooks.on('renderCombatTracker', renderCombatTracker)
     }
@@ -97,7 +99,6 @@ Hooks.on('pasteToken', pasteToken)
 Hooks.on('updateToken', updateToken)
 Hooks.on('deleteToken', deleteToken)
 Hooks.on('controlToken', controlToken)
-Hooks.on('renderTokenHUD', renderTokenHUD)
 
 Hooks.on('canvasPan', () => clearConditionals())
 

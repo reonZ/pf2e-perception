@@ -66,6 +66,10 @@
     return game.settings.get(MODULE_ID, setting);
   }
   __name(getSetting, "getSetting");
+  function setSetting(setting, value) {
+    return game.settings.set(MODULE_ID, setting, value);
+  }
+  __name(setSetting, "setSetting");
 
   // src/effect.js
   function createFlatFootedSource(visibility) {
@@ -159,7 +163,18 @@
     token = token instanceof Token ? token.document : token;
     if (!(token instanceof TokenDocument))
       return [];
-    return token.scene.tokens.filter((t) => t !== token && t.actor?.isOfType("creature"));
+    let tokens = token.scene.tokens.filter((t) => t !== token && t.actor?.isOfType("creature"));
+    if (getSetting("encounter")) {
+      const combat = game.combats.active;
+      if (!combat)
+        return tokens;
+      return tokens.filter((t) => {
+        const actor = t.actor;
+        const traits = actor.traits;
+        return actor.type === "familiar" || traits.has("minion") || traits.has("eidolon") || combat.getCombatantByToken(t.id);
+      });
+    }
+    return tokens;
   }
   __name(getValidTokens, "getValidTokens");
   function validateTokens(token, tokens) {
@@ -1755,6 +1770,19 @@
     });
   }
   __name(setupToggleTarget, "setupToggleTarget");
+  function renderCombatTrackerConfig(config, html) {
+    const checked = getSetting("encounter");
+    html.find(".form-group").last().after(`<div class="form-group">
+    <label>${localize("settings.encounter.name")}</label>
+    <input type="checkbox" name="pf2e-perception.encounter" ${checked ? "checked" : ""}>
+    <p class="notes">${localize("settings.encounter.short")}</p>
+</div>`);
+    html.find('input[name="pf2e-perception.encounter"]').on("change", (event) => {
+      const checked2 = event.currentTarget.checked;
+      setSetting("encounter", checked2);
+    });
+  }
+  __name(renderCombatTrackerConfig, "renderCombatTrackerConfig");
 
   // src/settings.js
   function registerSettings() {
@@ -1787,6 +1815,7 @@
       }
     });
     register("concealed", Boolean, true);
+    register("encounter", Boolean, false);
   }
   __name(registerSettings, "registerSettings");
   function path(setting, key) {
@@ -1825,6 +1854,8 @@
     const isGM = game.data.users.find((x) => x._id === game.data.userId).role >= CONST.USER_ROLES.GAMEMASTER;
     if (isGM) {
       Hooks.on("renderSceneConfig", renderSceneConfig);
+      Hooks.on("renderTokenHUD", renderTokenHUD);
+      Hooks.on("renderCombatTrackerConfig", renderCombatTrackerConfig);
     } else {
       Hooks.on("renderCombatTracker", renderCombatTracker);
     }
@@ -1870,7 +1901,6 @@
   Hooks.on("updateToken", updateToken);
   Hooks.on("deleteToken", deleteToken);
   Hooks.on("controlToken", controlToken);
-  Hooks.on("renderTokenHUD", renderTokenHUD);
   Hooks.on("canvasPan", () => clearConditionals());
   Hooks.on("renderChatMessage", renderChatMessage);
   Hooks.on("renderCheckModifiersDialog", renderCheckModifiersDialog);

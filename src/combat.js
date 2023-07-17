@@ -1,5 +1,5 @@
 import { isUndetected } from './detection.js'
-import { getSetting } from './module.js'
+import { getSetting, localize, setSetting } from './module.js'
 
 export function renderCombatTracker(tracker, html) {
     if (getSetting('target')) setupToggleTarget(html)
@@ -39,5 +39,20 @@ function setupToggleTarget(html) {
             },
             true
         )
+    })
+}
+
+export function renderCombatTrackerConfig(config, html) {
+    const checked = getSetting('encounter')
+
+    html.find('.form-group').last().after(`<div class="form-group">
+    <label>${localize('settings.encounter.name')}</label>
+    <input type="checkbox" name="pf2e-perception.encounter" ${checked ? 'checked' : ''}>
+    <p class="notes">${localize('settings.encounter.short')}</p>
+</div>`)
+
+    html.find('input[name="pf2e-perception.encounter"]').on('change', event => {
+        const checked = event.currentTarget.checked
+        setSetting('encounter', checked)
     })
 }
