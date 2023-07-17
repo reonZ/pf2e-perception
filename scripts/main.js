@@ -135,13 +135,19 @@
 
   // src/scene.js
   function renderSceneConfig(config, html) {
-    const tab = html.find('.tab[data-tab="basic"]');
-    const checked = getStandardSetting(config.object);
-    tab.find("hr").first().after(`<div class="form-group">
-    <label>${localize("settings.standard.name")}</label>
-    <input type="checkbox" name="flags.pf2e-perception.standard" ${checked ? "checked" : ""}>
-    <p class="notes">${localize("settings.standard.short")}</p>
-</div><hr>`);
+    if (!game.user.isGM)
+      return;
+    let settings = "";
+    for (const setting of ["standard", "concealed"]) {
+      const checked = getSceneSetting(config.object, setting);
+      settings += `<div class="form-group">
+    <label>${localize(`settings.${setting}.name`)}</label>
+    <input type="checkbox" name="flags.pf2e-perception.${setting}" ${checked ? "checked" : ""}>
+    <p class="notes">${localize(`settings.${setting}.short`)}</p>
+</div>`;
+    }
+    settings += "<hr>";
+    html.find('.tab[data-tab="basic"] hr').first().after(settings);
     config.setPosition();
   }
   __name(renderSceneConfig, "renderSceneConfig");
@@ -160,14 +166,10 @@
     });
   }
   __name(validateTokens, "validateTokens");
-  function getStandardSetting(scene) {
-    return getFlag(scene, "standard") ?? getSetting("standard");
+  function getSceneSetting(scene, setting) {
+    return getFlag(scene, setting) ?? getSetting(setting);
   }
-  __name(getStandardSetting, "getStandardSetting");
-  function getConcealedSetting(scene) {
-    return getFlag(scene, "concealed") ?? getSetting("concealed");
-  }
-  __name(getConcealedSetting, "getConcealedSetting");
+  __name(getSceneSetting, "getSceneSetting");
 
   // src/utils.js
   function getPrototype(obj, depth = 1) {
@@ -432,15 +434,17 @@
     };
   }
   __name(getRectEdges, "getRectEdges");
-  function lineIntersectWall(origin, target) {
+  function lineIntersectWall(origin, target, debug = false) {
+    if (debug)
+      drawDebugLine(origin, target);
     return CONFIG.Canvas.polygonBackends.move.testCollision(origin, target, { type: "move", mode: "any" });
   }
   __name(lineIntersectWall, "lineIntersectWall");
-  function pointToTokenIntersectWall(origin, token) {
+  function pointToTokenIntersectWall(origin, token, debug = false) {
     const rect = token.bounds;
     for (const point of RECT_SPREAD) {
       const coords = getRectPoint(point, rect);
-      if (lineIntersectWall(origin, coords))
+      if (lineIntersectWall(origin, coords, debug))
         return true;
     }
     return false;
@@ -450,6 +454,15 @@
     return { x: rect.x + rect.width * point.x, y: rect.y + rect.height * point.y };
   }
   __name(getRectPoint, "getRectPoint");
+  function clearDebug() {
+    canvas.controls.debug.clear();
+  }
+  __name(clearDebug, "clearDebug");
+  function drawDebugLine(origin, target, color = "blue") {
+    const hex = color === "blue" ? 26316 : 16711680;
+    canvas.controls.debug.lineStyle(4, hex).moveTo(origin.x, origin.y).lineTo(target.x, target.y);
+  }
+  __name(drawDebugLine, "drawDebugLine");
 
   // src/lighting.js
   function isConcealed(token) {
@@ -457,7 +470,7 @@
     if (token.document.hasStatusEffect(CONFIG.specialStatusEffects.INVISIBLE))
       return false;
     const scene = token.scene;
-    if (scene !== canvas.scene || !scene.tokenVision || scene.darkness < scene.globalLightThreshold || !getConcealedSetting(scene))
+    if (scene !== canvas.scene || !scene.tokenVision || scene.darkness < scene.globalLightThreshold || !getSceneSetting(scene, "concealed"))
       return false;
     return !inBrightLight(token);
   }
@@ -552,15 +565,17 @@
     return token.update(updates);
   }
   __name(setTokenData, "setTokenData");
-  function hasStandardCover(origin, target) {
+  function hasStandardCover(origin, target, debug = false) {
     const scene = origin.scene;
-    if (!getStandardSetting(scene))
+    if (!getSceneSetting(scene, "standard"))
       return false;
+    if (debug)
+      clearDebug();
     const standard = getSetting("standard-type");
     if (standard === "center")
-      return lineIntersectWall(origin.center, target.center);
+      return lineIntersectWall(origin.center, target.center, debug);
     else if (standard === "points")
-      return pointToTokenIntersectWall(origin.center, target);
+      return pointToTokenIntersectWall(origin.center, target, debug);
   }
   __name(hasStandardCover, "hasStandardCover");
   var SIZES = {
@@ -571,23 +586,29 @@
     huge: 4,
     grg: 5
   };
-  function getCreatureCover(originToken, targetToken) {
+  function getCreatureCover(originToken, targetToken, debug = false) {
     const setting = getSetting("lesser");
     if (setting === "none")
       return void 0;
     let cover = void 0;
     const origin = originToken.center;
     const target = targetToken.center;
-    const originSize = SIZES[originToken.actor.size];
-    const targetSize = SIZES[targetToken.actor.size];
-    const tokens = originToken.scene.tokens;
+    if (debug) {
+      clearDebug();
+      drawDebugLine(origin, target);
+    }
     const isExtraLarge = /* @__PURE__ */ __name((token) => {
       const size = SIZES[token.actor.size];
       return size - originSize >= 2 && size - targetSize >= 2;
     }, "isExtraLarge");
-    const hasExtraLarge = originSize < SIZES.huge && targetSize < SIZES.huge && tokens.some(isExtraLarge);
+    const originSize = SIZES[originToken.actor.size];
+    const targetSize = SIZES[targetToken.actor.size];
+    const tokens = originToken.scene.tokens.contents.sort((a, b) => SIZES[b.actor.size] - SIZES[a.actor.size]);
+    let extralarges = originSize < SIZES.huge && targetSize < SIZES.huge && tokens.filter(isExtraLarge).length;
     const margin = setting === "ten" ? 0.1 : setting === "twenty" ? 0.2 : 0;
     const intersectsEdge = /* @__PURE__ */ __name((edge) => {
+      if (debug)
+        drawDebugLine(edge.A, edge.B, "red");
       return lineSegmentIntersects(origin, target, edge.A, edge.B);
     }, "intersectsEdge");
     const intersectsWith = setting === "cross" ? (edges) => {
@@ -598,14 +619,10 @@
       if (tokenDocument.hidden || token === originToken || token === targetToken)
         continue;
       const edges = getRectEdges(token.bounds, margin);
-      if (!intersectsWith(edges))
-        continue;
-      if (!hasExtraLarge)
-        return "lesser";
+      if (intersectsWith(edges))
+        return extralarges ? "standard" : "lesser";
       else if (isExtraLarge(tokenDocument))
-        return "standard";
-      else
-        cover = "lesser";
+        extralarges--;
     }
     return cover;
   }
@@ -635,6 +652,13 @@
     const flags = data.flags?.["pf2e-perception"];
     if (flags && (flags.data || flags["-=data"] !== void 0)) {
       token.object.renderFlags.set({ refreshVisibility: true });
+      const hk = Hooks.on("refreshToken", (refreshed) => {
+        if (!token.object === refreshed)
+          return;
+        Hooks.off("refreshToken", hk);
+        if (game.combat?.getCombatantByToken(token.id))
+          ui.combat.render();
+      });
     }
   }
   __name(updateToken, "updateToken");
@@ -733,7 +757,7 @@
     return selection ? findChoiceSetRule(effect)?.selection.level : effect;
   }
   __name(getCoverEffect, "getCoverEffect");
-  function getConditionalCover(origin, target, options) {
+  function getConditionalCover(origin, target, options, debug = false) {
     const ranged = options.includes("item:ranged");
     const prone = ranged ? isProne(target.actor) : false;
     let systemCover = getCoverEffect(target.actor, true);
@@ -747,10 +771,10 @@
     if (!prone && cover === "greater-prone")
       cover = void 0;
     const isCoverable = ranged || options.includes("item:trait:reach") || options.includes("item:type:spell");
-    if (COVER_VALUES[cover] < COVER_VALUES.standard && COVER_VALUES[systemCover] < COVER_VALUES.standard && hasStandardCover(origin, target)) {
+    if (COVER_VALUES[cover] < COVER_VALUES.standard && COVER_VALUES[systemCover] < COVER_VALUES.standard && hasStandardCover(origin, target, debug)) {
       cover = "standard";
     } else if (!cover && !systemCover && isCoverable && origin.distanceTo(target) > 5) {
-      cover = getCreatureCover(origin, target);
+      cover = getCreatureCover(origin, target, debug);
     }
     if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser)
       return "greater-prone";
@@ -1504,34 +1528,6 @@
   }
   __name(openVisibilityValidationMenu, "openVisibilityValidationMenu");
 
-  // src/combat.js
-  function allowCombatTarget(allow) {
-    Hooks[allow ? "on" : "off"]("renderCombatTracker", renderCombatTracker);
-    ui.combat?.render();
-  }
-  __name(allowCombatTarget, "allowCombatTarget");
-  function renderCombatTracker(tracker, html) {
-    html.find("[data-control=toggleTarget]").each((_, el) => {
-      el.addEventListener(
-        "click",
-        (event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          event.stopImmediatePropagation();
-          const { combatantId } = event.currentTarget.closest(".combatant").dataset;
-          const combatant = game.combats.viewed.combatants.get(combatantId ?? "");
-          const token = combatant?.token;
-          if (!token)
-            return;
-          const isTargeted = Array.from(game.user.targets).some((t) => t.document === token);
-          token.object.setTarget(!isTargeted, { releaseOthers: !event.shiftKey });
-        },
-        true
-      );
-    });
-  }
-  __name(renderCombatTracker, "renderCombatTracker");
-
   // src/detection.js
   function basicSightCanDetect(wrapped, visionSource, target) {
     if (!wrapped(visionSource, target))
@@ -1566,10 +1562,10 @@
     return false;
   }
   __name(reachesThreshold, "reachesThreshold");
-  function isUndetected(target, mode) {
+  function isUndetected(target, mode, unnoticed = false) {
     const tokens = game.user.isGM ? canvas.tokens.controlled : target.scene.tokens.filter((t) => t.isOwner);
     const filtered = tokens.filter((t) => t.detectionModes.some((d) => d.id === mode));
-    return reachesThreshold(target, filtered, VISIBILITY_VALUES.undetected);
+    return reachesThreshold(target, filtered, unnoticed ? VISIBILITY_VALUES.unnoticed : VISIBILITY_VALUES.undetected);
   }
   __name(isUndetected, "isUndetected");
   function isHidden(target) {
@@ -1582,6 +1578,53 @@
     return reachesThreshold(target, tokens, VISIBILITY_VALUES.hidden);
   }
   __name(isHidden, "isHidden");
+
+  // src/combat.js
+  function renderCombatTracker(tracker, html) {
+    if (game.user.isGM)
+      return;
+    if (getSetting("target"))
+      setupToggleTarget(html);
+    hideUndetected(html);
+  }
+  __name(renderCombatTracker, "renderCombatTracker");
+  function hideUndetected(html) {
+    if (!canvas.ready)
+      return;
+    const combatants = game.combats.viewed?.combatants;
+    if (!combatants?.size)
+      return;
+    html.find("#combat-tracker .combatant").each((i, li) => {
+      const { combatantId } = li.dataset;
+      const token = combatants.get(combatantId ?? "")?.token;
+      if (!token)
+        return;
+      if (isUndetected(token, "basicSight", true))
+        li.remove();
+    });
+  }
+  __name(hideUndetected, "hideUndetected");
+  function setupToggleTarget(html) {
+    html.find("[data-control=toggleTarget]").each((_, el) => {
+      el.addEventListener(
+        "click",
+        (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          const { combatantId } = event.currentTarget.closest(".combatant").dataset;
+          const combatant = game.combats.viewed.combatants.get(combatantId ?? "");
+          const token = combatant?.token;
+          if (!token)
+            return;
+          const isTargeted = Array.from(game.user.targets).some((t) => t.document === token);
+          token.object.setTarget(!isTargeted, { releaseOthers: !event.shiftKey });
+        },
+        true
+      );
+    });
+  }
+  __name(setupToggleTarget, "setupToggleTarget");
 
   // src/roll.js
   async function checkRoll(wrapped, ...args) {
@@ -1659,7 +1702,7 @@
   // src/settings.js
   function registerSettings() {
     register("target", Boolean, true, {
-      onChange: allowCombatTarget
+      onChange: () => ui.combat?.render()
     });
     register("lesser", String, "ten", {
       choices: {
@@ -1713,28 +1756,61 @@
   var BASIC_SIGHT_CAN_DETECT = "CONFIG.Canvas.detectionModes.basicSight._canDetect";
   var HEARING_CAN_DETECT = "CONFIG.Canvas.detectionModes.hearing._canDetect";
   var FEEL_TREMOR_CAN_DETECT = "CONFIG.Canvas.detectionModes.feelTremor._canDetect";
-  Hooks.once("setup", () => {
+  Hooks.once("init", () => {
     registerSettings();
     setupActions();
-    if (game.user.isGM) {
-      Hooks.on("renderTokenHUD", renderTokenHUD);
-    }
     libWrapper.register(MODULE_ID, CHECK_ROLL, checkRoll);
     libWrapper.register(MODULE_ID, GET_CONTEXTUAL_CLONE, getContextualClone);
     libWrapper.register(MODULE_ID, GET_SELF_ROLL_OPTIONS, getSelfRollOptions);
     libWrapper.register(MODULE_ID, BASIC_SIGHT_CAN_DETECT, basicSightCanDetect);
     libWrapper.register(MODULE_ID, HEARING_CAN_DETECT, hearingCanDetect);
     libWrapper.register(MODULE_ID, FEEL_TREMOR_CAN_DETECT, feelTremorCanDetect);
-    if (!game.user.isGM && getSetting("target"))
-      allowCombatTarget(true);
+  });
+  Hooks.once("ready", () => {
+    game.modules.get(MODULE_ID).api = {
+      geometry: {
+        clearDebug,
+        lineIntersectWall,
+        pointToTokenIntersectWall
+      },
+      token: {
+        getCreatureCover,
+        getVisibility,
+        clearConditionals,
+        showConditionals,
+        showAllConditionals,
+        hasStandardCover,
+        getTokenData
+      },
+      lighting: {
+        isConcealed,
+        inBrightLight
+      },
+      actor: {
+        getActorToken,
+        isProne,
+        getCoverEffect,
+        getConditionalCover
+      },
+      scene: {
+        getValidTokens,
+        validateTokens,
+        getSceneSetting
+      },
+      detection: {
+        isUndetected
+      }
+    };
   });
   Hooks.on("hoverToken", hoverToken);
   Hooks.on("pasteToken", pasteToken);
   Hooks.on("updateToken", updateToken);
   Hooks.on("deleteToken", deleteToken);
   Hooks.on("controlToken", controlToken);
+  Hooks.on("renderTokenHUD", renderTokenHUD);
   Hooks.on("canvasPan", () => clearConditionals());
   Hooks.on("renderChatMessage", renderChatMessage);
   Hooks.on("renderSceneConfig", renderSceneConfig);
+  Hooks.on("renderCombatTracker", renderCombatTracker);
 })();
 //# sourceMappingURL=main.js.map

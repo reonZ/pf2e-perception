@@ -1,6 +1,8 @@
 import { getFlag, getSetting, localize } from './module.js'
 
 export function renderSceneConfig(config, html) {
+    if (!game.user.isGM) return
+
     let settings = ''
 
     for (const setting of ['standard', 'concealed']) {

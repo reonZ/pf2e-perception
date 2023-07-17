@@ -1,9 +1,8 @@
 import { MODULE_ID } from './module.js'
-import { allowCombatTarget } from './combat.js'
 
 export function registerSettings() {
     register('target', Boolean, true, {
-        onChange: allowCombatTarget,
+        onChange: () => ui.combat?.render(),
     })
 
     register('lesser', String, 'ten', {

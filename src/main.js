@@ -1,8 +1,8 @@
 import { setupActions } from './action.js'
 import { getActorToken, getConditionalCover, getContextualClone, getCoverEffect, getSelfRollOptions, isProne } from './actor.js'
 import { renderChatMessage } from './chat.js'
-import { allowCombatTarget } from './combat.js'
-import { basicSightCanDetect, feelTremorCanDetect, hearingCanDetect } from './detection.js'
+import { renderCombatTracker } from './combat.js'
+import { basicSightCanDetect, feelTremorCanDetect, hearingCanDetect, isUndetected } from './detection.js'
 import { clearDebug, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { inBrightLight, isConcealed } from './lighting.js'
 import { MODULE_ID, getSetting } from './module.js'
@@ -34,13 +34,9 @@ const BASIC_SIGHT_CAN_DETECT = 'CONFIG.Canvas.detectionModes.basicSight._canDete
 const HEARING_CAN_DETECT = 'CONFIG.Canvas.detectionModes.hearing._canDetect'
 const FEEL_TREMOR_CAN_DETECT = 'CONFIG.Canvas.detectionModes.feelTremor._canDetect'
 
-Hooks.once('setup', () => {
+Hooks.once('init', () => {
     registerSettings()
     setupActions()
-
-    if (game.user.isGM) {
-        Hooks.on('renderTokenHUD', renderTokenHUD)
-    }
 
     libWrapper.register(MODULE_ID, CHECK_ROLL, checkRoll)
 
@@ -50,8 +46,6 @@ Hooks.once('setup', () => {
     libWrapper.register(MODULE_ID, BASIC_SIGHT_CAN_DETECT, basicSightCanDetect)
     libWrapper.register(MODULE_ID, HEARING_CAN_DETECT, hearingCanDetect)
     libWrapper.register(MODULE_ID, FEEL_TREMOR_CAN_DETECT, feelTremorCanDetect)
-
-    if (!game.user.isGM && getSetting('target')) allowCombatTarget(true)
 })
 
 Hooks.once('ready', () => {
@@ -85,6 +79,9 @@ Hooks.once('ready', () => {
             validateTokens,
             getSceneSetting,
         },
+        detection: {
+            isUndetected,
+        },
     }
 })
 
@@ -93,9 +90,12 @@ Hooks.on('pasteToken', pasteToken)
 Hooks.on('updateToken', updateToken)
 Hooks.on('deleteToken', deleteToken)
 Hooks.on('controlToken', controlToken)
+Hooks.on('renderTokenHUD', renderTokenHUD)
 
 Hooks.on('canvasPan', () => clearConditionals())
 
 Hooks.on('renderChatMessage', renderChatMessage)
 
 Hooks.on('renderSceneConfig', renderSceneConfig)
+
+Hooks.on('renderCombatTracker', renderCombatTracker)

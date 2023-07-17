@@ -29,10 +29,10 @@ function reachesThreshold(target, tokens, threshold) {
     return false
 }
 
-function isUndetected(target, mode) {
+export function isUndetected(target, mode, unnoticed = false) {
     const tokens = game.user.isGM ? canvas.tokens.controlled : target.scene.tokens.filter(t => t.isOwner)
     const filtered = tokens.filter(t => t.detectionModes.some(d => d.id === mode))
-    return reachesThreshold(target, filtered, VISIBILITY_VALUES.undetected)
+    return reachesThreshold(target, filtered, unnoticed ? VISIBILITY_VALUES.unnoticed : VISIBILITY_VALUES.undetected)
 }
 
 function isHidden(target) {

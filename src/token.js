@@ -64,7 +64,6 @@ export async function setTokenData(token, data) {
 
 export function hasStandardCover(origin, target, debug = false) {
     const scene = origin.scene
-    console.log(getSceneSetting(scene, 'standard'))
     if (!getSceneSetting(scene, 'standard')) return false
 
     if (debug) clearDebug()
@@ -164,6 +163,11 @@ export function updateToken(token, data, context, userId) {
     const flags = data.flags?.['pf2e-perception']
     if (flags && (flags.data || flags['-=data'] !== undefined)) {
         token.object.renderFlags.set({ refreshVisibility: true })
+        const hk = Hooks.on('refreshToken', refreshed => {
+            if (!token.object === refreshed) return
+            Hooks.off('refreshToken', hk)
+            if (game.combat?.getCombatantByToken(token.id)) ui.combat.render()
+        })
     }
 }
 
