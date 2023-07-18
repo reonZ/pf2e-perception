@@ -20,7 +20,6 @@ export function pasteToken(originals, sources) {
 export function getTokenData(token, ...path) {
     path.unshift('data')
     token = token instanceof Token ? token.document : token
-    const data = getFlag(token, path.join('.'))
     return getFlag(token, path.join('.'))
 }
 

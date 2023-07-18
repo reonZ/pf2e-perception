@@ -54,7 +54,7 @@ export async function checkRoll(wrapped, ...args) {
 
         const messageData = {
             flavor,
-            speaker: ChatMessage.getSpeaker({ token: originToken }),
+            speaker: ChatMessage.getSpeaker({ token: originToken instanceof Token ? originToken.document : originToken }),
         }
 
         if (isUndetected) {

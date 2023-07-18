@@ -20,6 +20,19 @@
             margin-block: 0.1em;
         }
     }
+
+    &.point-out {
+        font-size: var(--font-size-12);
+
+        h4 {
+            font-weight: 700;
+            color: var(--color-text-dark-secondary);
+        }
+
+        section {
+            margin: 0;
+        }
+    }
 }
 
 .dice-checks {

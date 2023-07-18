@@ -5,7 +5,7 @@ import { getTokenData, getVisibility, getCreatureCover, hasStandardCover } from 
 export function getSelfRollOptions(wrapped, prefix) {
     const result = wrapped(prefix)
 
-    if (prefix === 'origin') {
+    if (prefix === 'origin' && canvas.ready) {
         const token = getActorToken(this)
         if (token) result.push(`origin:tokenid:${token.id}`)
     }

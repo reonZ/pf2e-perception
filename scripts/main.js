@@ -543,7 +543,6 @@
   function getTokenData(token, ...path2) {
     path2.unshift("data");
     token = token instanceof Token ? token.document : token;
-    const data = getFlag(token, path2.join("."));
     return getFlag(token, path2.join("."));
   }
   __name(getTokenData, "getTokenData");
@@ -740,7 +739,7 @@
   // src/actor.js
   function getSelfRollOptions(wrapped, prefix) {
     const result = wrapped(prefix);
-    if (prefix === "origin") {
+    if (prefix === "origin" && canvas.ready) {
       const token = getActorToken(this);
       if (token)
         result.push(`origin:tokenid:${token.id}`);
@@ -823,7 +822,7 @@
       return;
     const isGM = game.user.isGM;
     const hasPlayerOwner = token.hasPlayerOwner;
-    const { cover, selected, skipWait, validated, blindCheck } = getFlags(message);
+    const { cover, selected, skipWait, validated, blindCheck, pointOut: pointOut2 } = getFlags(message);
     const pf2eContext = message.getFlag("pf2e", "context");
     if (blindCheck && !isGM && hasPlayerOwner) {
       html.find(".message-header .message-sender").text(token.name);
@@ -882,9 +881,9 @@
           addBlindSkillCheckFlavor({ token, message, html, validated });
         }
       }
-    } else if (pf2eContext?.type === "perception-check") {
+    } else if (pf2eContext?.type === "perception-check" && pf2eContext.selected?.length) {
       if (isGM) {
-        if (pf2eContext.options.includes("action:seek") && pf2eContext.selected) {
+        if (pf2eContext.options.includes("action:seek")) {
           addVisibilityValidationButton({
             token,
             html,
@@ -896,9 +895,34 @@
           });
         }
       } else if (hasPlayerOwner) {
-        if (pf2eContext.options.includes("action:seek") && pf2eContext.selected) {
+        if (pf2eContext.options.includes("action:seek")) {
           addBlindSkillCheckFlavor({ token, message, html, validated });
         }
+      }
+    } else if (pointOut2) {
+      const selectedToken = token.scene.tokens.get(pointOut2);
+      if (!selectedToken)
+        return;
+      if (isGM) {
+        let buttons = '<div style="display: grid; grid-template-columns: 1fr auto; gap: 3px">';
+        buttons += createValidateButton({ property: "visibility", skipWait, validated });
+        buttons += createChatButton({ action: "ping-token", icon: "fa-solid fa-signal-stream" });
+        buttons += "</div>";
+        html.find(".message-content").append(buttons);
+        html.find("[data-action=validate-visibility]").on("click", async () => {
+          PointOutValidationMenu.openMenu({
+            message,
+            token: selectedToken,
+            originator: token,
+            selected: canvas.tokens.controlled.map((t) => t.id)
+          });
+        });
+        html.find("[data-action=ping-token]").on("click", () => {
+          canvas.ping(selectedToken.center);
+        });
+      } else if (hasPlayerOwner) {
+        const hint = createWaitHint("visibility", validated);
+        html.find(".message-content").append(hint);
       }
     }
   }
@@ -949,11 +973,12 @@
   }
   __name(createValidateButton, "createValidateButton");
   function createChatButton({ action, icon, label }) {
-    let button = `<button type="button" style="margin: 0 0 5px; padding: 0;" data-action="${action}">`;
+    let button = `<button type="button" style="margin: 0 0 5px; padding-block: 0;" data-action="${action}">`;
     if (icon)
-      button += `<i class="${icon}"></i> ${label}</button>`;
-    else
-      button += label;
+      button += `<i class="${icon}" ${label ? "" : 'style="margin: 0;"'}></i>`;
+    if (label)
+      button += `${icon ? " " : ""}${label}`;
+    button += "</button>";
     return button;
   }
   __name(createChatButton, "createChatButton");
@@ -1216,6 +1241,29 @@
     }
   };
   __name(HideValidationMenu, "HideValidationMenu");
+  var PointOutValidationMenu = class extends VisibilityValidationMenu {
+    #originator;
+    constructor(params, options = {}) {
+      super(params, options);
+      this.#originator = params.originator;
+    }
+    get selected() {
+      const token = this.token;
+      const alliance = token.actor.alliance;
+      const originatorId = this.#originator.id;
+      const data = getTokenData(token) ?? {};
+      return getValidTokens(token).filter((t) => {
+        if (t.id === originatorId || t.actor.alliance === alliance)
+          return false;
+        const visibility = getProperty(data, `${t.id}.visibility`);
+        return VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected;
+      }).map((t) => t.id);
+    }
+    processValue({ token, value }) {
+      return VISIBILITY_VALUES[value] >= VISIBILITY_VALUES.undetected ? "hidden" : value;
+    }
+  };
+  __name(PointOutValidationMenu, "PointOutValidationMenu");
   var ReverseVisibilityValidationMenu = class extends VisibilityValidationMenu {
     processValue({ token, value }) {
       const roll = this.roll;
@@ -1294,8 +1342,66 @@
     setupCover(BaseAction, BaseActionVariant);
     setupHide(SingleCheckAction, SingleCheckActionVariant);
     setupSeek(SingleCheckAction, SingleCheckActionVariant);
+    setupPointOut(BaseAction, BaseActionVariant);
   }
   __name(setupActions, "setupActions");
+  function setupPointOut(BaseAction, BaseActionVariant) {
+    class PointOutVariant extends BaseActionVariant {
+      async use(options = {}) {
+        const action = localize("action.take-cover");
+        const token = getSelectedToken(options, action);
+        if (token)
+          pointOut(this, token);
+      }
+    }
+    __name(PointOutVariant, "PointOutVariant");
+    class PointOut extends BaseAction {
+      constructor() {
+        super({
+          cost: 1,
+          name: `${MODULE_ID}.action.point-out`,
+          description: `${MODULE_ID}.action.point-out.description`,
+          rollOptions: ["action:point-out"],
+          slug: "point-out",
+          traits: ["auditory", "manipulate", "visual"]
+        });
+      }
+      toActionVariant(data = {}) {
+        data.name ??= this.name;
+        return new PointOutVariant(this, data);
+      }
+    }
+    __name(PointOut, "PointOut");
+    game.pf2e.actions.set("point-out", new PointOut());
+  }
+  __name(setupPointOut, "setupPointOut");
+  async function pointOut({ name, traits }, token) {
+    const target = game.user.targets.first();
+    const visibility = target ? getTokenData(target, token.id, "visibility") : void 0;
+    const isVisible = VISIBILITY_VALUES[visibility] < VISIBILITY_VALUES.undetected;
+    let description;
+    if (isVisible) {
+      const dc = target.actor.skills.stealth.dc.value;
+      description = localize("message.point-out.short-check", {
+        check: `@Check[type:perception|dc:${dc}|traits:auditory,manipulate,visual|showDC:gm]`
+      });
+    } else
+      description = localize("message.point-out.short");
+    const content = await renderTemplate(templatePath("point-out"), {
+      description,
+      name,
+      traits: traits.map((slug) => ({
+        slug,
+        tooltip: CONFIG.PF2E.traitsDescriptions[slug],
+        name: CONFIG.PF2E.actionTraits[slug]
+      }))
+    });
+    const flags = {
+      pointOut: isVisible ? target.id : void 0
+    };
+    createTokenMessage({ content, token, flags });
+  }
+  __name(pointOut, "pointOut");
   function setupSeek(SingleCheckAction, SingleCheckActionVariant) {
     class SeekVariant extends SingleCheckActionVariant {
       async use(options = {}) {
@@ -1433,7 +1539,7 @@
   function setupCover(BaseAction, BaseActionVariant) {
     class TakeCoverVariant extends BaseActionVariant {
       async use(options = {}) {
-        const action = localize("actions.take-cover");
+        const action = localize("action.take-cover");
         const token = getSelectedToken(options, action);
         if (token)
           takeCover(token);
@@ -1478,7 +1584,7 @@
       isProne: isProne(actor)
     });
     const dialog = new Dialog({
-      title: `${token.name} - ${localize("actions.take-cover")}`,
+      title: `${token.name} - ${localize("action.take-cover")}`,
       content,
       buttons: {},
       render: (html) => {
@@ -1535,15 +1641,15 @@
     if (!tokens.length)
       tokens = [getActorToken(game.user.character)].filter(Boolean);
     if (tokens.length > 1) {
-      ui.notifications.warn(localize("actions.only-one", { action }));
+      ui.notifications.warn(localize("action.only-one", { action }));
       return;
     } else if (!tokens.length) {
-      ui.notifications.warn(localize("actions.must-one", { action }));
+      ui.notifications.warn(localize("action.must-one", { action }));
       return;
     }
     const token = tokens[0];
     if (!token?.actor.isOfType("creature")) {
-      ui.notifications.warn(localize("actions.must-creature", { action }));
+      ui.notifications.warn(localize("action.must-creature", { action }));
       return;
     }
     return token;
@@ -1606,7 +1712,7 @@
       })).outerHTML;
       const messageData = {
         flavor,
-        speaker: ChatMessage.getSpeaker({ token: originToken })
+        speaker: ChatMessage.getSpeaker({ token: originToken instanceof Token ? originToken.document : originToken })
       };
       if (isUndetected2) {
         context.options.add("secret");

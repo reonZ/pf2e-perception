@@ -15,6 +15,16 @@
 .pf2e-perception.covers button {
   margin-block: 0.1em;
 }
+.pf2e-perception.point-out {
+  font-size: var(--font-size-12);
+}
+.pf2e-perception.point-out h4 {
+  font-weight: 700;
+  color: var(--color-text-dark-secondary);
+}
+.pf2e-perception.point-out section {
+  margin: 0;
+}
 
 .dice-checks .window-content .pf2e-perception .dialog-row {
   grid: "mod exclude" 1fr/1fr 50px;

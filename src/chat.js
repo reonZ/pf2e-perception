@@ -1,4 +1,4 @@
-import { CoverValidationMenu, HideValidationMenu, SeekValidationMenu } from './apps/validation.js'
+import { CoverValidationMenu, HideValidationMenu, PointOutValidationMenu, SeekValidationMenu } from './apps/validation.js'
 import { MODULE_ID, getFlag, getFlags, localize, setFlag } from './module.js'
 
 export function renderChatMessage(message, html) {
@@ -7,7 +7,7 @@ export function renderChatMessage(message, html) {
 
     const isGM = game.user.isGM
     const hasPlayerOwner = token.hasPlayerOwner
-    const { cover, selected, skipWait, validated, blindCheck } = getFlags(message)
+    const { cover, selected, skipWait, validated, blindCheck, pointOut } = getFlags(message)
     const pf2eContext = message.getFlag('pf2e', 'context')
 
     if (blindCheck && !isGM && hasPlayerOwner) {
@@ -70,9 +70,9 @@ export function renderChatMessage(message, html) {
                 addBlindSkillCheckFlavor({ token, message, html, validated })
             }
         }
-    } else if (pf2eContext?.type === 'perception-check') {
+    } else if (pf2eContext?.type === 'perception-check' && pf2eContext.selected?.length) {
         if (isGM) {
-            if (pf2eContext.options.includes('action:seek') && pf2eContext.selected) {
+            if (pf2eContext.options.includes('action:seek')) {
                 addVisibilityValidationButton({
                     token,
                     html,
@@ -84,9 +84,39 @@ export function renderChatMessage(message, html) {
                 })
             }
         } else if (hasPlayerOwner) {
-            if (pf2eContext.options.includes('action:seek') && pf2eContext.selected) {
+            if (pf2eContext.options.includes('action:seek')) {
                 addBlindSkillCheckFlavor({ token, message, html, validated })
             }
+        }
+    } else if (pointOut) {
+        const selectedToken = token.scene.tokens.get(pointOut)
+        if (!selectedToken) return
+
+        if (isGM) {
+            let buttons = '<div style="display: grid; grid-template-columns: 1fr auto; gap: 3px">'
+
+            buttons += createValidateButton({ property: 'visibility', skipWait, validated })
+            buttons += createChatButton({ action: 'ping-token', icon: 'fa-solid fa-signal-stream' })
+
+            buttons += '</div>'
+
+            html.find('.message-content').append(buttons)
+
+            html.find('[data-action=validate-visibility]').on('click', async () => {
+                PointOutValidationMenu.openMenu({
+                    message,
+                    token: selectedToken,
+                    originator: token,
+                    selected: canvas.tokens.controlled.map(t => t.id),
+                })
+            })
+
+            html.find('[data-action=ping-token]').on('click', () => {
+                canvas.ping(selectedToken.center)
+            })
+        } else if (hasPlayerOwner) {
+            const hint = createWaitHint('visibility', validated)
+            html.find('.message-content').append(hint)
         }
     }
 }
@@ -133,9 +163,13 @@ function createValidateButton({ skipWait, validated, property }) {
 }
 
 export function createChatButton({ action, icon, label }) {
-    let button = `<button type="button" style="margin: 0 0 5px; padding: 0;" data-action="${action}">`
-    if (icon) button += `<i class="${icon}"></i> ${label}</button>`
-    else button += label
+    let button = `<button type="button" style="margin: 0 0 5px; padding-block: 0;" data-action="${action}">`
+
+    if (icon) button += `<i class="${icon}" ${label ? '' : 'style="margin: 0;"'}></i>`
+    if (label) button += `${icon ? ' ' : ''}${label}`
+
+    button += '</button>'
+
     return button
 }
 

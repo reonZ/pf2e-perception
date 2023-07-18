@@ -147,13 +147,20 @@
                     "wait": "Wait for a GM to validate..",
                     "validated": "Visibility has been validated"
                 }
+            },
+            "point-out": {
+                "description": "<p>You indicate a creature that you can see to one or more allies, gesturing in a direction and describing the distance verbally. That creature is <strong>hidden</strong> to your allies, rather than <strong>undetected</strong>. This works only for allies who can see you and are in a position where they could potentially detect the target. If your allies can't hear or understand you, they must succeed at a Perception check against the creature's <strong>Stealth</strong> DC or they misunderstand and believe the target is in a different location.</p>",
+                "short": "If your allies can't hear or understand you, they must succeed at a Perception check against the creature's Stealth DC or they misunderstand and believe the target is in a different location",
+                "short-check": "If your allies can't hear or understand you, they must succeed at a {check} or they misunderstand and believe the target is in a different location"
             }
         },
-        "actions": {
+        "action": {
             "only-one": "Only one token/actor can be selected to use the <strong>{action}</strong> action.",
             "must-one": "One token/actor must be selected to use the <strong>{action}</strong> action.",
+            "must-target": "You must target one token/actor to use the <strong>{action}</strong> action.",
             "must-creature": "Only a creature can use the <strong>{action}</strong> action.",
-            "take-cover": "Take Cover"
+            "take-cover": "Take Cover",
+            "point-out": "Point Out"
         },
         "template": {
             "scene": "You can only place templates on the scene the token is in."

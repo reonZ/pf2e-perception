@@ -1,9 +1,9 @@
 import { getActorToken, getCoverEffect, isProne } from './actor.js'
 import { CoverValidationMenu, HideValidationMenu, SeekValidationMenu } from './apps/validation.js'
 import { createTokenMessage } from './chat.js'
-import { defaultValues } from './constants.js'
+import { VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { createCoverSource } from './effect.js'
-import { getSetting, localize, templatePath } from './module.js'
+import { MODULE_ID, getSetting, localize, templatePath } from './module.js'
 import { validateTokens } from './scene.js'
 import { createSeekTemplate, deleteTokenTemplate } from './template.js'
 import { clearTokenData, getTokenData, setTokenData } from './token.js'
@@ -19,6 +19,67 @@ export function setupActions() {
     setupCover(BaseAction, BaseActionVariant)
     setupHide(SingleCheckAction, SingleCheckActionVariant)
     setupSeek(SingleCheckAction, SingleCheckActionVariant)
+    setupPointOut(BaseAction, BaseActionVariant)
+}
+
+function setupPointOut(BaseAction, BaseActionVariant) {
+    class PointOutVariant extends BaseActionVariant {
+        async use(options = {}) {
+            const action = localize('action.take-cover')
+            const token = getSelectedToken(options, action)
+            if (token) pointOut(this, token)
+        }
+    }
+
+    class PointOut extends BaseAction {
+        constructor() {
+            super({
+                cost: 1,
+                name: `${MODULE_ID}.action.point-out`,
+                description: `${MODULE_ID}.action.point-out.description`,
+                rollOptions: ['action:point-out'],
+                slug: 'point-out',
+                traits: ['auditory', 'manipulate', 'visual'],
+            })
+        }
+
+        toActionVariant(data = {}) {
+            data.name ??= this.name
+            return new PointOutVariant(this, data)
+        }
+    }
+
+    game.pf2e.actions.set('point-out', new PointOut())
+}
+
+async function pointOut({ name, traits }, token) {
+    const target = game.user.targets.first()
+    const visibility = target ? getTokenData(target, token.id, 'visibility') : undefined
+    const isVisible = VISIBILITY_VALUES[visibility] < VISIBILITY_VALUES.undetected
+
+    let description
+    if (isVisible) {
+        const dc = target.actor.skills.stealth.dc.value
+        description = localize('message.point-out.short-check', {
+            check: `@Check[type:perception|dc:${dc}|traits:auditory,manipulate,visual|showDC:gm]`,
+        })
+    } else description = localize('message.point-out.short')
+
+    const content = await renderTemplate(templatePath('point-out'), {
+        description,
+        name,
+        traits: traits.map(slug => ({
+            slug,
+            tooltip: CONFIG.PF2E.traitsDescriptions[slug],
+            name: CONFIG.PF2E.actionTraits[slug],
+        })),
+    })
+
+    const flags = {
+        pointOut: isVisible ? target.id : undefined,
+    }
+
+    createTokenMessage({ content, token, flags })
 }
 
 function setupSeek(SingleCheckAction, SingleCheckActionVariant) {
@@ -168,7 +229,7 @@ function setupHide(SingleCheckAction, SingleCheckActionVariant) {
 function setupCover(BaseAction, BaseActionVariant) {
     class TakeCoverVariant extends BaseActionVariant {
         async use(options = {}) {
-            const action = localize('actions.take-cover')
+            const action = localize('action.take-cover')
             const token = getSelectedToken(options, action)
             if (token) takeCover(token)
         }
@@ -215,7 +276,7 @@ async function takeCover(token) {
     })
 
     const dialog = new Dialog({
-        title: `${token.name} - ${localize('actions.take-cover')}`,
+        title: `${token.name} - ${localize('action.take-cover')}`,
         content,
         buttons: {},
         render: html => {
@@ -271,16 +332,16 @@ function getSelectedToken(options, action) {
     if (!tokens.length) tokens = [getActorToken(game.user.character)].filter(Boolean)
 
     if (tokens.length > 1) {
-        ui.notifications.warn(localize('actions.only-one', { action }))
+        ui.notifications.warn(localize('action.only-one', { action }))
         return
     } else if (!tokens.length) {
-        ui.notifications.warn(localize('actions.must-one', { action }))
+        ui.notifications.warn(localize('action.must-one', { action }))
         return
     }
 
     const token = tokens[0]
     if (!token?.actor.isOfType('creature')) {
-        ui.notifications.warn(localize('actions.must-creature', { action }))
+        ui.notifications.warn(localize('action.must-creature', { action }))
         return
     }
 

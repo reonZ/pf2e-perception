@@ -154,6 +154,34 @@ export class HideValidationMenu extends VisibilityValidationMenu {
     }
 }
 
+export class PointOutValidationMenu extends VisibilityValidationMenu {
+    #originator
+
+    constructor(params, options = {}) {
+        super(params, options)
+        this.#originator = params.originator
+    }
+
+    get selected() {
+        const token = this.token
+        const alliance = token.actor.alliance
+        const originatorId = this.#originator.id
+        const data = getTokenData(token) ?? {}
+
+        return getValidTokens(token)
+            .filter(t => {
+                if (t.id === originatorId || t.actor.alliance === alliance) return false
+                const visibility = getProperty(data, `${t.id}.visibility`)
+                return VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected
+            })
+            .map(t => t.id)
+    }
+
+    processValue({ token, value }) {
+        return VISIBILITY_VALUES[value] >= VISIBILITY_VALUES.undetected ? 'hidden' : value
+    }
+}
+
 class ReverseVisibilityValidationMenu extends VisibilityValidationMenu {
     processValue({ token, value }) {
         const roll = this.roll
