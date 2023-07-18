@@ -76,6 +76,8 @@ export async function checkRoll(wrapped, ...args) {
         if (!isUndetected && !isSuccess) return
     } else if (context.options.has('action:hide')) {
         context.selected = game.user.targets.ids
+        // } else if (context.options.has('action:sneak')) {
+        //     context.selected = game.user.targets.ids
     } else if (context.options.has('action:seek')) {
         const alliance = originToken.actor.alliance
         const highlighted = getTokenTemplateTokens(originToken)

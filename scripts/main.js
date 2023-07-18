@@ -1265,19 +1265,6 @@
   };
   __name(PointOutValidationMenu, "PointOutValidationMenu");
   var ReverseVisibilityValidationMenu = class extends VisibilityValidationMenu {
-    processValue({ token, value }) {
-      const roll = this.roll;
-      const dc = token.actor.skills.stealth.dc.value;
-      const visibility = VISIBILITY_VALUES[value];
-      if (roll >= dc + 10 && visibility >= VISIBILITY_VALUES.hidden)
-        return "observed";
-      else if (roll >= dc && visibility === VISIBILITY_VALUES.hidden)
-        return "observed";
-      else if (roll >= dc && visibility >= VISIBILITY_VALUES.undetected)
-        return "hidden";
-      else
-        return value;
-    }
     getSavedData(converted = true) {
       const thisId = this.token.id;
       const tokens = getValidTokens(this.token);
@@ -1328,6 +1315,19 @@
       const validated = await super.openMenu(params, options);
       if (validated)
         deleteTokenTemplate(params.token);
+    }
+    processValue({ token, value }) {
+      const roll = this.roll;
+      const dc = token.actor.skills.stealth.dc.value;
+      const visibility = VISIBILITY_VALUES[value];
+      if (roll >= dc + 10 && visibility >= VISIBILITY_VALUES.hidden)
+        return "observed";
+      else if (roll >= dc && visibility === VISIBILITY_VALUES.hidden)
+        return "observed";
+      else if (roll >= dc && visibility >= VISIBILITY_VALUES.undetected)
+        return "hidden";
+      else
+        return value;
     }
   };
   __name(SeekValidationMenu, "SeekValidationMenu");
