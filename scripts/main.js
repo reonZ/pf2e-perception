@@ -1200,6 +1200,14 @@
     get property() {
       return "cover";
     }
+    get selected() {
+      const selected = super.selected;
+      if (selected.length)
+        return selected;
+      const token = this.token;
+      const alliance = token.actor.alliance;
+      return getValidTokens(token).filter((t) => t.actor.alliance !== alliance).map((t) => t.id);
+    }
     processValue() {
       return this.#value;
     }
