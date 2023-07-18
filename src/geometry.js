@@ -50,6 +50,6 @@ export function clearDebug() {
 }
 
 export function drawDebugLine(origin, target, color = 'blue') {
-    const hex = color === 'blue' ? 0x0066cc : 0xff0000
+    const hex = color === 'blue' ? 0x0066cc : color === 'red' ? 0xff0000 : 0x16a103
     canvas.controls.debug.lineStyle(4, hex).moveTo(origin.x, origin.y).lineTo(target.x, target.y)
 }
