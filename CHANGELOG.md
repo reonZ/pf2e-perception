@@ -5,4 +5,4 @@ todo
 
 # 0.6.0
 
--   non-lister first release
+-   non-listed first release
