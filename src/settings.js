@@ -38,6 +38,8 @@ export function registerSettings() {
     register('concealed', Boolean, true)
 
     register('encounter', Boolean, false)
+
+    register('show-conditions-only-gm', Boolean, true)
 }
 
 function path(setting, key) {

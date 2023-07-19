@@ -30,6 +30,10 @@
                 "name": "Skip Cover Validation",
                 "hint": "When enabled, the GM won't have to manually validate when a player takes/remove conditional covers."
             },
+            "show-conditions-only-gm": {
+                "name": "Show Condition Indication Only to GM",
+                "hint": "When enabled, the players won't be able to see the condition indicators above the tokens, only the GM."
+            },
             "target": {
                 "name": "Allow Combat Target",
                 "hint": "When enabled, all creatures in the combat tracker can be targeted, even those that are not currently visible on the board. This is useful when a player wants to try to attack a creature that is undetected."

@@ -205,7 +205,8 @@ export function showAllConditionals(token) {
 
 export async function showConditionals(origin, target) {
     origin = origin instanceof Token ? origin : origin.object
-    if (!origin.visible || !origin.actor.isOfType('creature')) return
+    const onlyGm = getSetting('show-conditions-only-gm')
+    if (!origin.visible || !origin.actor.isOfType('creature') || (onlyGm && !game.user.isGM)) return
 
     const data = getTokenData(origin, target.id)
     if (isEmpty(data)) return
