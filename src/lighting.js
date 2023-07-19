@@ -28,7 +28,7 @@ export function inBrightLight(token, debug = false) {
 
         if (light.object === token) return true
 
-        if (!inBrightRange(light.object.center, rect, light.data.bright)) continue
+        if (!inBrightRange(light.object.center, rect, light.data.bright, debug)) continue
 
         if (light.data.walls === false) return true
 
@@ -44,7 +44,7 @@ export function inBrightLight(token, debug = false) {
     return false
 }
 
-function inBrightRange(origin, rect, bright) {
+function inBrightRange(origin, rect, bright, debug = false) {
     for (const point of RECT_CORNERS) {
         const rectPoint = getRectPoint(point, rect)
         const distance = new Ray(origin, rectPoint).distance
