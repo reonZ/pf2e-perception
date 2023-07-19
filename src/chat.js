@@ -11,8 +11,8 @@ export function renderChatMessage(message, html) {
     const pf2eContext = message.getFlag('pf2e', 'context')
 
     if (blindCheck && !isGM && hasPlayerOwner) {
-        html.find('.message-header .message-sender').text(token.name)
-        html.find('.message-header .flavor-text').html(blindCheck)
+        html.find('.message-sender').text(token.name)
+        html.find('.flavor-text').html(blindCheck)
     } else if (cover) {
         if (isGM) {
             const button = createValidateButton({ property: 'cover', skipWait, validated })
@@ -27,10 +27,10 @@ export function renderChatMessage(message, html) {
     } else if (pf2eContext?.visibility) {
         if (!validated) html.find('.message-buttons').remove()
 
-        const flavor = html.find('.message-header .flavor-text')
+        const flavor = html.find('.flavor-text')
 
         if (!isGM && hasPlayerOwner) {
-            html.find('.message-header .message-sender').text(token.name)
+            html.find('.message-sender').text(token.name)
             flavor.empty()
         }
 
@@ -126,10 +126,10 @@ export function validateMessage(message) {
 }
 
 function addBlindSkillCheckFlavor({ html, token, message, validated }) {
-    html.find('.message-header .message-sender').text(token.name)
+    html.find('.message-sender').text(token.name)
     let flavor = message.getFlag('pf2e', 'modifierName')
     flavor += createWaitHint('visibility', validated)
-    html.find('.message-header .flavor-text').html(flavor)
+    html.find('.flavor-text').html(flavor)
 }
 
 function createWaitHint(property, validated) {
@@ -145,7 +145,7 @@ function createHint(hint, validated) {
 
 function addVisibilityValidationButton({ skipWait, validated, html, message, ValidationMenu, token, selected }) {
     const button = createValidateButton({ property: 'visibility', skipWait, validated })
-    html.find('.message-header .flavor-text').append(button)
+    html.find('.flavor-text').append(button)
     html.find('[data-action=validate-visibility]').on('click', async () => {
         const roll = message.rolls[0]
         ValidationMenu.openMenu({ token, message, roll, selected })
