@@ -1,6 +1,7 @@
 import { validateMessage } from '../chat.js'
 import { COVERS, VISIBILITIES, VISIBILITY_VALUES, defaultValues } from '../constants.js'
 import { MODULE_ID, getSetting, localize, templatePath } from '../module.js'
+import { DegreeOfSuccess } from '../pf2e.js'
 import { getValidTokens } from '../scene.js'
 import { deleteTokenTemplate } from '../template.js'
 import { getTokenData } from '../token.js'
@@ -147,9 +148,10 @@ export class HideValidationMenu extends VisibilityValidationMenu {
         const roll = this.roll
         const dc = token.actor.perception.dc.value
         const visibility = VISIBILITY_VALUES[value]
+        const success = new DegreeOfSuccess(roll, dc).value
 
-        if (roll >= dc && visibility < VISIBILITY_VALUES.hidden) return 'hidden'
-        else if (roll < dc && visibility >= VISIBILITY_VALUES.hidden) return 'observed'
+        if (success >= DegreeOfSuccess.SUCCESS && visibility < VISIBILITY_VALUES.hidden) return 'hidden'
+        else if (success <= DegreeOfSuccess.FAILURE && visibility >= VISIBILITY_VALUES.hidden) return 'observed'
         else return value
     }
 }
@@ -244,10 +246,11 @@ export class SeekValidationMenu extends ReverseVisibilityValidationMenu {
         const roll = this.roll
         const dc = token.actor.skills.stealth.dc.value
         const visibility = VISIBILITY_VALUES[value]
+        const success = new DegreeOfSuccess(roll, dc).value
 
-        if (roll >= dc + 10 && visibility >= VISIBILITY_VALUES.hidden) return 'observed'
-        else if (roll >= dc && visibility === VISIBILITY_VALUES.hidden) return 'observed'
-        else if (roll >= dc && visibility >= VISIBILITY_VALUES.undetected) return 'hidden'
+        if (success >= DegreeOfSuccess.CRITICAL_SUCCESS && visibility >= VISIBILITY_VALUES.hidden) return 'observed'
+        else if (success >= DegreeOfSuccess.SUCCESS && visibility === VISIBILITY_VALUES.hidden) return 'observed'
+        else if (success >= DegreeOfSuccess.SUCCESS && visibility >= VISIBILITY_VALUES.undetected) return 'hidden'
         else return value
     }
 }

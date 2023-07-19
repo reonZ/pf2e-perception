@@ -395,7 +395,7 @@ function createButton(action, icon, label) {
 }
 
 function openVisibilityValidationMenu({ token, result, ValidationMenu }) {
-    const roll = result[0].roll.total
+    const roll = result[0].roll
     const message = result[0].message
     const selected = message.getFlag('pf2e', 'context.selected')
     ValidationMenu.openMenu({ token, roll, selected, message })

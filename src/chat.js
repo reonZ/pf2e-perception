@@ -147,7 +147,7 @@ function addVisibilityValidationButton({ skipWait, validated, html, message, Val
     const button = createValidateButton({ property: 'visibility', skipWait, validated })
     html.find('.message-header .flavor-text').append(button)
     html.find('[data-action=validate-visibility]').on('click', async () => {
-        const roll = message.rolls[0].total
+        const roll = message.rolls[0]
         ValidationMenu.openMenu({ token, message, roll, selected })
     })
 }
