@@ -79,15 +79,13 @@ export async function checkRoll(wrapped, ...args) {
         // } else if (context.options.has('action:sneak')) {
         //     context.selected = game.user.targets.ids
     } else if (context.options.has('action:seek')) {
-        const alliance = originToken.actor.alliance
         const highlighted = getTokenTemplateTokens(originToken)
-        if (!highlighted) return wrapped(...args)
+        if (highlighted === undefined) return wrapped(...args)
 
-        context.selected = validateTokens(originToken, highlighted)
-            .filter(t => {
-                const otherAlliance = t.actor.alliance
-                return !t.document.hidden && (!otherAlliance || otherAlliance !== alliance)
-            })
+        const tokens = highlighted ?? Array.from(game.user.targets)
+
+        context.selected = validateTokens(originToken, tokens)
+            .filter(t => !t.document.hidden)
             .map(t => t.id)
     }
 

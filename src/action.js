@@ -65,7 +65,7 @@ export function setupActions() {
 function setupPointOut(BaseAction, BaseActionVariant) {
     class PointOutVariant extends BaseActionVariant {
         async use(options = {}) {
-            const action = localize('action.take-cover')
+            const action = localize('action.point-out')
             const token = getSelectedToken(options, action)
             if (token) pointOut(this, token)
         }

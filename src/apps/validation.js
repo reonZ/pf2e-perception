@@ -21,6 +21,17 @@ class ValidationMenu extends BaseMenu {
         return templatePath('validation')
     }
 
+    get selected() {
+        const selected = super.selected
+        if (selected.length) return selected
+
+        const token = this.token
+        const alliance = token.actor.alliance
+        return getValidTokens(token)
+            .filter(t => t.actor.alliance !== alliance)
+            .map(t => t.id)
+    }
+
     getSavedData(converted = true) {
         const data = super.getSavedData()
         return converted ? this._convertData(data) : data
@@ -109,17 +120,6 @@ export class CoverValidationMenu extends ValidationMenu {
         return 'cover'
     }
 
-    get selected() {
-        const selected = super.selected
-        if (selected.length) return selected
-
-        const token = this.token
-        const alliance = token.actor.alliance
-        return getValidTokens(token)
-            .filter(t => t.actor.alliance !== alliance)
-            .map(t => t.id)
-    }
-
     processValue() {
         return this.#value
     }
@@ -143,17 +143,6 @@ class VisibilityValidationMenu extends ValidationMenu {
 }
 
 export class HideValidationMenu extends VisibilityValidationMenu {
-    get selected() {
-        const selected = super.selected
-        if (selected.length) return selected
-
-        const token = this.token
-        const alliance = token.actor.alliance
-        return getValidTokens(token)
-            .filter(t => t.actor.alliance !== alliance)
-            .map(t => t.id)
-    }
-
     processValue({ token, value }) {
         const roll = this.roll
         const dc = token.actor.perception.dc.value
