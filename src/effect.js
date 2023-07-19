@@ -8,7 +8,7 @@ export function createFlatFootedSource(visibility) {
 }
 
 export function createCoverSource(cover, canSkip = false) {
-    const bonus = COVER_VALUES[cover]
+    const bonus = COVER_VALUES[cover] === 3 ? 4 : COVER_VALUES[cover]
 
     return {
         _id: 'I9lfZUiCwMiGogVi',
