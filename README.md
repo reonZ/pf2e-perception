@@ -10,7 +10,9 @@ Bullet points:
 
 -   hovering over a token will display the conditional covers and visibilities other tokens in the scene have gainst this one
 
--   the module will hide tokens that are conditionally undetected from the GM canvas if one of the selected tokens shouldn't see them or if any owned token in the scene for players
+-   the module will hide tokens that are conditionally undetected from the currently selected tokens for the GM
+
+-   the module will hide tokens that are conditionally undetected from any owned token in the scene for the players
 
 -   the module will hide unnoticed combatants from the combat tracker for players using the same logic as above
 
