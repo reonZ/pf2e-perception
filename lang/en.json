@@ -31,7 +31,7 @@
                 "hint": "When enabled, the GM won't have to manually validate when a player takes/remove conditional covers."
             },
             "show-conditions-only-gm": {
-                "name": "Show Condition Indication Only to GM",
+                "name": "Show Condition Indicators Only to GM",
                 "hint": "When enabled, the players won't be able to see the condition indicators above the tokens, only the GM."
             },
             "target": {
