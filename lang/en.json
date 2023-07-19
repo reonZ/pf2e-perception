@@ -52,6 +52,15 @@
                 "name": "Encounter Tokens Only",
                 "hint": "When enabled, the module will only work with tokens belonging to the current encounter if any for most of its features. Remember to add the 'minion' and 'eidolon' traits on the creatures that should participate but not show up in the tracker. This setting also appears in the Encounter Tracker Settings.",
                 "short": "The module will only work with tokens belonging to the current encounter if any."
+            },
+            "flat-check": {
+                "name": "Flat Check",
+                "hint": "Should the module automatically roll a Flat-Check before an attack targeting a concealed/hidden target.",
+                "choices": {
+                    "none": "Disabled",
+                    "roll": "Roll Flat-Check",
+                    "cancel": "Cancel the Attack on failure"
+                }
             }
         },
         "menu": {

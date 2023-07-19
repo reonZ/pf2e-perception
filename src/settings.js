@@ -37,6 +37,14 @@ export function registerSettings() {
 
     register('concealed', Boolean, true)
 
+    register('flat-check', String, 'cancel', {
+        choices: {
+            none: path('flat-check', 'choices.none'),
+            roll: path('flat-check', 'choices.roll'),
+            cancel: path('flat-check', 'choices.cancel'),
+        },
+    })
+
     register('encounter', Boolean, false)
 }
 

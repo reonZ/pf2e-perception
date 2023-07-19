@@ -1,6 +1,6 @@
 import { getActorToken, getFeatWithUUID } from './actor.js'
 import { BLIND_FIGHT_UUID, COVER_UUID, VISIBILITY_VALUES, attackCheckRoll, skipConditional, validCheckRoll } from './constants.js'
-import { MODULE_ID, getFlag, localize } from './module.js'
+import { MODULE_ID, getFlag, getSetting, localize } from './module.js'
 import { validateTokens } from './scene.js'
 import { getTokenTemplateTokens } from './template.js'
 import { getVisibility } from './token.js'
@@ -15,8 +15,15 @@ export async function checkRoll(wrapped, ...args) {
     const originToken = token ?? getActorToken(actor)
     const targetToken = target?.token
     const isAttackRoll = attackCheckRoll.includes(type)
+    const flatCheck = getSetting('flat-check')
 
-    if (isReroll || !createMessage || !originToken || !validCheckRoll.includes(type) || (isAttackRoll && !targetToken))
+    if (
+        isReroll ||
+        !createMessage ||
+        !originToken ||
+        !validCheckRoll.includes(type) ||
+        (isAttackRoll && (!targetToken || flatCheck === 'none'))
+    )
         return wrapped(...args)
 
     if (isAttackRoll) {
@@ -73,7 +80,7 @@ export async function checkRoll(wrapped, ...args) {
 
         await roll.toMessage(messageData, { rollMode: isUndetected ? (game.user.isGM ? 'gmroll' : 'blindroll') : 'roll' })
 
-        if (!isUndetected && !isSuccess) return
+        if (flatCheck !== 'roll' && !isUndetected && !isSuccess) return
     } else if (context.options.has('action:hide')) {
         context.selected = game.user.targets.ids
         // } else if (context.options.has('action:sneak')) {
