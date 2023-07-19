@@ -95,7 +95,7 @@ function setupPointOut(BaseAction, BaseActionVariant) {
 async function pointOut({ name, traits }, token) {
     const target = game.user.targets.first()
     const visibility = target ? getTokenData(target, token.id, 'visibility') : undefined
-    const isVisible = VISIBILITY_VALUES[visibility] < VISIBILITY_VALUES.undetected
+    const isVisible = target && VISIBILITY_VALUES[visibility] < VISIBILITY_VALUES.undetected
 
     let description
     if (isVisible) {
