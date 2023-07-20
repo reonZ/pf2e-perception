@@ -93,7 +93,7 @@ function setupPointOut(BaseAction, BaseActionVariant) {
 }
 
 async function pointOut({ name, traits }, token) {
-    const target = game.user.targets.first()
+    const target = game.user.targets.filter(t => t.actor).first()
     const visibility = target ? getTokenData(target, token.id, 'visibility') : undefined
     const isVisible = target && VISIBILITY_VALUES[visibility] < VISIBILITY_VALUES.undetected
 
@@ -361,14 +361,14 @@ async function takeCover(token) {
 }
 
 function getSelectedToken(options, action) {
-    let tokens = options.tokens ?? []
+    let tokens = options.tokens?.filter(t => t.actor) ?? []
     if (!Array.isArray(tokens)) tokens = [tokens]
 
     let actors = options.actors ?? []
     if (!Array.isArray(actors)) actors = [actors]
 
     if (!tokens.length && actors.length === 1) tokens = [getActorToken(actors[0])].filter(Boolean)
-    if (!tokens.length) tokens = canvas.tokens.controlled
+    if (!tokens.length) tokens = canvas.tokens.controlled.filter(t => t.actor)
     if (!tokens.length) tokens = [getActorToken(game.user.character)].filter(Boolean)
 
     if (tokens.length > 1) {
@@ -380,7 +380,7 @@ function getSelectedToken(options, action) {
     }
 
     const token = tokens[0]
-    if (!token?.actor.isOfType('creature')) {
+    if (!token?.actor?.isOfType('creature')) {
         ui.notifications.warn(localize('action.must-creature', { action }))
         return
     }

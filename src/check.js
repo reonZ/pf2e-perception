@@ -26,11 +26,11 @@ export async function checkRoll(wrapped, ...args) {
     )
         return wrapped(...args)
 
-    if (isAttackRoll) {
+    if (isAttackRoll && targetToken.actor) {
         const visibility = getVisibility(targetToken, originToken, true)
         if (!visibility) return wrapped(...args)
 
-        if (visibility === 'concealed' && originToken.actor.hasLowLightVision) return wrapped(...args)
+        if (visibility === 'concealed' && originToken.actor?.hasLowLightVision) return wrapped(...args)
 
         const blindFight = getFeatWithUUID(actor, BLIND_FIGHT_UUID)
         if (visibility === 'concealed' && blindFight) return wrapped(...args)

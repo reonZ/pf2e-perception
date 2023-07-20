@@ -103,7 +103,9 @@ export function getCreatureCover(originToken, targetToken, debug = false) {
     const originSize = SIZES[originToken.actor.size]
     const targetSize = SIZES[targetToken.actor.size]
 
-    const tokens = originToken.scene.tokens.contents.sort((a, b) => SIZES[b.actor.size] - SIZES[a.actor.size])
+    const tokens = originToken.scene.tokens.contents
+        .filter(t => t.actor)
+        .sort((a, b) => SIZES[b.actor.size] - SIZES[a.actor.size])
 
     let extralarges = originSize < SIZES.huge && targetSize < SIZES.huge && tokens.filter(isExtraLarge).length
 
@@ -205,7 +207,7 @@ export function showAllConditionals(token) {
 
 export async function showConditionals(origin, target) {
     origin = origin instanceof Token ? origin : origin.object
-    if (!origin.visible || !origin.actor.isOfType('creature')) return
+    if (!origin.visible || !origin.actor?.isOfType('creature')) return
 
     const data = getTokenData(origin, target.id)
     if (isEmpty(data)) return
