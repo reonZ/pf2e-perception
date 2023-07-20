@@ -1,0 +1,19 @@
+<form autocomplete="off" onsubmit="event.preventDefault();">
+
+    {{#each icons}}
+    <div class="form-group">
+        <label style="flex: 1;">{{this.label}}</label>
+        <input type="text" name="{{this.name}}" value="{{this.value}}" placeholder="{{this.placeholder}}">
+    </div>
+    {{/each}}
+
+    <div class="form-group">
+        <button type="submit">
+            <i class="fas fa-save"></i> {{i18n 'icon-path.save'}}
+        </button>
+
+        <button type="button" name="cancel">
+            <i class="fa-solid fa-xmark"></i> {{i18n 'icon-path.cancel'}}
+        </button>
+    </div>
+</form>

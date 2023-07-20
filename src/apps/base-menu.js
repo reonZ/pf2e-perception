@@ -121,7 +121,7 @@ export class BaseMenu extends Application {
         const covers = COVERS.map(value => ({ value, label: localize(`cover.${value}`) }))
 
         return {
-            i18n: (...args) => localize(...args),
+            i18n: localize,
             covers: isProne(this.actor) ? covers : covers.slice(0, -1),
             visibilities: VISIBILITIES.map(value => ({ value, label: localize(`visibility.${value}`) })),
         }

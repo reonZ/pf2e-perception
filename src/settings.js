@@ -1,6 +1,16 @@
+import { IconPathMenu } from './apps/icon-path-menu.js'
 import { MODULE_ID } from './module.js'
 
 export function registerSettings() {
+    register('icon-path', Object, {}, { config: false })
+    game.settings.registerMenu(MODULE_ID, 'icon-path-menu', {
+        name: path('icon-path', 'name'),
+        label: path('icon-path', 'label'),
+        icon: 'fa-solid fa-list',
+        restricted: true,
+        type: IconPathMenu,
+    })
+
     register('target', Boolean, true, {
         onChange: () => ui.combat?.render(),
     })

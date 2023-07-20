@@ -1,5 +1,5 @@
 import { PerceptionMenu } from './apps/perception.js'
-import { VISIBILITY_VALUES, defaultValues } from './constants.js'
+import { ICONS_PATHS, VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { clearDebug, drawDebugLine, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { isConcealed } from './lighting.js'
 import { MODULE_ID, getFlag, getSetting, unsetFlag } from './module.js'
@@ -218,9 +218,12 @@ export async function showConditionals(origin, target) {
     let content = `<div class="pf2e-conditionals" data-hover-id="${origin.id}" data-token-id="${target.id}" `
     content += `style="top: ${coords.y}px; left: ${coords.x + (origin.hitArea.width * scale) / 2}px;">`
 
+    const savedPaths = getSetting('icon-path')
     Object.entries(data).map(([property, value]) => {
-        const img = property === 'cover' ? 'modules/pf2e-perception/images/cover' : `systems/pf2e/icons/conditions/${value}`
-        content += `<div class="conditional"><img src="../../../${img}.webp"></img></div>`
+        const icon = property === 'cover' ? 'cover' : value
+        let path = savedPaths[icon] || ICONS_PATHS[icon]
+        if (path.startsWith('systems') || path.startsWith('modules')) path = `../../../${path}`
+        content += `<div class="conditional"><img src="${path}"></img></div>`
     })
 
     content += '</div>'

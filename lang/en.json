@@ -1,6 +1,10 @@
 {
     "pf2e-perception": {
         "settings": {
+            "icon-path": {
+                "name": "Conditional Icons",
+                "label": "Setup Paths"
+            },
             "lesser": {
                 "name": "Automate Creature Cover",
                 "hint": "Should the module automatically check for creature covers on the board.",
@@ -176,6 +180,11 @@
         },
         "dice-checks": {
             "covers": "Ignore Conditional Covers"
+        },
+        "icon-path": {
+            "save": "Save",
+            "cancel": "Cancel",
+            "cover": "Cover"
         }
     }
 }

@@ -35,3 +35,11 @@ export const validCheckRoll = [...attackCheckRoll, 'skill-check', 'perception-ch
 export const skipConditional = {
     cover: 'conditional:cover:skip',
 }
+
+export const ICONS_PATHS = {
+    cover: 'modules/pf2e-perception/images/cover.webp',
+    concealed: 'systems/pf2e/icons/conditions/concealed.webp',
+    hidden: 'systems/pf2e/icons/conditions/hidden.webp',
+    undetected: 'systems/pf2e/icons/conditions/undetected.webp',
+    unnoticed: 'systems/pf2e/icons/conditions/unnoticed.webp',
+}

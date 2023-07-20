@@ -308,7 +308,7 @@ async function takeCover(token) {
     }, {})
 
     const content = await renderTemplate(templatePath('covers-dialog'), {
-        i18n: key => localize(key),
+        i18n: localize,
         hasTargets: !!targets.length,
         hasCovers: !isEmpty(covers),
         hasTargetCover: targets.some(id => id in covers),
