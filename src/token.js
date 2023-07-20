@@ -209,8 +209,13 @@ export async function showConditionals(origin, target) {
     origin = origin instanceof Token ? origin : origin.object
     if (!origin.visible || !origin.actor?.isOfType('creature')) return
 
-    const data = getTokenData(origin, target.id)
+    let data = getTokenData(origin, target.id)
     if (isEmpty(data)) return
+
+    if (!game.user.isGM && !target.document.hasPlayerOwner && VISIBILITY_VALUES[data.visibility] >= VISIBILITY_VALUES.hidden) {
+        if (!data.cover) return
+        data = { cover: data.cover }
+    }
 
     const scale = origin.worldTransform.a
     const coords = canvas.clientCoordinatesFromCanvas(origin.document._source)
