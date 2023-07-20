@@ -11,6 +11,15 @@ export function registerSettings() {
         type: IconPathMenu,
     })
 
+    register('permission', String, CONST.USER_ROLES.GAMEMASTER, {
+        choices: {
+            1: path('permission', 'choices.1'),
+            2: path('permission', 'choices.2'),
+            3: path('permission', 'choices.3'),
+            4: path('permission', 'choices.4'),
+        },
+    })
+
     register('target', Boolean, true, {
         onChange: () => ui.combat?.render(),
     })

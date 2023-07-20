@@ -2,11 +2,11 @@ import { PerceptionMenu } from './apps/perception.js'
 import { ICONS_PATHS, VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { clearDebug, drawDebugLine, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { isConcealed } from './lighting.js'
-import { MODULE_ID, getFlag, getSetting, unsetFlag } from './module.js'
+import { MODULE_ID, getFlag, getSetting, hasPermission, unsetFlag } from './module.js'
 import { getSceneSetting, getValidTokens } from './scene.js'
 
 export function renderTokenHUD(hud, html) {
-    if (!hud.object.actor?.isOfType('creature')) return
+    if (!hasPermission() || !hud.object.actor?.isOfType('creature')) return
     html.find('.col.left').append(`<div class="control-icon" data-action="pf2e-perception"><i class="fa-solid fa-eye"></i></div>`)
     html.find('[data-action=pf2e-perception]').on('click', event => PerceptionMenu.openMenu({ token: hud.object }))
 }

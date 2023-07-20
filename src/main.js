@@ -50,7 +50,6 @@ Hooks.once('init', () => {
     const isGM = game.data.users.find(x => x._id === game.data.userId).role >= CONST.USER_ROLES.GAMEMASTER
     if (isGM) {
         Hooks.on('renderSceneConfig', renderSceneConfig)
-        Hooks.on('renderTokenHUD', renderTokenHUD)
         Hooks.on('renderCombatTrackerConfig', renderCombatTrackerConfig)
     } else {
         Hooks.on('renderCombatTracker', renderCombatTracker)
@@ -99,6 +98,7 @@ Hooks.on('pasteToken', pasteToken)
 Hooks.on('updateToken', updateToken)
 Hooks.on('deleteToken', deleteToken)
 Hooks.on('controlToken', controlToken)
+Hooks.on('renderTokenHUD', renderTokenHUD)
 
 Hooks.on('canvasPan', () => clearConditionals())
 

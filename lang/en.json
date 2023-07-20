@@ -65,6 +65,16 @@
                     "roll": "Roll Flat-Check",
                     "cancel": "Cancel the Attack on failure"
                 }
+            },
+            "permission": {
+                "name": "Perception Menu Permission",
+                "hint": "Which minimum permission a user must have to be able to interract with the perception menu. Remember that the menu is a major spoiler if given access to players.",
+                "choices": {
+                    "1": "Player",
+                    "2": "Trusted Player",
+                    "3": "Assistant Gamemaster",
+                    "4": "Gamemaster"
+                }
             }
         },
         "menu": {

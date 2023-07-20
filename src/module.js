@@ -37,3 +37,7 @@ export function getSetting(setting) {
 export function setSetting(setting, value) {
     return game.settings.set(MODULE_ID, setting, value)
 }
+
+export function hasPermission() {
+    return game.user.role >= getSetting('permission')
+}
