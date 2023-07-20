@@ -68,15 +68,13 @@ export function getConditionalCover(origin, target, options, debug = false) {
     if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return 'greater-prone'
     if (!prone && cover === 'greater-prone') cover = undefined
 
-    const isCoverable = ranged || options.includes('item:trait:reach') || options.includes('item:type:spell')
-
     if (
         COVER_VALUES[cover] < COVER_VALUES.standard &&
         COVER_VALUES[systemCover] < COVER_VALUES.standard &&
         hasStandardCover(origin, target, debug)
     ) {
         cover = 'standard'
-    } else if (!cover && !systemCover && isCoverable && origin.distanceTo(target) > 5) {
+    } else if (!cover && !systemCover && origin.distanceTo(target) > 5) {
         cover = getCreatureCover(origin, target, debug)
     }
 
