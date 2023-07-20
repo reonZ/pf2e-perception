@@ -33,10 +33,8 @@ export function lineIntersectWall(origin, target, debug = false) {
 }
 
 export function pointToTokenIntersectWall(origin, token, debug = false) {
-    const rect = token.bounds
-    for (const point of RECT_SPREAD) {
-        const coords = getRectPoint(point, rect)
-        if (lineIntersectWall(origin, coords, debug)) return true
+    for (const point of rectSpread(token.bounds)) {
+        if (lineIntersectWall(origin, point, debug)) return true
     }
     return false
 }
@@ -52,4 +50,16 @@ export function clearDebug() {
 export function drawDebugLine(origin, target, color = 'blue') {
     const hex = color === 'blue' ? 0x0066cc : color === 'red' ? 0xff0000 : 0x16a103
     canvas.controls.debug.lineStyle(4, hex).moveTo(origin.x, origin.y).lineTo(target.x, target.y)
+}
+
+export function* rectSpread(rect) {
+    for (const point of RECT_SPREAD) {
+        yield getRectPoint(point, rect)
+    }
+}
+
+export function* rectCorners(rect) {
+    for (const point of RECT_CORNERS) {
+        yield getRectPoint(point, rect)
+    }
 }

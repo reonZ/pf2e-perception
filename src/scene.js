@@ -3,7 +3,7 @@ import { getFlag, getSetting, localize } from './module.js'
 export function renderSceneConfig(config, html) {
     let settings = ''
 
-    for (const setting of ['standard', 'concealed']) {
+    for (const setting of ['standard', 'exposure']) {
         const checked = getSceneSetting(config.object, setting)
 
         settings += `<div class="form-group">

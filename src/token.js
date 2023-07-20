@@ -1,7 +1,7 @@
 import { PerceptionMenu } from './apps/perception.js'
 import { ICONS_PATHS, VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { clearDebug, drawDebugLine, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
-import { isConcealed } from './lighting.js'
+import { getLightExposure } from './lighting.js'
 import { MODULE_ID, getFlag, getSetting, hasPermission, unsetFlag } from './module.js'
 import { getSceneSetting, getValidTokens } from './scene.js'
 
@@ -138,11 +138,10 @@ export function getCreatureCover(originToken, targetToken, debug = false) {
     return cover
 }
 
-export function getVisibility(origin, target, checkConcealed = false) {
+export function getVisibility(origin, target) {
     const systemVisibility = (() => {
         const originActor = origin.actor
-        const visibilities = ['unnoticed', 'undetected', 'hidden']
-        if (checkConcealed) visibilities.push('concealed')
+        const visibilities = ['unnoticed', 'undetected', 'hidden', 'concealed']
 
         for (const visibility of visibilities) {
             if (originActor.hasCondition(visibility)) return visibility
@@ -152,12 +151,13 @@ export function getVisibility(origin, target, checkConcealed = false) {
     const visibility = getTokenData(origin, target.id, 'visibility')
     const mergedVisibility = VISIBILITY_VALUES[systemVisibility] > VISIBILITY_VALUES[visibility] ? systemVisibility : visibility
 
-    if (checkConcealed && VISIBILITY_VALUES[mergedVisibility] < VISIBILITY_VALUES.concealed && !target.actor.hasLowLightVision) {
-        const concealed = isConcealed(origin)
-        if (concealed) return 'concealed'
-    }
+    const mergedVisibilityValue = VISIBILITY_VALUES[mergedVisibility]
+    if (mergedVisibilityValue >= VISIBILITY_VALUES.undetected) return mergedVisibility
 
-    return mergedVisibility
+    const exposure = getLightExposure(origin)
+    let exposedVisibility = exposure === 'dim' ? 'concealed' : exposure === 'bright' ? undefined : 'hidden'
+
+    return mergedVisibilityValue > VISIBILITY_VALUES[exposedVisibility] ? mergedVisibility : exposedVisibility
 }
 
 export function updateToken(token, data, context, userId) {

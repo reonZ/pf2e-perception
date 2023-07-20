@@ -5,7 +5,7 @@ import { checkRoll, renderCheckModifiersDialog } from './check.js'
 import { renderCombatTracker, renderCombatTrackerConfig } from './combat.js'
 import { basicSightCanDetect, feelTremorCanDetect, hearingCanDetect, isUndetected } from './detection.js'
 import { clearDebug, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
-import { inBrightLight, isConcealed } from './lighting.js'
+import { getLightExposure } from './lighting.js'
 import { MODULE_ID } from './module.js'
 import { getSceneSetting, getValidTokens, renderSceneConfig, validateTokens } from './scene.js'
 import { registerSettings } from './settings.js'
@@ -73,8 +73,7 @@ Hooks.once('ready', () => {
             getTokenData,
         },
         lighting: {
-            isConcealed,
-            inBrightLight,
+            getLightExposure,
         },
         actor: {
             getActorToken,

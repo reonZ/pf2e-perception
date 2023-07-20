@@ -54,7 +54,7 @@ export function registerSettings() {
         },
     })
 
-    register('concealed', Boolean, true)
+    register('exposure', Boolean, true)
 
     register('flat-check', String, 'cancel', {
         choices: {

@@ -27,7 +27,7 @@ export async function checkRoll(wrapped, ...args) {
         return wrapped(...args)
 
     if (isAttackRoll && targetToken.actor) {
-        const visibility = getVisibility(targetToken, originToken, true)
+        const visibility = getVisibility(targetToken, originToken)
         if (!visibility) return wrapped(...args)
 
         if (visibility === 'concealed' && originToken.actor?.hasLowLightVision) return wrapped(...args)

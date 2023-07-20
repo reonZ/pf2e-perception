@@ -1,55 +1,71 @@
-import { RECT_CORNERS, RECT_SPREAD, clearDebug, drawDebugLine, getRectPoint } from './geometry.js'
+import { clearDebug, drawDebugLine, rectCorners } from './geometry.js'
 import { getSceneSetting } from './scene.js'
 
-export function isConcealed(token) {
+export function getLightExposure(token, debug = false) {
     token = token instanceof Token ? token : token.object
 
-    if (token.document.hasStatusEffect(CONFIG.specialStatusEffects.INVISIBLE)) return false
+    if (token.document.hasStatusEffect(CONFIG.specialStatusEffects.INVISIBLE)) return undefined
 
     const scene = token.scene
     if (
         scene !== canvas.scene ||
         !scene.tokenVision ||
         scene.darkness < scene.globalLightThreshold ||
-        !getSceneSetting(scene, 'concealed')
+        !getSceneSetting(scene, 'exposure')
     )
-        return false
-
-    return !inBrightLight(token)
-}
-
-export function inBrightLight(token, debug = false) {
-    const rect = token.bounds
+        return undefined
 
     if (debug) clearDebug()
 
+    const rect = token.document.bounds
+    let exposure = null
+
     for (const light of canvas.effects.lightSources) {
-        if (!light.active || light.data.bright === 0) continue
+        if (!light.active) continue
 
-        if (light.object === token) return true
+        const bright = light.data.bright
+        const dim = light.data.dim
 
-        if (!inBrightRange(light.object.center, rect, light.data.bright, debug)) continue
+        if (light.object === token) {
+            if (bright) return 'bright'
+            if (dim) exposure = 'dim'
+            continue
+        }
 
-        if (light.data.walls === false) return true
+        const contained = []
+        for (const point of rectCorners(rect)) {
+            if (light.shape.contains(point.x, point.y)) contained.push(point)
+            else if (debug) drawDebugLine(light, point, 'red')
+        }
 
-        for (const point of RECT_SPREAD) {
-            const { x, y } = getRectPoint(point, rect)
-            if (light.shape.contains(x, y)) {
-                if (debug) drawDebugLine(light, { x, y }, 'green')
-                return true
-            } else if (debug) drawDebugLine(light, { x, y }, 'blue')
+        if (!contained.length) continue
+
+        if (light.ratio === 1) {
+            if (debug) drawDebugLine(light, contained, 'green')
+            return 'bright'
+        }
+
+        if (light.ratio === 0) {
+            if (debug) drawDebugLine(light, contained, 'blue')
+            exposure = 'dim'
+            continue
+        }
+
+        for (const point of contained) {
+            const distance = new Ray(light, point).distance
+            if (distance <= bright) {
+                if (debug) {
+                    drawDebugLine(light, point, 'green')
+                    exposure = 'bright'
+                } else return 'bright'
+            } else {
+                if (debug) {
+                    drawDebugLine(light, point, 'blue')
+                    if (exposure !== 'bright') exposure = 'dim'
+                } else exposure = 'dim'
+            }
         }
     }
 
-    return false
-}
-
-function inBrightRange(origin, rect, bright, debug = false) {
-    for (const point of RECT_CORNERS) {
-        const rectPoint = getRectPoint(point, rect)
-        const distance = new Ray(origin, rectPoint).distance
-        if (distance < bright) return true
-        else if (debug) drawDebugLine(origin, rectPoint, 'red')
-    }
-    return false
+    return exposure
 }
