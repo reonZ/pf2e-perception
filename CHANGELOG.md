@@ -3,6 +3,10 @@ todo ?
 -   sniping duo ?
 -   foil sense ?
 
+# 0.7.2
+
+-   fixed an issue brought by `11.306`
+
 # 0.7.1
 
 -   fixed issue with automated light exposure always considering tokens `hidden` in scenes that had vision/exposure disabled or not in the dark
