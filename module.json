@@ -9,14 +9,10 @@
             "discord": "Idle#3251"
         }
     ],
-    "esmodules": [
-        "scripts/main.js"
-    ],
-    "scripts": [
-        "libs/jquery-ui.min.js"
-    ],
+    "esmodules": ["scripts/main.js"],
+    "scripts": ["libs/jquery-ui.min.js"],
     "compatibility": {
-        "minimum": "11.305",
+        "minimum": "11.306",
         "verified": "11"
     },
     "version": "0.7.1",
@@ -27,10 +23,7 @@
     "download": "https://github.com/reonZ/pf2e-perception/releases/download/0.7.1/module.zip",
     "changelog": "https://github.com/reonZ/pf2e-perception/blob/master/CHANGELOG.md",
     "bugs": "https://github.com/reonZ/pf2e-perception/issues",
-    "styles": [
-        "styles/global.css",
-        "styles/menu.css"
-    ],
+    "styles": ["styles/global.css", "styles/menu.css"],
     "languages": [
         {
             "lang": "en",

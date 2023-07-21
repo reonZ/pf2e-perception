@@ -39,8 +39,14 @@ export function getContextualClone(wrapped, rollOptions, ephemeralEffects) {
 
 export function getActorToken(actor, target = false) {
     if (!actor) return undefined
+    const actorId = actor.id
+    const isToken = actor.isToken
     const tokens = target ? game.user.targets : canvas.tokens.controlled
-    return tokens.find(token => token.actor === actor) ?? actor.getActiveTokens().shift() ?? null
+    return (
+        tokens.find(token => (isToken ? token.actor === actor : token.actor.id === actorId)) ??
+        actor.getActiveTokens().shift() ??
+        null
+    )
 }
 
 export function isProne(actor) {
