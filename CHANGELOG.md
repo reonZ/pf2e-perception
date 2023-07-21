@@ -3,11 +3,15 @@ todo ?
 -   sniping duo ?
 -   foil sense ?
 
+# 0.7.1
+
+-   fixed issue with automated light exposure always considering tokens `hidden` in scenes that had vision/exposure disabled or not in the dark
+
 # 0.7.0
 
 -   replaced `Automate Concealment` setting with `Automate Light Exposure`
--   the system now check if a token is in bright light, dim light or darkness when it comes to automatically checking its vibility state
--   added `Perception Menu Permission` setting which allow you to select which minimum permission a user must have to be able to interract with the perception menu (keep in mind that the menu is a major spoiler if given access to players)
+-   the system now check if a token is in bright light, dim light or darkness when it comes to automatically checking its visibility state
+-   added `Perception Menu Permission` setting which allow you to select which minimum permission a user must have to be able to interact with the perception menu (keep in mind that the menu is a major spoiler if given access to players)
 -   added `Conditional Icons` settings menu where you can set custom path to icon images that will be displayed on token hover
 -   added `Flat Check` setting allowing you to disabled module flat checks, roll flat checks before attacks or canceling the attacks entirely on failure
 -   the `Hide` and `Seek` actions now properly use the degree of success provided by natural 20/1
