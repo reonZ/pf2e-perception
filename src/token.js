@@ -155,7 +155,7 @@ export function getVisibility(origin, target) {
     if (mergedVisibilityValue >= VISIBILITY_VALUES.undetected) return mergedVisibility
 
     const exposure = getLightExposure(origin)
-    let exposedVisibility = exposure === 'dim' ? 'concealed' : exposure === 'bright' ? undefined : 'hidden'
+    let exposedVisibility = exposure === 'dim' ? 'concealed' : exposure === null ? 'hidden' : undefined
 
     return mergedVisibilityValue > VISIBILITY_VALUES[exposedVisibility] ? mergedVisibility : exposedVisibility
 }
