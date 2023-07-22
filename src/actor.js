@@ -22,7 +22,7 @@ export function getContextualClone(wrapped, rollOptions, ephemeralEffects) {
     if (!origin || !target) return wrapped(rollOptions, ephemeralEffects)
 
     const conditionalCover = getConditionalCover(origin, target, rollOptions)
-    if (conditionalCover) ephemeralEffects.push(createCoverSource(conditionalCover, true))
+    if (conditionalCover) ephemeralEffects.push(createCoverSource(conditionalCover))
 
     const visibility = getVisibility(origin, target)
     if (VISIBILITY_VALUES[visibility] > VISIBILITY_VALUES.concealed) {

@@ -189,7 +189,10 @@
             "scene": "You can only place templates on the scene the token is in."
         },
         "dice-checks": {
-            "covers": "Ignore Conditional Covers"
+            "cover": {
+                "label": "Override Cover",
+                "none": "No Cover"
+            }
         },
         "icon-path": {
             "save": "Save",

@@ -1,5 +1,6 @@
-import { getActorToken, getFeatWithUUID } from './actor.js'
-import { BLIND_FIGHT_UUID, COVER_UUID, VISIBILITY_VALUES, attackCheckRoll, skipConditional, validCheckRoll } from './constants.js'
+import { getActorToken, getCoverEffect, getFeatWithUUID, isProne } from './actor.js'
+import { BLIND_FIGHT_UUID, COVERS, COVER_UUID, VISIBILITY_VALUES, attackCheckRoll, validCheckRoll } from './constants.js'
+import { createCoverSource, findChoiceSetRule } from './effect.js'
 import { MODULE_ID, getFlag, getSetting, localize } from './module.js'
 import { validateTokens } from './scene.js'
 import { getTokenTemplateTokens } from './template.js'
@@ -100,8 +101,6 @@ export async function checkRoll(wrapped, ...args) {
 }
 
 export function renderCheckModifiersDialog(dialog, html) {
-    const appid = html.attr('data-appid')
-
     const { createMessage = 'true', type, token, target, isReroll, options, dc } = dialog.context
     const originToken = token
     const targetToken = target?.token
@@ -109,52 +108,78 @@ export function renderCheckModifiersDialog(dialog, html) {
 
     if (isReroll || !createMessage || !originToken || !targetToken || !targetActor || !attackCheckRoll.includes(type)) return
 
-    const originalCover =
-        dialog[MODULE_ID]?.originalCover ??
-        targetActor.itemTypes.effect.find(e => e.sourceId === COVER_UUID && getFlag(e, 'canSkip'))?.toObject()
+    const coverEffect = getCoverEffect(targetActor)
+    const currentCover = coverEffect
+        ? findChoiceSetRule(coverEffect)?.selection.level ?? getFlag(coverEffect, 'level')
+        : undefined
+    let coverOverride = dialog[MODULE_ID]?.coverOverride ?? currentCover
 
-    if (!originalCover) return
+    let template = '<div class="roll-mode-panel">'
+    template += `<div class="label">${localize('dice-checks.cover.label')}</div>`
+    template += `<select name="overrideCover"><option value="">${localize('dice-checks.cover.none')}</option>`
 
-    if (!dialog[MODULE_ID]?.originalCover) setProperty(dialog, `${MODULE_ID}.originalCover`, originalCover)
+    const covers = isProne(targetActor) ? COVERS.slice(1) : COVERS.slice(1, -1)
 
-    const skipCover = options.has(skipConditional.cover)
-
-    html.find('.roll-mode-panel').before(`<div class="pf2e-perception">
-        <div class="dialog-row ${skipCover ? '' : 'disabled'}">
-            <span class="mod">${localize('dice-checks.covers')}</span>
-            <label class="exclude toggle">
-                <input type="checkbox" id="app-${appid}-perception-covers" ${skipCover ? 'checked' : ''} />
-                <label for="app-${appid}-perception-covers"></label>
-            </label>
-        </div>
-    </div><hr>`)
-
-    html.find(`#app-${appid}-perception-covers`).on('change', event => {
-        const checked = event.currentTarget.checked
-
-        if (checked) options.add(skipConditional.cover)
-        else options.delete(skipConditional.cover)
-
-        const items = deepClone(targetActor._source.items)
-        const index = items.findIndex(
-            i => getProperty(i, 'flags.core.sourceId') === COVER_UUID && getProperty(i, `flags.${MODULE_ID}.canSkip`)
-        )
-
-        if (checked && index !== -1) items.splice(index, 1)
-        else if (!checked && index === -1) items.push(originalCover)
-
-        target.actor = targetActor.clone({ items }, { keepId: true })
-
-        if (dc?.slug) {
-            const statistic = target.actor.getStatistic(dc.slug)?.dc
-            if (statistic) {
-                dc.value = statistic.value
-                dc.statistic = statistic
-            }
-        }
-
-        dialog.render()
+    covers.forEach(slug => {
+        const selected = slug === coverOverride ? 'selected' : ''
+        const label = localize(`cover.${slug}`)
+        template += `<option value="${slug}" ${selected}>${label}</option>`
     })
+
+    template += '</select></div>'
+
+    // visibility override here
+
+    template += '<hr>'
+
+    html.find('.roll-mode-panel').before(template)
+
+    html.find('select[name=overrideCover]').on('change', event => {
+        const value = event.currentTarget.value || undefined
+        setProperty(dialog, `${MODULE_ID}.coverOverride`, value)
+        coverOverride = value
+    })
+
+    html.find('button.roll')[0].addEventListener(
+        'click',
+        event => {
+            event.preventDefault()
+            event.stopPropagation()
+            event.stopImmediatePropagation()
+
+            let modified = false
+            const items = deepClone(targetActor._source.items)
+
+            if (coverOverride !== currentCover) {
+                modified = true
+
+                const coverIndex = items.findIndex(i => getProperty(i, 'flags.core.sourceId') === COVER_UUID)
+                if (coverIndex !== -1) items.splice(coverIndex, 1)
+
+                if (coverOverride) {
+                    const source = createCoverSource(coverOverride)
+                    items.push(source)
+                }
+            }
+
+            if (modified) {
+                target.actor = targetActor.clone({ items }, { keepId: true })
+
+                if (dc?.slug) {
+                    const statistic = target.actor.getStatistic(dc.slug)?.dc
+                    if (statistic) {
+                        dc.value = statistic.value
+                        dc.statistic = statistic
+                    }
+                }
+            }
+
+            dialog.resolve(true)
+            dialog.isResolved = true
+            dialog.close()
+        },
+        true
+    )
 
     dialog.setPosition()
 }

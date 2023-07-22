@@ -7,13 +7,13 @@ export function createFlatFootedSource(visibility) {
     return condition.toObject()
 }
 
-export function createCoverSource(cover, canSkip = false) {
-    const bonus = COVER_VALUES[cover] === 3 ? 4 : COVER_VALUES[cover]
+export function createCoverSource(level) {
+    const bonus = COVER_VALUES[level] === 3 ? 4 : COVER_VALUES[level]
 
     return {
         _id: 'I9lfZUiCwMiGogVi',
         img: 'systems/pf2e/icons/conditions-2/status_acup.webp',
-        name: localize('cover', cover),
+        name: localize('cover', level),
         system: {
             description: {
                 gm: '',
@@ -21,7 +21,7 @@ export function createCoverSource(cover, canSkip = false) {
             },
             rules: [
                 { domain: 'all', key: 'RollOption', option: `self:cover-bonus:${bonus}` },
-                { domain: 'all', key: 'RollOption', option: `self:cover-level:${cover}` },
+                { domain: 'all', key: 'RollOption', option: `self:cover-level:${level}` },
                 {
                     key: 'FlatModifier',
                     predicate: [
@@ -61,7 +61,10 @@ export function createCoverSource(cover, canSkip = false) {
         type: 'effect',
         flags: {
             core: { sourceId: COVER_UUID },
-            [MODULE_ID]: { canSkip },
+            [MODULE_ID]: {
+                level,
+                bonus,
+            },
         },
     }
 }
