@@ -67,6 +67,10 @@ you can replace `x` by `all` for the rollOption to trigger on all cover|visibili
 -   `lesser|standard|greater|greater-prone:ac:0` to force a certain AC value for a cover
 -   `concealed|hidden:dc:0` to force a certain DC value for a visibility
 
+# Wiki
+
+take a look at the [wiki](https://github.com/reonZ/pf2e-perception/wiki/Roll-Options) to find some pre-built rollOptions and macros to use with the module
+
 # CHANGELOG
 
 You can see the changelog [HERE](./CHANGELOG.md)
