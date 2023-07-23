@@ -54,7 +54,7 @@ Bullet points:
 
     if you wanted to reduce covers by one degree, the rollOption would look like
 
-    ```json
+    ```
     self:pf2perception:cover:reduce:x
     ```
 
@@ -62,7 +62,7 @@ Bullet points:
 
     the same thing can be done for visibility
 
-    ```json
+    ```
     self:pf2perception:visibility:reduce:x
     ```
 
