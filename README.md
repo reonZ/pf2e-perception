@@ -54,16 +54,18 @@ you can use custom rollOptions to adjust cover and visibility during attacks, th
 {"key":"RollOption","domain":"all","option":"self:pf2perception:hidden:dc:5"}
 ```
 
-when the changes are supposed to be made when the token the rollOption exists on is targeted instead of being the attacker, you need to add a `-self` to the option (e.g. `pf2perception:cover:cancel-self:all`, `pf2perception:hidden:dc-self:0`)
+when the changes are supposed to be made when the token the rollOption exists on is targeted instead of being the attacker, you need to add a `-self` to the option (e.g. `cover:cancel-self:all`, `hidden:dc-self:0`)
+
+all rollOptions must be prefixed with `self:pf2perception:` when they are used inside a `RollOption` rule element, if however, they are passed to a attack check as argument, the ones that are supposed to apply on the token when it is targeted (when adding `-self`) must use the prefix `target:pf2perception:`
 
 you can replace `x` by `all` for the rollOption to trigger on all cover|visibility values
 
--   `pf2perception:cover|visibility:cancel:x` to completely cancel the cover|visibility if it is equal to `x`
--   `pf2perception:cover|visibility:reduce:x` to reduce the cover|visibility by one tier if it is equal to `x`
--   `pf2perception:visibility:noflat:x` to skip the flat check when the visibility is equal to `x`
--   `pf2perception:cover:ignore:xxx` to ignore a certain token (replace `xxx` by the token id) when testing for creature cover
--   `pf2perception:lesser|standard|greater|greater-prone:ac:0` to force a certain AC value for a cover
--   `pf2perception:concealed|hidden:dc:0` to force a certain DC value for a visibility
+-   `cover|visibility:cancel:x` to completely cancel the cover|visibility if it is equal to `x`
+-   `cover|visibility:reduce:x` to reduce the cover|visibility by one tier if it is equal to `x`
+-   `visibility:noflat:x` to skip the flat check when the visibility is equal to `x`
+-   `cover:ignore:xxx` to ignore a certain token (replace `xxx` by the token id) when testing for creature cover
+-   `lesser|standard|greater|greater-prone:ac:0` to force a certain AC value for a cover
+-   `concealed|hidden:dc:0` to force a certain DC value for a visibility
 
 # CHANGELOG
 
