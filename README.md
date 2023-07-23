@@ -44,6 +44,30 @@ Bullet points:
 
 -   there is a lot of functions exposed in `game.modules.get('pf2e-perception')` that can be used, some even have a debug mode to display the computation like `getCreatureCover`, `hasStandardCover` or `inBrightLight`
 
+-   you can use custom rollOptions to adjust cover and visibility during attacks, this can be done either by adding system `RollOption` to feats/features/effect/etc. or passing them directly in the attack options argument. here is an example of how to implement the `Blind-Fight` feat, just add those 3 REs the feat itself:
+
+    ```json
+    {"key":"RollOption","domain":"all","option":"self:pf2perception:visibility:cancel:hidden"}
+    {"key":"RollOption","domain":"all","option":"self:pf2perception:concealed:dc:0"}
+    {"key":"RollOption","domain":"all","option":"self:pf2perception:hidden:dc:5"}
+    ```
+
+    if you wanted to reduce covers by one degree, the rollOption would look like
+
+    ```json
+    self:pf2perception:cover:reduce:x
+    ```
+
+    `x` can be `all` or any type of concealement: `lesser`, `standard`, `greater` or `greater-prone`
+
+    the same thing can be done for visibility
+
+    ```json
+    self:pf2perception:visibility:reduce:x
+    ```
+
+    `x` can be `all` or any type of visibility: `concealed`, `hidden`, `undetected` or `unnoticed`
+
 # CHANGELOG
 
 You can see the changelog [HERE](./CHANGELOG.md)
