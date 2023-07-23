@@ -7,8 +7,8 @@ export function createFlatFootedSource(visibility) {
     return condition.toObject()
 }
 
-export function createCoverSource(level) {
-    const bonus = COVER_VALUES[level] === 3 ? 4 : COVER_VALUES[level]
+export function createCoverSource(level, bonus) {
+    bonus ??= COVER_VALUES[level] === 3 ? 4 : COVER_VALUES[level]
 
     return {
         _id: 'I9lfZUiCwMiGogVi',

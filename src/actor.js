@@ -1,6 +1,6 @@
-import { COVERS, COVER_UUID, COVER_VALUES, VISIBILITY_VALUES } from './constants.js'
+import { COVER_UUID, COVER_VALUES, VISIBILITY_VALUES } from './constants.js'
 import { createCoverSource, createFlatFootedSource, findChoiceSetRule } from './effect.js'
-import { optionsToObject, updateVisibilityFromOptions } from './options.js'
+import { getOption, optionsToObject, testOption, updateFromOptions } from './options.js'
 import { extractEphemeralEffects, getRangeIncrement, isOffGuardFromFlanking, traitSlugToObject } from './pf2e/helpers.js'
 import { getConditionalCover, getVisibility } from './token.js'
 
@@ -193,26 +193,25 @@ export async function getRollContext(params) {
 
 function addConditionals({ ephemeralEffects, selfToken, targetToken, options }) {
     let cover = getConditionalCover(selfToken, targetToken, options)
+    let visibility = getVisibility(selfToken, targetToken)
 
     options = optionsToObject(options)
 
-    if (options.origin?.cover) {
-        if (cover && options.origin.cover.reduce) {
-            const reduced = ['all', cover].some(x => options.origin.cover.reduce.includes(x))
-            if (reduced) {
-                const index = COVERS.indexOf(cover)
-                cover = COVERS[Math.max(0, index - 1)]
-            }
-        }
+    cover = updateFromOptions(cover, options, 'cover')
+    visibility = updateFromOptions(visibility, options, 'visibility')
+
+    let coverBonus = undefined
+    if (cover) {
+        const ac = getOption(options, cover, 'ac')?.[0]
+        if (ac == 0) cover = undefined
+        else if (ac) coverBonus = ac
     }
 
-    let visibility = updateVisibilityFromOptions(getVisibility(selfToken, targetToken), options.target?.visibility)
-    if (options.target?.visibility?.cancel) {
-        const canceled = ['all', visibility].some(x => options.target.visibility.cancel.includes(x))
-        if (canceled) visibility = undefined
+    if (visibility && testOption(visibility, options, 'visibility', 'noflat')) {
+        visibility = undefined
     }
 
-    if (COVER_VALUES[cover] > COVER_VALUES.none) ephemeralEffects.push(createCoverSource(cover))
+    if (COVER_VALUES[cover] > COVER_VALUES.none) ephemeralEffects.push(createCoverSource(cover, coverBonus))
     if (VISIBILITY_VALUES[visibility] > VISIBILITY_VALUES.concealed) ephemeralEffects.push(createFlatFootedSource(visibility))
 }
 

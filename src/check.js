@@ -2,7 +2,7 @@ import { getActorToken, getCoverEffect, isProne } from './actor.js'
 import { COVERS, COVER_UUID, VISIBILITY_VALUES, attackCheckRoll, validCheckRoll } from './constants.js'
 import { createCoverSource, findChoiceSetRule } from './effect.js'
 import { MODULE_ID, getFlag, getSetting, localize } from './module.js'
-import { optionsToObject, updateVisibilityFromOptions } from './options.js'
+import { getOption, optionsToObject, updateFromOptions } from './options.js'
 import { validateTokens } from './scene.js'
 import { getTokenTemplateTokens } from './template.js'
 import { getVisibility } from './token.js'
@@ -29,13 +29,13 @@ export async function checkRoll(wrapped, ...args) {
         return wrapped(...args)
 
     if (isAttackRoll && targetToken.actor) {
-        const options = optionsToObject(context.options).origin
-        const visibility = updateVisibilityFromOptions(getVisibility(targetToken, originToken), options?.visibility)
+        const options = optionsToObject(context.options)
+        const visibility = updateFromOptions(getVisibility(targetToken, originToken), options, 'visibility')
 
         if (!visibility) return wrapped(...args)
         if (visibility === 'concealed' && originToken.actor?.hasLowLightVision) return wrapped(...args)
 
-        const optionDC = options?.[visibility]?.dc?.[0]
+        const optionDC = getOption(options, visibility === 'concealed' ? 'concealed' : 'hidden', 'dc')?.[0]
         if (optionDC == 0) return wrapped(...args)
 
         const dc = optionDC ?? (visibility === 'concealed' ? 5 : 11)

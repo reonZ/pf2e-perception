@@ -44,31 +44,26 @@ Bullet points:
 
 -   there is a lot of functions exposed in `game.modules.get('pf2e-perception')` that can be used, some even have a debug mode to display the computation like `getCreatureCover`, `hasStandardCover` or `inBrightLight`
 
--   you can use custom rollOptions to adjust cover and visibility during attacks, this can be done either by adding system `RollOption` to feats/features/effect/etc. or passing them directly in the attack options argument. here is an example of how to implement the `Blind-Fight` feat, just add those 3 REs the feat itself:
+# Roll Options
 
-    ```json
-    {"key":"RollOption","domain":"all","option":"self:pf2perception:visibility:cancel:hidden"}
-    {"key":"RollOption","domain":"all","option":"self:pf2perception:concealed:dc:0"}
-    {"key":"RollOption","domain":"all","option":"self:pf2perception:hidden:dc:5"}
-    ```
+you can use custom rollOptions to adjust cover and visibility during attacks, this can be done either by adding system `RollOption` to feats/features/effect/etc. or passing them directly in the attack options argument. here is an example of how to implement the `Blind-Fight` feat, just add those 3 REs the feat itself:
 
-    if you wanted to reduce covers by one degree, the rollOption would look like
+```json
+{"key":"RollOption","domain":"all","option":"self:pf2perception:visibility:noflat-self:all"}
+{"key":"RollOption","domain":"all","option":"self:pf2perception:concealed:dc:0"}
+{"key":"RollOption","domain":"all","option":"self:pf2perception:hidden:dc:5"}
+```
 
-    ```
-    self:pf2perception:cover:reduce:x
-    ```
+when the changes are supposed to be made when the token the rollOption exists on is targeted instead of being the attacker, you need to add a `-self` to the option (e.g. `pf2perception:cover:cancel-self:all`, `pf2perception:hidden:dc-self:0`)
 
-    `x` can be `all` or any type of concealement: `lesser`, `standard`, `greater` or `greater-prone`
+you can replace `x` by `all` for the rollOption to trigger on all cover|visibility values
 
-    the same thing can be done for visibility
-
-    ```
-    self:pf2perception:visibility:reduce:x
-    ```
-
-    `x` can be `all` or any type of visibility: `concealed`, `hidden`, `undetected` or `unnoticed`
-
-    When used as options argument for an attack roll, things like `reduce` and `cancel` need to be used with the `target:` prefix instead because they care about the visibility/cover state of the target instead
+-   `pf2perception:cover|visibility:cancel:x` to completely cancel the cover|visibility if it is equal to `x`
+-   `pf2perception:cover|visibility:reduce:x` to reduce the cover|visibility by one tier if it is equal to `x`
+-   `pf2perception:visibility:noflat:x` to skip the flat check when the visibility is equal to `x`
+-   `pf2perception:cover:ignore:xxx` to ignore a certain token (replace `xxx` by the token id) when testing for creature cover
+-   `pf2perception:lesser|standard|greater|greater-prone:ac:0` to force a certain AC value for a cover
+-   `pf2perception:concealed|hidden:dc:0` to force a certain DC value for a visibility
 
 # CHANGELOG
 

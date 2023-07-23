@@ -4,6 +4,7 @@ import { COVER_VALUES, ICONS_PATHS, VISIBILITY_VALUES, defaultValues } from './c
 import { clearDebug, drawDebugLine, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { getLightExposure } from './lighting.js'
 import { MODULE_ID, getFlag, getSetting, hasPermission, unsetFlag } from './module.js'
+import { optionsToObject } from './options.js'
 import { getSceneSetting, getValidTokens } from './scene.js'
 
 export function renderTokenHUD(hud, html) {
@@ -83,9 +84,12 @@ const SIZES = {
     grg: 5,
 }
 
-export function getCreatureCover(originToken, targetToken, debug = false) {
+export function getCreatureCover(originToken, targetToken, options = [], debug = false) {
     const setting = getSetting('lesser')
     if (setting === 'none') return undefined
+
+    options = optionsToObject(options)
+    const ignoreIds = [...(options.target?.cover?.ignore ?? []), ...(options.origin?.cover?.ignore ?? [])]
 
     let cover = undefined
     const origin = originToken.center
@@ -105,7 +109,7 @@ export function getCreatureCover(originToken, targetToken, debug = false) {
     const targetSize = SIZES[targetToken.actor.size]
 
     const tokens = originToken.scene.tokens.contents
-        .filter(t => t.actor)
+        .filter(t => t.actor && !ignoreIds.includes(t.id))
         .sort((a, b) => SIZES[b.actor.size] - SIZES[a.actor.size])
 
     let extralarges = originSize < SIZES.huge && targetSize < SIZES.huge && tokens.filter(isExtraLarge).length
@@ -256,7 +260,7 @@ export function getConditionalCover(origin, target, options, debug = false) {
     ) {
         cover = 'standard'
     } else if (!cover && !systemCover && origin.distanceTo(target) > 5) {
-        cover = getCreatureCover(origin, target, debug)
+        cover = getCreatureCover(origin, target, options, debug)
     }
 
     if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return 'greater-prone'

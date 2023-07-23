@@ -1,4 +1,4 @@
-import { VISIBILITIES } from './constants.js'
+import { COVERS, VISIBILITIES } from './constants.js'
 
 export function optionsToObject(options, affects = 'origin') {
     const obj = {}
@@ -19,16 +19,34 @@ export function optionsToObject(options, affects = 'origin') {
     return obj
 }
 
-export function updateVisibilityFromOptions(visibility, options) {
-    if (!visibility || !options) return visibility
+export function testOption(value, options, type, option) {
+    const test = values => {
+        if (!values) return false
+        return ['all', value].some(x => values.includes(x))
+    }
+    const selfResult = test(options.origin?.[type]?.[option])
+    const targetResult = test(options.target?.[type]?.[`${option}-self`])
+    return selfResult || targetResult
+}
 
-    if (options.reduce) {
-        const reduced = ['all', visibility].some(x => options.reduce.includes(x))
-        if (reduced) {
-            const index = VISIBILITIES.indexOf(visibility)
-            visibility = VISIBILITIES[Math.max(0, index - 1)]
-        }
+export function getOption(options, ...path) {
+    const selfOption = getProperty(options.origin, path.join('.')) ?? []
+    const targetResult = getProperty(options.target, [...path.slice(0, -1), path.at(-1) + '-self'].join('.')) ?? []
+    return [...selfOption, ...targetResult]
+}
+
+export function updateFromOptions(value, options, type) {
+    options = Array.isArray(options) ? optionsToObject(options) : options
+
+    if (value && testOption(value, options, type, 'cancel')) {
+        value = undefined
     }
 
-    return visibility
+    if (value && testOption(value, options, type, 'reduce')) {
+        const list = type === 'cover' ? COVERS : VISIBILITIES
+        const index = list.indexOf(value)
+        value = list[Math.max(0, index - 1)]
+    }
+
+    return value
 }
