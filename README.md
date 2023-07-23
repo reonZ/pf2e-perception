@@ -46,7 +46,7 @@ Bullet points:
 
 # Roll Options
 
-you can use custom rollOptions to adjust cover and visibility during attacks, this can be done either by adding system `RollOption` to feats/features/effect/etc. or passing them directly in the attack options argument. here is an example of how to implement the `Blind-Fight` feat, just add those 3 REs the feat itself:
+you can use custom rollOptions to adjust cover and visibility during attacks, this can be done either by adding system `RollOption` to feats/features/effect/etc. or passing them directly in the attack options argument. here is an example of how to implement the `Blind-Fight` feat, just add those 3 REs to the feat itself:
 
 ```json
 {"key":"RollOption","domain":"all","option":"self:pf2perception:visibility:noflat-self:all"}
@@ -56,7 +56,7 @@ you can use custom rollOptions to adjust cover and visibility during attacks, th
 
 when the changes are supposed to be made when the token the rollOption exists on is targeted instead of being the attacker, you need to add a `-self` to the option (e.g. `cover:cancel-self:all`, `hidden:dc-self:0`)
 
-all rollOptions must be prefixed with `self:pf2perception:` when they are used inside a `RollOption` rule element, if however, they are passed to an attack check as argument, the ones that are supposed to apply on the token when it is targeted (when adding `-self`) must also use the prefix `target:pf2perception:`
+all rollOptions must be prefixed with `self:pf2perception:` when they are used inside a `RollOption` rule element
 
 you can replace `x` by `all` for the rollOption to trigger on all cover|visibility values
 
