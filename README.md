@@ -68,6 +68,8 @@ Bullet points:
 
     `x` can be `all` or any type of visibility: `concealed`, `hidden`, `undetected` or `unnoticed`
 
+    When used as options argument for an attack roll, things like `reduce` and `cancel` need to be used with the `target:` prefix instead because they care about the visibility/cover state of the target instead
+
 # CHANGELOG
 
 You can see the changelog [HERE](./CHANGELOG.md)
