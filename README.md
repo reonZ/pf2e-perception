@@ -56,7 +56,7 @@ you can use custom rollOptions to adjust cover and visibility during attacks, th
 
 when the changes are supposed to be made when the token the rollOption exists on is targeted instead of being the attacker, you need to add a `-self` to the option (e.g. `cover:cancel-self:all`, `hidden:dc-self:0`)
 
-all rollOptions must be prefixed with `self:pf2perception:` when they are used inside a `RollOption` rule element
+all rollOptions must be prefixed with `self:pf2perception:`
 
 you can replace `x` by `all` for the rollOption to trigger on all cover|visibility values
 
