@@ -3,16 +3,15 @@ todo ?
 -   sniping duo ?
 -   foil sense ?
 
+-   add cancel cover rolloption
+
+# 0.9.0
+
+-   did a complete refactor of the rollOptions, you can find a summary of how they work here: https://github.com/reonZ/pf2e-perception#roll-options
+
 # 0.8.0
 
 -   added support for custom rollOptions, those can be added via the system `RollOption` or directly provided in the attack options arguments, here is an example on how to implement the `Blind-Fight` feat, just add those 3 REs in the feat itself:
-
-    ```json
-    {"key":"RollOption","domain":"all","option":"self:pf2perception:visibility:cancel:hidden"}
-    {"key":"RollOption","domain":"all","option":"self:pf2perception:concealed:dc:0"}
-    {"key":"RollOption","domain":"all","option":"self:pf2perception:hidden:dc:5"}
-    ```
-
 -   removed automated support for the `Blind-Fight` feat
 -   you can now manually override a cover in the modifiers window (the one you need to hold shift to show or not show during a check roll)
 
