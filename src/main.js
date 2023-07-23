@@ -1,5 +1,5 @@
 import { setupActions } from './action.js'
-import { getActorToken, getConditionalCover, getContextualClone, getCoverEffect, getSelfRollOptions, isProne } from './actor.js'
+import { getActorToken, getCoverEffect, getRollContext, isProne } from './actor.js'
 import { renderChatMessage } from './chat.js'
 import { checkRoll, renderCheckModifiersDialog } from './check.js'
 import { renderCombatTracker, renderCombatTrackerConfig } from './combat.js'
@@ -13,6 +13,7 @@ import {
     clearConditionals,
     controlToken,
     deleteToken,
+    getConditionalCover,
     getCreatureCover,
     getTokenData,
     getVisibility,
@@ -27,8 +28,7 @@ import {
 
 const CHECK_ROLL = 'game.pf2e.Check.roll'
 
-const GET_CONTEXTUAL_CLONE = 'CONFIG.Actor.documentClass.prototype.getContextualClone'
-const GET_SELF_ROLL_OPTIONS = 'CONFIG.Actor.documentClass.prototype.getSelfRollOptions'
+const GET_ROLL_CONTEXT = 'CONFIG.Actor.documentClass.prototype.getRollContext'
 
 const BASIC_SIGHT_CAN_DETECT = 'CONFIG.Canvas.detectionModes.basicSight._canDetect'
 const HEARING_CAN_DETECT = 'CONFIG.Canvas.detectionModes.hearing._canDetect'
@@ -40,8 +40,7 @@ Hooks.once('init', () => {
 
     libWrapper.register(MODULE_ID, CHECK_ROLL, checkRoll)
 
-    libWrapper.register(MODULE_ID, GET_CONTEXTUAL_CLONE, getContextualClone)
-    libWrapper.register(MODULE_ID, GET_SELF_ROLL_OPTIONS, getSelfRollOptions)
+    libWrapper.register(MODULE_ID, GET_ROLL_CONTEXT, getRollContext, 'OVERRIDE')
 
     libWrapper.register(MODULE_ID, BASIC_SIGHT_CAN_DETECT, basicSightCanDetect)
     libWrapper.register(MODULE_ID, HEARING_CAN_DETECT, hearingCanDetect)

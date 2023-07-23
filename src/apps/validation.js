@@ -1,7 +1,7 @@
 import { validateMessage } from '../chat.js'
 import { COVERS, VISIBILITIES, VISIBILITY_VALUES, defaultValues } from '../constants.js'
 import { MODULE_ID, getSetting, localize, templatePath } from '../module.js'
-import { DegreeOfSuccess } from '../pf2e.js'
+import { DegreeOfSuccess } from '../pf2e/success.js'
 import { getValidTokens } from '../scene.js'
 import { deleteTokenTemplate } from '../template.js'
 import { getTokenData } from '../token.js'

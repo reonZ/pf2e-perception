@@ -1,5 +1,6 @@
+import { getCoverEffect, isProne } from './actor.js'
 import { PerceptionMenu } from './apps/perception.js'
-import { ICONS_PATHS, VISIBILITY_VALUES, defaultValues } from './constants.js'
+import { COVER_VALUES, ICONS_PATHS, VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { clearDebug, drawDebugLine, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { getLightExposure } from './lighting.js'
 import { MODULE_ID, getFlag, getSetting, hasPermission, unsetFlag } from './module.js'
@@ -234,4 +235,31 @@ export async function showConditionals(origin, target) {
     content += '</div>'
 
     $(document.body).append(content)
+}
+
+export function getConditionalCover(origin, target, options, debug = false) {
+    const ranged = options.includes('item:ranged')
+    const prone = ranged ? isProne(target.actor) : false
+
+    let systemCover = getCoverEffect(target.actor, true)
+    if (prone && COVER_VALUES[systemCover] > COVER_VALUES.lesser) return 'greater-prone'
+    if (!prone && systemCover === 'greater-prone') systemCover = undefined
+
+    let cover = getTokenData(target, origin.id, 'cover')
+    if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return 'greater-prone'
+    if (!prone && cover === 'greater-prone') cover = undefined
+
+    if (
+        COVER_VALUES[cover] < COVER_VALUES.standard &&
+        COVER_VALUES[systemCover] < COVER_VALUES.standard &&
+        hasStandardCover(origin, target, debug)
+    ) {
+        cover = 'standard'
+    } else if (!cover && !systemCover && origin.distanceTo(target) > 5) {
+        cover = getCreatureCover(origin, target, debug)
+    }
+
+    if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return 'greater-prone'
+
+    return COVER_VALUES[cover] > COVER_VALUES[systemCover] ? cover : undefined
 }

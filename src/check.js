@@ -1,7 +1,8 @@
-import { getActorToken, getCoverEffect, getFeatWithUUID, isProne } from './actor.js'
-import { BLIND_FIGHT_UUID, COVERS, COVER_UUID, VISIBILITY_VALUES, attackCheckRoll, validCheckRoll } from './constants.js'
+import { getActorToken, getCoverEffect, isProne } from './actor.js'
+import { COVERS, COVER_UUID, VISIBILITY_VALUES, attackCheckRoll, validCheckRoll } from './constants.js'
 import { createCoverSource, findChoiceSetRule } from './effect.js'
 import { MODULE_ID, getFlag, getSetting, localize } from './module.js'
+import { optionsToObject, updateVisibilityFromOptions } from './options.js'
 import { validateTokens } from './scene.js'
 import { getTokenTemplateTokens } from './template.js'
 import { getVisibility } from './token.js'
@@ -28,15 +29,16 @@ export async function checkRoll(wrapped, ...args) {
         return wrapped(...args)
 
     if (isAttackRoll && targetToken.actor) {
-        const visibility = getVisibility(targetToken, originToken)
-        if (!visibility) return wrapped(...args)
+        const options = optionsToObject(context.options).origin
+        const visibility = updateVisibilityFromOptions(getVisibility(targetToken, originToken), options?.visibility)
 
+        if (!visibility) return wrapped(...args)
         if (visibility === 'concealed' && originToken.actor?.hasLowLightVision) return wrapped(...args)
 
-        const blindFight = getFeatWithUUID(actor, BLIND_FIGHT_UUID)
-        if (visibility === 'concealed' && blindFight) return wrapped(...args)
+        const optionDC = options?.[visibility]?.dc?.[0]
+        if (optionDC == 0) return wrapped(...args)
 
-        const dc = visibility === 'concealed' || blindFight ? 5 : 11
+        const dc = optionDC ?? (visibility === 'concealed' ? 5 : 11)
         const roll = await new Roll('1d20').evaluate({ async: true })
         const total = roll.total
         const isSuccess = total >= dc
