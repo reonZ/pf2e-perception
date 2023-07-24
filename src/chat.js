@@ -1,4 +1,11 @@
-import { CoverValidationMenu, HideValidationMenu, PointOutValidationMenu, SeekValidationMenu } from './apps/validation.js'
+import {
+    CoverValidationMenu,
+    HideValidationMenu,
+    PointOutValidationMenu,
+    SeekValidationMenu,
+    UnHideValidationMenu,
+} from './apps/validation.js'
+import { attackCheckRoll } from './constants.js'
 import { MODULE_ID, getFlag, getFlags, localize, setFlag } from './module.js'
 
 export function renderChatMessage(message, html) {
@@ -118,6 +125,20 @@ export function renderChatMessage(message, html) {
             const hint = createWaitHint('visibility', validated)
             html.find('.message-content').append(hint)
         }
+    }
+
+    if (isGM && attackCheckRoll.includes(pf2eContext?.type)) {
+        const tooltip = localize('message.unhide.tooltip')
+        const button = `<span style="position: absolute; right: 0px; bottom: 1px;">
+    <button data-action="unhide" title="${tooltip}" style="width: 22px; height: 22px; font-size: 10px; line-height: 1px;">
+        <i class="fa-duotone fa-eye-slash" style="right: 1px;"></i>
+    </button>
+</span>`
+        html.find('.dice-result .dice-total').append(button)
+        html.find('[data-action=unhide]').on('click', event => {
+            event.stopPropagation()
+            UnHideValidationMenu.openMenu({ token })
+        })
     }
 }
 

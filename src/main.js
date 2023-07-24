@@ -89,6 +89,14 @@ Hooks.once('ready', () => {
             isUndetected,
         },
     }
+
+    Hooks.on('renderChatMessage', renderChatMessage)
+
+    for (const el of document.querySelectorAll('#chat-log .chat-message')) {
+        const message = game.messages.get(el.dataset.messageId)
+        if (!message) continue
+        renderChatMessage(message, $(el))
+    }
 })
 
 Hooks.on('hoverToken', hoverToken)
@@ -99,7 +107,5 @@ Hooks.on('controlToken', controlToken)
 Hooks.on('renderTokenHUD', renderTokenHUD)
 
 Hooks.on('canvasPan', () => clearConditionals())
-
-Hooks.on('renderChatMessage', renderChatMessage)
 
 Hooks.on('renderCheckModifiersDialog', renderCheckModifiersDialog)

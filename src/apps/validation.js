@@ -95,7 +95,7 @@ class ValidationMenu extends BaseMenu {
             i18n,
             property: property,
             options: property === 'cover' ? covers : visibilities,
-            showSelected: validation === 'all',
+            showSelected: selected.length !== tokens.length && validation === 'all',
             showChanges: validation !== 'changed',
         }
     }
@@ -152,6 +152,18 @@ export class HideValidationMenu extends VisibilityValidationMenu {
 
         if (success >= DegreeOfSuccess.SUCCESS && visibility < VISIBILITY_VALUES.hidden) return 'hidden'
         else if (success <= DegreeOfSuccess.FAILURE && visibility >= VISIBILITY_VALUES.hidden) return 'observed'
+        else return value
+    }
+}
+
+export class UnHideValidationMenu extends VisibilityValidationMenu {
+    get selected() {
+        return getValidTokens(this.token).map(t => t.id)
+    }
+
+    processValue({ token, value }) {
+        const visibility = VISIBILITY_VALUES[value]
+        if (visibility >= VISIBILITY_VALUES.hidden) return 'observed'
         else return value
     }
 }
