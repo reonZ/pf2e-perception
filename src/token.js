@@ -160,10 +160,7 @@ export function getVisibility(origin, target) {
     if (mergedVisibilityValue >= VISIBILITY_VALUES.undetected) return mergedVisibility
 
     const exposure = getLightExposure(origin)
-
-    let exposedVisibility = undefined
-    if (exposure === 'dim' && !target.actor?.hasLowLightVision) exposedVisibility = 'concealed'
-    else if (exposure === null && !target.actor?.hasDarkvision) exposedVisibility = 'hidden'
+    const exposedVisibility = exposure === 'dim' ? 'concealed' : exposure === null ? 'hidden' : undefined
 
     return mergedVisibilityValue > VISIBILITY_VALUES[exposedVisibility] ? mergedVisibility : exposedVisibility
 }
