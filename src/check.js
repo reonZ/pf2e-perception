@@ -70,8 +70,10 @@ export async function checkRoll(wrapped, ...args) {
 
         if (isUndetected) {
             context.options.add('secret')
-            context.isSuccess = isSuccess
-            context.visibility = visibility
+            context.pf2ePerception = {
+                isSuccess: isSuccess,
+                visibility: visibility,
+            }
 
             let blindCheck = `${game.i18n.localize('PF2E.FlatCheck')}:`
             blindCheck += `<strong> ${game.i18n.localize(`PF2E.condition.undetected.name`)}</strong>`
@@ -86,7 +88,7 @@ export async function checkRoll(wrapped, ...args) {
 
         if (flatCheck !== 'roll' && !isUndetected && !isSuccess) return
     } else if (context.options.has('action:hide')) {
-        context.selected = game.user.targets.ids
+        setProperty(context, 'pf2ePerception.selected', game.user.targets.ids)
         // } else if (context.options.has('action:sneak')) {
         //     context.selected = game.user.targets.ids
     } else if (context.options.has('action:seek')) {
@@ -94,10 +96,11 @@ export async function checkRoll(wrapped, ...args) {
         if (highlighted === undefined) return wrapped(...args)
 
         const tokens = highlighted ?? Array.from(game.user.targets)
-
-        context.selected = validateTokens(originToken, tokens)
+        const selected = validateTokens(originToken, tokens)
             .filter(t => !t.document.hidden)
             .map(t => t.id)
+
+        setProperty(context, 'pf2ePerception.selected', selected)
     }
 
     return wrapped(...args)

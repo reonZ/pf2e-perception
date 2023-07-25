@@ -31,7 +31,7 @@ export function renderChatMessage(message, html) {
             const hint = createWaitHint('cover', validated)
             html.find('.message-content').append(hint)
         }
-    } else if (pf2eContext?.visibility) {
+    } else if (pf2eContext?.pf2ePerception?.visibility) {
         if (!validated) html.find('.message-buttons').remove()
 
         const flavor = html.find('.flavor-text')
@@ -68,7 +68,7 @@ export function renderChatMessage(message, html) {
                     message,
                     skipWait,
                     validated,
-                    selected: pf2eContext.selected,
+                    selected: pf2eContext.pf2ePerception.selected,
                     ValidationMenu: HideValidationMenu,
                 })
             }
@@ -86,7 +86,7 @@ export function renderChatMessage(message, html) {
                     message,
                     skipWait,
                     validated,
-                    selected: pf2eContext.selected,
+                    selected: pf2eContext.pf2ePerception.selected,
                     ValidationMenu: SeekValidationMenu,
                 })
             }

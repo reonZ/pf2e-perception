@@ -135,7 +135,7 @@ function setupSeek(SingleCheckAction, SingleCheckActionVariant) {
             const result = await super.use(options)
 
             if (game.user.isGM) {
-                const { selected } = result[0].message.getFlag('pf2e', 'context')
+                const { selected } = result[0].message.getFlag('pf2e', 'context.pf2ePerception')
                 if (selected) openVisibilityValidationMenu({ token, result, ValidationMenu: SeekValidationMenu })
             }
 
@@ -397,6 +397,6 @@ function createButton(action, icon, label) {
 function openVisibilityValidationMenu({ token, result, ValidationMenu }) {
     const roll = result[0].roll
     const message = result[0].message
-    const selected = message.getFlag('pf2e', 'context.selected')
+    const { selected } = message.getFlag('pf2e', 'context.pf2ePerception')
     ValidationMenu.openMenu({ token, roll, selected, message })
 }
