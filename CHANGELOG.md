@@ -1,3 +1,11 @@
+# 0.11.0
+
+-   added NPC `Rule Based Vision` support, you need to enable the vision on the NPC tokens for it to take action
+-   added `Force NPC Vision` setting which will force the `Vision Enabled` option on newly created NPC tokens, this can be set on a per-scene bases
+-   added a warning if the `PF2e Rules-Based NPC Vision` module is active, both modules will conflict with each other
+-   moved custom context flags into a single namespace
+-   fixed issue with the rollOption `set` when using `none` and `observed`
+
 # 0.10.0
 
 -   added `cover|visibility:set:x` rollOption to force a cover|visibility state equal to `x`, here `x` cannot be `all` but accept `none` for cover and `observed` for visibitlity
