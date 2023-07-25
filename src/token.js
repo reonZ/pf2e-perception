@@ -267,3 +267,13 @@ export function getConditionalCover(origin, target, options, debug = false) {
 
     return COVER_VALUES[cover] > COVER_VALUES[systemCover] ? cover : undefined
 }
+
+export function rulesBasedVision() {
+    return !!(this.sight.enabled && this.actor?.isOfType('creature') && this.scene?.rulesBasedVision)
+}
+
+export function preCreateToken(token) {
+    if (!getSceneSetting(token.scene, 'npc-vision')) return
+    if (!token.actor?.isOfType('npc')) return
+    token.updateSource({ 'sight.enabled': true })
+}

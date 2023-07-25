@@ -20,13 +20,17 @@ import {
     hasStandardCover,
     hoverToken,
     pasteToken,
+    preCreateToken,
     renderTokenHUD,
+    rulesBasedVision,
     showAllConditionals,
     showConditionals,
     updateToken,
 } from './token.js'
 
 const CHECK_ROLL = 'game.pf2e.Check.roll'
+
+const RULES_BASED_VISION = 'CONFIG.Token.documentClass.prototype.rulesBasedVision'
 
 const GET_ROLL_CONTEXT = 'CONFIG.Actor.documentClass.prototype.getRollContext'
 const VISION_LEVEL = 'CONFIG.PF2E.Actor.documentClasses.npc.prototype.visionLevel'
@@ -40,6 +44,8 @@ Hooks.once('init', () => {
     setupActions()
 
     libWrapper.register(MODULE_ID, CHECK_ROLL, checkRoll)
+
+    libWrapper.register(MODULE_ID, RULES_BASED_VISION, rulesBasedVision, 'OVERRIDE')
 
     libWrapper.register(MODULE_ID, GET_ROLL_CONTEXT, getRollContext, 'OVERRIDE')
     libWrapper.register(MODULE_ID, VISION_LEVEL, visionLevel, 'OVERRIDE')
@@ -99,6 +105,10 @@ Hooks.once('ready', () => {
         if (!message) continue
         renderChatMessage(message, $(el))
     }
+
+    if (game.user.isGM && game.modules.get('pf2e-rules-based-npc-vision')?.active) {
+        ui.notifications.error(`${MODULE_ID}.warning.npc-vision`, { permanent: true, localize: true })
+    }
 })
 
 Hooks.on('hoverToken', hoverToken)
@@ -107,6 +117,7 @@ Hooks.on('updateToken', updateToken)
 Hooks.on('deleteToken', deleteToken)
 Hooks.on('controlToken', controlToken)
 Hooks.on('renderTokenHUD', renderTokenHUD)
+Hooks.on('preCreateToken', preCreateToken)
 
 Hooks.on('canvasPan', () => clearConditionals())
 

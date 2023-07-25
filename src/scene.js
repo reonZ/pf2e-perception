@@ -3,10 +3,11 @@ import { getFlag, getSetting, localize } from './module.js'
 export function renderSceneConfig(config, html) {
     let settings = ''
 
-    for (const setting of ['standard', 'exposure']) {
+    const list = ['standard', 'exposure', 'npc-vision']
+    for (const setting of list) {
         const checked = getSceneSetting(config.object, setting)
 
-        settings += `<div class="form-group">
+        settings += `<div class="form-group pf2e-perception-injected">
     <label>${localize(`settings.${setting}.name`)}</label>
     <input type="checkbox" name="flags.pf2e-perception.${setting}" ${checked ? 'checked' : ''}>
     <p class="notes">${localize(`settings.${setting}.short`)}</p>
@@ -16,7 +17,13 @@ export function renderSceneConfig(config, html) {
     settings += '<hr>'
 
     html.find('.tab[data-tab="basic"] hr').first().after(settings)
-    config.setPosition()
+
+    const addedHeight = html
+        .find('.pf2e-perception-injected')
+        .toArray()
+        .reduce((height, el) => ((height += el.clientHeight), height), 0)
+
+    config.setPosition({ top: config.position.top - addedHeight / 2 })
 }
 
 export function getValidTokens(token) {

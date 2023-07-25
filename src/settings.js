@@ -20,6 +20,8 @@ export function registerSettings() {
         },
     })
 
+    register('npc-vision', Boolean, false)
+
     register('target', Boolean, true, {
         onChange: () => ui.combat?.render(),
     })
