@@ -36,16 +36,17 @@ export function getOption(options, ...path) {
 }
 
 export function updateFromOptions(value, options, type) {
+    const list = type === 'cover' ? COVERS : VISIBILITIES
     options = Array.isArray(options) ? optionsToObject(options) : options
 
-    if (value && testOption(value, options, type, 'cancel')) {
-        value = undefined
-    }
+    if (value && testOption(value, options, type, 'cancel')) return undefined
+
+    const setValue = getOption(options, type, 'set')?.[0]
+    if (setValue && list.includes(setValue)) return setValue
 
     if (value && testOption(value, options, type, 'reduce')) {
-        const list = type === 'cover' ? COVERS : VISIBILITIES
         const index = list.indexOf(value)
-        value = list[Math.max(0, index - 1)]
+        return list[Math.max(0, index - 1)]
     }
 
     return value
