@@ -1,9 +1,11 @@
-todo ?
+# 0.10.0
 
--   sniping duo ?
--   foil sense ?
-
--   add cancel cover rolloption
+-   added `cover|visibility:set:x` rollOption to force a cover|visibility state equal to `x`, here `x` cannot be `all` but accept `none` for cover and `observed` for visibitlity
+-   added a button in attack chat cards which allows the GM to un-hide the token that initiated the attack
+-   added support for NPC senses using the senses shown in `Special Senses` field ; also, and even though the system doesn't support it and gives a warning, NPCs can use the `Sense` Rule Element to add temporary vision senses (e.g. using a darkvision spell effect or similar)
+-   messages are now parsed during the `ready` hook on first load and after a refresh of the browser tab
+-   the module will no longer roll a flat-check for hidden targets when the attacker has darkvision
+-   changed the rollOption `visibility:noflat:x` to be `visibility:noff:x`, the former could be confused with "no flat-check" instead of "no flat-footed" (i confused myself with it...)
 
 # 0.9.0
 

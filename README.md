@@ -49,7 +49,7 @@ Bullet points:
 you can use custom rollOptions to adjust cover and visibility during attacks, this can be done either by adding system `RollOption` to feats/features/effect/etc. or passing them directly in the attack options argument. here is an example of how to implement the `Blind-Fight` feat, just add those 3 REs to the feat itself:
 
 ```json
-{"key":"RollOption","domain":"all","option":"self:pf2perception:visibility:noflat-self:all"}
+{"key":"RollOption","domain":"all","option":"self:pf2perception:visibility:noff-self:all"}
 {"key":"RollOption","domain":"all","option":"self:pf2perception:concealed:dc:0"}
 {"key":"RollOption","domain":"all","option":"self:pf2perception:hidden:dc:5"}
 ```
@@ -61,11 +61,14 @@ all rollOptions must be prefixed with `self:pf2perception:`
 you can replace `x` by `all` for the rollOption to trigger on all cover|visibility values
 
 -   `cover|visibility:cancel:x` to completely cancel the cover|visibility if it is equal to `x`
+-   `cover|visibility:set:x` to force a cover|visibility state equal to `x`, here `x` cannot be `all` but accept `none` for cover and `observed` for visibitlity
 -   `cover|visibility:reduce:x` to reduce the cover|visibility by one tier if it is equal to `x`
--   `visibility:noflat:x` to skip the flat check when the visibility is equal to `x`
+-   `visibility:noff:x` do not add the flat-footed condition when the visibility is equal to `x`
 -   `cover:ignore:xxx` to ignore a certain token (replace `xxx` by the token id) when testing for creature cover
 -   `lesser|standard|greater|greater-prone:ac:0` to force a certain AC value for a cover
 -   `concealed|hidden:dc:0` to force a certain DC value for a visibility
+
+the priority of rollOptions is: `cancel` > `set` > `reduce` > ...
 
 # Wiki
 
