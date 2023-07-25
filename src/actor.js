@@ -207,7 +207,7 @@ function addConditionals({ ephemeralEffects, selfToken, targetToken, options }) 
         else if (ac) coverBonus = ac
     }
 
-    if (visibility && testOption(visibility, options, 'visibility', 'noflat')) {
+    if (visibility && testOption(visibility, options, 'visibility', 'noff')) {
         visibility = undefined
     }
 
