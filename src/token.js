@@ -88,6 +88,9 @@ export function getCreatureCover(originToken, targetToken, options = [], debug =
     const setting = getSetting('lesser')
     if (setting === 'none') return undefined
 
+    originToken = originToken instanceof Token ? originToken.document : originToken
+    targetToken = targetToken instanceof Token ? targetToken.document : targetToken
+
     options = optionsToObject(options)
     const ignoreIds = [...(options.target?.cover?.ignore ?? []), ...(options.origin?.cover?.ignore ?? [])]
 
