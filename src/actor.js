@@ -1,4 +1,4 @@
-import { COVER_UUID, COVER_VALUES, VISIBILITY_VALUES } from './constants.js'
+import { COVER_UUID, COVER_VALUES, VISIBILITY_VALUES, VISION_LEVELS } from './constants.js'
 import { createCoverSource, createFlatFootedSource, findChoiceSetRule } from './effect.js'
 import { getOption, optionsToObject, testOption, updateFromOptions } from './options.js'
 import { extractEphemeralEffects, getRangeIncrement, isOffGuardFromFlanking, traitSlugToObject } from './pf2e/helpers.js'
@@ -238,4 +238,20 @@ export function getCoverEffect(actor, selection = false) {
 
 export function getFeatWithUUID(actor, uuid) {
     return actor.itemTypes.feat.find(f => f.sourceId === uuid)
+}
+
+export function visionLevel() {
+    const sensesStr = this.system.traits.senses.value
+    const senses = sensesStr.toLowerCase().replaceAll(/[ -]/g, '').split(',')
+
+    const sensesRules = this.rules.filter(r => r.key === 'Sense').map(r => r.selector.toLowerCase())
+    senses.push(...sensesRules)
+
+    return this.getCondition('blinded')
+        ? VISION_LEVELS.BLINDED
+        : senses.includes('darkvision') || senses.includes('greaterdarkvision')
+        ? VISION_LEVELS.DARKVISION
+        : senses.includes('lowlightvision')
+        ? VISION_LEVELS.LOWLIGHT
+        : VISION_LEVELS.NORMAL
 }

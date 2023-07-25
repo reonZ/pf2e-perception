@@ -31,14 +31,17 @@ export const attackCheckRoll = ['attack-roll', 'spell-attack-roll']
 
 export const validCheckRoll = [...attackCheckRoll, 'skill-check', 'perception-check']
 
-export const skipConditional = {
-    cover: 'conditional:cover:skip',
-}
-
 export const ICONS_PATHS = {
     cover: 'modules/pf2e-perception/images/cover.webp',
     concealed: 'systems/pf2e/icons/conditions/concealed.webp',
     hidden: 'systems/pf2e/icons/conditions/hidden.webp',
     undetected: 'systems/pf2e/icons/conditions/undetected.webp',
     unnoticed: 'systems/pf2e/icons/conditions/unnoticed.webp',
+}
+
+export const VISION_LEVELS = {
+    BLINDED: 0,
+    NORMAL: 1,
+    LOWLIGHT: 2,
+    DARKVISION: 3,
 }

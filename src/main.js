@@ -1,5 +1,5 @@
 import { setupActions } from './action.js'
-import { getActorToken, getCoverEffect, getRollContext, isProne } from './actor.js'
+import { getActorToken, getCoverEffect, getRollContext, isProne, visionLevel } from './actor.js'
 import { renderChatMessage } from './chat.js'
 import { checkRoll, renderCheckModifiersDialog } from './check.js'
 import { renderCombatTracker, renderCombatTrackerConfig } from './combat.js'
@@ -29,6 +29,7 @@ import {
 const CHECK_ROLL = 'game.pf2e.Check.roll'
 
 const GET_ROLL_CONTEXT = 'CONFIG.Actor.documentClass.prototype.getRollContext'
+const VISION_LEVEL = 'CONFIG.PF2E.Actor.documentClasses.npc.prototype.visionLevel'
 
 const BASIC_SIGHT_CAN_DETECT = 'CONFIG.Canvas.detectionModes.basicSight._canDetect'
 const HEARING_CAN_DETECT = 'CONFIG.Canvas.detectionModes.hearing._canDetect'
@@ -41,6 +42,7 @@ Hooks.once('init', () => {
     libWrapper.register(MODULE_ID, CHECK_ROLL, checkRoll)
 
     libWrapper.register(MODULE_ID, GET_ROLL_CONTEXT, getRollContext, 'OVERRIDE')
+    libWrapper.register(MODULE_ID, VISION_LEVEL, visionLevel, 'OVERRIDE')
 
     libWrapper.register(MODULE_ID, BASIC_SIGHT_CAN_DETECT, basicSightCanDetect)
     libWrapper.register(MODULE_ID, HEARING_CAN_DETECT, hearingCanDetect)
