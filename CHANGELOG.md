@@ -1,6 +1,6 @@
 # 0.11.1
 
--   fixed flat-footed being applied when hidden attacker was target a token with darkvision
+-   fixed flat-footed being applied when hidden attacker was targeting a token with darkvision
 -   fixed issue with extra large creature hidden in scene messing up with the automated creature cover test always returning standard cover
 
 # 0.11.0
