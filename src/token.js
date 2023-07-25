@@ -109,7 +109,7 @@ export function getCreatureCover(originToken, targetToken, options = [], debug =
     const targetSize = SIZES[targetToken.actor.size]
 
     const tokens = originToken.scene.tokens.contents
-        .filter(t => t.actor && !ignoreIds.includes(t.id))
+        .filter(t => t.actor && !t.hidden && t !== originToken && t !== targetToken && !ignoreIds.includes(t.id))
         .sort((a, b) => SIZES[b.actor.size] - SIZES[a.actor.size])
 
     let extralarges = originSize < SIZES.huge && targetSize < SIZES.huge && tokens.filter(isExtraLarge).length
@@ -132,8 +132,6 @@ export function getCreatureCover(originToken, targetToken, options = [], debug =
 
     for (const tokenDocument of tokens) {
         const token = tokenDocument.object
-        if (tokenDocument.hidden || token === originToken || token === targetToken) continue
-
         const edges = getRectEdges(token.bounds, margin)
 
         if (intersectsWith(edges)) return extralarges ? 'standard' : 'lesser'
