@@ -41,5 +41,6 @@ function isHidden(target) {
         tokens = target.scene.tokens.filter(t => t.isOwner)
         if (tokens.length !== 1) return false
     }
+    tokens = tokens.filter(t => !t.actor.hasDarkvision)
     return reachesThreshold(target, tokens, VISIBILITY_VALUES.hidden)
 }
