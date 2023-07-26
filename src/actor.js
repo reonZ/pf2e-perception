@@ -3,6 +3,7 @@ import { createCoverSource, createFlatFootedSource, findChoiceSetRule } from './
 import { getOption, optionsToObject, testOption, updateFromOptions } from './options.js'
 import { extractEphemeralEffects, getRangeIncrement, isOffGuardFromFlanking, traitSlugToObject } from './pf2e/helpers.js'
 import { getConditionalCover, getVisibility } from './token.js'
+import { asNumberOnly } from './utils.js'
 
 export async function getRollContext(params) {
     const [selfToken, targetToken] =
@@ -202,8 +203,9 @@ function addConditionals({ ephemeralEffects, selfToken, targetToken, options }) 
 
     let coverBonus = undefined
     if (cover) {
-        const ac = getOption(options, cover, 'ac')?.[0]
-        if (ac == 0) cover = undefined
+        let ac = getOption(options, cover, 'ac')?.[0]
+        ac = asNumberOnly(ac)
+        if (ac === 0) cover = undefined
         else if (ac) coverBonus = ac
     }
 

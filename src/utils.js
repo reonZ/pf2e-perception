@@ -19,3 +19,8 @@ export function getPrototype(obj, depth = 1) {
 export function sortByName(a, b) {
     return a.name.localeCompare(b.name)
 }
+
+export function asNumberOnly(value) {
+    value = Number(value)
+    return isNaN(value) ? undefined : value
+}

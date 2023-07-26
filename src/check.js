@@ -6,6 +6,7 @@ import { getOption, optionsToObject, updateFromOptions } from './options.js'
 import { validateTokens } from './scene.js'
 import { getTokenTemplateTokens } from './template.js'
 import { getVisibility } from './token.js'
+import { asNumberOnly } from './utils.js'
 
 export async function checkRoll(wrapped, ...args) {
     const context = args[1]
@@ -34,8 +35,9 @@ export async function checkRoll(wrapped, ...args) {
 
         if (!visibility) return wrapped(...args)
 
-        const optionDC = getOption(options, visibility === 'concealed' ? 'concealed' : 'hidden', 'dc')?.[0]
-        if (optionDC == 0) return wrapped(...args)
+        let optionDC = getOption(options, visibility === 'concealed' ? 'concealed' : 'hidden', 'dc')?.[0]
+        optionDC = asNumberOnly(optionDC)
+        if (optionDC === 0) return wrapped(...args)
 
         const dc = optionDC ?? (visibility === 'concealed' ? 5 : 11)
         const isUndetected = VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected
