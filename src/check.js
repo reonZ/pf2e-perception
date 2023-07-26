@@ -33,8 +33,6 @@ export async function checkRoll(wrapped, ...args) {
         const visibility = updateFromOptions(getVisibility(targetToken, originToken), options, 'visibility')
 
         if (!visibility) return wrapped(...args)
-        if (visibility === 'concealed' && originToken.actor?.hasLowLightVision) return wrapped(...args)
-        if (visibility === 'hidden' && originToken.actor?.hasDarkvision) return wrapped(...args)
 
         const optionDC = getOption(options, visibility === 'concealed' ? 'concealed' : 'hidden', 'dc')?.[0]
         if (optionDC == 0) return wrapped(...args)
