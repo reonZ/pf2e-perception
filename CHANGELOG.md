@@ -1,3 +1,9 @@
+# 0.12.0
+
+-   `concealed` and `hidden` conditional icons will no longer show up if the hovered token actor has respectively `low-light vision` and `darkvision`
+-   fixed error with messages that were generated without the module active of with a previous version of the module
+-   fixed PoV vision showing tokens as hidden when selected token has darkvision
+
 # 0.11.2
 
 -   fixed flat-check not working with system version `5.2.3`
