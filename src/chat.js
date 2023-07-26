@@ -56,7 +56,7 @@ export function renderChatMessage(message, html) {
                 })
             }
         }
-    } else if (pf2eContext?.type === 'skill-check') {
+    } else if (pf2eContext?.type === 'skill-check' && pf2eContext.pf2ePerception) {
         if (isGM) {
             if (pf2eContext.options.includes('action:hide')) {
                 addVisibilityValidationButton({
@@ -74,7 +74,7 @@ export function renderChatMessage(message, html) {
                 addBlindSkillCheckFlavor({ token, message, html, validated })
             }
         }
-    } else if (pf2eContext?.type === 'perception-check') {
+    } else if (pf2eContext?.type === 'perception-check' && pf2eContext.pf2ePerception) {
         if (isGM) {
             if (pf2eContext.options.includes('action:seek')) {
                 addVisibilityValidationButton({
