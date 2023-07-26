@@ -1,3 +1,8 @@
+# 0.11.2
+
+-   fixed flat-check not working with system version `5.2.3`
+-   fixed automated creature cover testing against target token itself
+
 # 0.11.1
 
 -   fixed flat-footed being applied when hidden attacker was targeting a token with darkvision
