@@ -38,12 +38,9 @@ export async function checkRoll(wrapped, ...args) {
         if (optionDC == 0) return wrapped(...args)
 
         const dc = optionDC ?? (visibility === 'concealed' ? 5 : 11)
-        const roll = await new Roll('1d20').evaluate({ async: true })
-        const total = roll.total
-        const isSuccess = total >= dc
         const isUndetected = VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected
 
-        new originToken.actor.perception.constructor(originToken.actor, {
+        const roll = await new originToken.actor.perception.constructor(originToken.actor, {
             slug: 'visibility-check',
             label: `${game.i18n.localize('PF2E.FlatCheck')}: ${game.i18n.localize(`PF2E.condition.${visibility}.name`)}`,
             check: { type: 'flat-check' },
@@ -53,11 +50,13 @@ export async function checkRoll(wrapped, ...args) {
             rollMode: isUndetected ? (game.user.isGM ? 'gmroll' : 'blindroll') : 'roll',
         })
 
+        const isSuccess = roll.degreeOfSuccess > 1
+
         if (isUndetected) {
             context.options.add('secret')
             context.pf2ePerception = {
                 isSuccess: isSuccess,
-                visibility: visibility,
+                visibility,
             }
         }
 
