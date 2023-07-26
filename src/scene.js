@@ -3,7 +3,7 @@ import { getFlag, getSetting, localize } from './module.js'
 export function renderSceneConfig(config, html) {
     let settings = ''
 
-    const list = ['standard', 'exposure', 'npc-vision']
+    const list = ['standard', 'npc-vision']
     for (const setting of list) {
         const checked = getSceneSetting(config.object, setting)
 

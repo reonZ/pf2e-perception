@@ -42,7 +42,6 @@ export function registerSettings() {
         choices: {
             center: path('standard-type', 'choices.center'),
             points: path('standard-type', 'choices.points'),
-            // corners: path('standard-type', 'choices.corners'),
         },
     })
 
@@ -55,8 +54,6 @@ export function registerSettings() {
             changed: path('validation', 'choices.changed'),
         },
     })
-
-    register('exposure', Boolean, true)
 
     register('flat-check', String, 'cancel', {
         choices: {

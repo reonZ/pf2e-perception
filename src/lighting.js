@@ -1,5 +1,4 @@
 import { clearDebug, drawDebugLine, rectCorners } from './geometry.js'
-import { getSceneSetting } from './scene.js'
 
 export function getLightExposure(token, debug = false) {
     token = token instanceof Token ? token : token.object
@@ -7,13 +6,7 @@ export function getLightExposure(token, debug = false) {
     if (token.document.hasStatusEffect(CONFIG.specialStatusEffects.INVISIBLE)) return undefined
 
     const scene = token.scene
-    if (
-        scene !== canvas.scene ||
-        !scene.tokenVision ||
-        scene.darkness < scene.globalLightThreshold ||
-        !getSceneSetting(scene, 'exposure')
-    )
-        return undefined
+    if (scene !== canvas.scene || !scene.tokenVision || scene.darkness < scene.globalLightThreshold) return undefined
 
     if (debug) clearDebug()
 
