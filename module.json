@@ -9,12 +9,8 @@
             "discord": "Idle#3251"
         }
     ],
-    "esmodules": [
-        "scripts/main.js"
-    ],
-    "scripts": [
-        "libs/jquery-ui.min.js"
-    ],
+    "esmodules": ["scripts/main.js"],
+    "scripts": ["libs/jquery-ui.min.js"],
     "compatibility": {
         "minimum": "11.306",
         "verified": "11"
@@ -27,10 +23,7 @@
     "download": "https://github.com/reonZ/pf2e-perception/releases/download/0.11.1/module.zip",
     "changelog": "https://github.com/reonZ/pf2e-perception/blob/master/CHANGELOG.md",
     "bugs": "https://github.com/reonZ/pf2e-perception/issues",
-    "styles": [
-        "styles/global.css",
-        "styles/menu.css"
-    ],
+    "styles": ["styles/global.css", "styles/menu.css"],
     "languages": [
         {
             "lang": "en",
@@ -46,7 +39,7 @@
                 "manifest": "https://raw.githubusercontent.com/foundryvtt/pf2e/master/system.json",
                 "compatibility": {
                     "minimum": "5.2.1",
-                    "verified": "5.2.2"
+                    "verified": "5.2.3"
                 }
             }
         ],

@@ -9,7 +9,7 @@ const DEGREE_ADJUSTMENT_AMOUNTS = {
     TO_CRITICAL_SUCCESS: 'criticalSuccess',
 }
 
-const DEGREE_OF_SUCCESS_STRINGS = ['criticalFailure', 'failure', 'success', 'criticalSuccess']
+export const DEGREE_OF_SUCCESS_STRINGS = ['criticalFailure', 'failure', 'success', 'criticalSuccess']
 
 export class DegreeOfSuccess {
     constructor(roll, dc, dosAdjustments = null) {

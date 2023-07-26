@@ -44,29 +44,16 @@ export async function checkRoll(wrapped, ...args) {
         const total = roll.total
         const isSuccess = total >= dc
         const isUndetected = VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected
-        const success = isSuccess ? 2 : 1
 
-        let flavor = `${game.i18n.localize('PF2E.FlatCheck')}:`
-        flavor += `<strong> ${game.i18n.localize(`PF2E.condition.${visibility}.name`)}</strong>`
-
-        flavor += (
-            await game.pf2e.Check.createResultFlavor({
-                target,
-                degree: {
-                    value: success,
-                    unadjusted: success,
-                    adjustment: null,
-                    dieResult: total,
-                    rollTotal: total,
-                    dc: { value: dc },
-                },
-            })
-        ).outerHTML
-
-        const messageData = {
-            flavor,
-            speaker: ChatMessage.getSpeaker({ token: originToken instanceof Token ? originToken.document : originToken }),
-        }
+        new originToken.actor.perception.constructor(originToken.actor, {
+            slug: 'visibility-check',
+            label: `${game.i18n.localize('PF2E.FlatCheck')}: ${game.i18n.localize(`PF2E.condition.${visibility}.name`)}`,
+            check: { type: 'flat-check' },
+        }).roll({
+            dc,
+            target: targetToken.actor,
+            rollMode: isUndetected ? (game.user.isGM ? 'gmroll' : 'blindroll') : 'roll',
+        })
 
         if (isUndetected) {
             context.options.add('secret')
@@ -74,17 +61,7 @@ export async function checkRoll(wrapped, ...args) {
                 isSuccess: isSuccess,
                 visibility: visibility,
             }
-
-            let blindCheck = `${game.i18n.localize('PF2E.FlatCheck')}:`
-            blindCheck += `<strong> ${game.i18n.localize(`PF2E.condition.undetected.name`)}</strong>`
-            messageData.flags = {
-                [MODULE_ID]: {
-                    blindCheck,
-                },
-            }
         }
-
-        await roll.toMessage(messageData, { rollMode: isUndetected ? (game.user.isGM ? 'gmroll' : 'blindroll') : 'roll' })
 
         if (flatCheck !== 'roll' && !isUndetected && !isSuccess) return
     } else if (context.options.has('action:hide')) {

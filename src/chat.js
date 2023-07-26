@@ -14,13 +14,10 @@ export function renderChatMessage(message, html) {
 
     const isGM = game.user.isGM
     const hasPlayerOwner = token.hasPlayerOwner
-    const { cover, selected, skipWait, validated, blindCheck, pointOut } = getFlags(message)
+    const { cover, selected, skipWait, validated, pointOut } = getFlags(message)
     const pf2eContext = message.getFlag('pf2e', 'context')
 
-    if (blindCheck && !isGM && hasPlayerOwner) {
-        html.find('.message-sender').text(token.name)
-        html.find('.flavor-text').html(blindCheck)
-    } else if (cover) {
+    if (cover) {
         if (isGM) {
             const button = createValidateButton({ property: 'cover', skipWait, validated })
             html.find('.message-content').append(button)
