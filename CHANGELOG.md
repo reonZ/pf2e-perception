@@ -1,6 +1,12 @@
+# 0.14.0
+
+-   `darkvision` is no longer taken into account for conditional `hidden` in PoV detection
+-   fixed flat-check degree of success not doing anything
+-   fixed numerical rollOptions values not being cast as numbers
+
 # 0.13.0
 
--   only acount for `darkvision` and `low-light vision` for the visibility provided by the light exposure part of the module
+-   only account for `darkvision` and `low-light vision` for the visibility provided by the light exposure part of the module
 -   removed `Automate Light Exposure` setting, this cannot be optional if we want `darkvision` and `low-light vision` to ever be taken into account
 -   reverted not showing conditional icons when the actor had `low-light vision` and `darkvision`
 
