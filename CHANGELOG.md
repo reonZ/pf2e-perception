@@ -1,3 +1,9 @@
+# 0.13.0
+
+-   only acount for `darkvision` and `low-light vision` for the visibility provided by the light exposure part of the module
+-   removed `Automate Light Exposure` setting, this cannot be optional if we want `darkvision` and `low-light vision` to ever be taken into account
+-   reverted not showing conditional icons when the actor had `low-light vision` and `darkvision`
+
 # 0.12.0
 
 -   `concealed` and `hidden` conditional icons will no longer show up if the hovered token actor has respectively `low-light vision` and `darkvision`
