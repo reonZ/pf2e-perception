@@ -220,11 +220,7 @@ export async function showConditionals(origin, target) {
     let data = getTokenData(origin, target.id)
     if (isEmpty(data)) return
 
-    if (
-        (!game.user.isGM && !target.document.hasPlayerOwner && VISIBILITY_VALUES[data.visibility] >= VISIBILITY_VALUES.hidden) ||
-        (data.visibility === 'concealed' && target.actor.hasLowLightVision) ||
-        (data.visibility === 'hidden' && target.actor.hasDarkvision)
-    ) {
+    if (!game.user.isGM && !target.document.hasPlayerOwner && VISIBILITY_VALUES[data.visibility] >= VISIBILITY_VALUES.hidden) {
         if (!data.cover) return
         data = { cover: data.cover }
     }
