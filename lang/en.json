@@ -83,7 +83,7 @@
             }
         },
         "warning": {
-            "npc-vision": "This module already implements everything <strong>PF2e Rules-Based NPC Vision</strong> offers, having both modules active will break stuff."
+            "npc-vision": "<strong>PF2e Perception</strong> already implements everything <strong>PF2e Rules-Based NPC Vision</strong> offers, having both modules active will break stuff."
         },
         "menu": {
             "perception": {
