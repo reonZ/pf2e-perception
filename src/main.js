@@ -9,6 +9,7 @@ import { getLightExposure } from './lighting.js'
 import { MODULE_ID } from './module.js'
 import { getSceneSetting, getValidTokens, renderSceneConfig, validateTokens } from './scene.js'
 import { registerSettings } from './settings.js'
+import { highlightTemplateGrid, preCreateMeasuredTemplate } from './template.js'
 import {
     clearConditionals,
     controlToken,
@@ -32,6 +33,8 @@ const CHECK_ROLL = 'game.pf2e.Check.roll'
 
 const RULES_BASED_VISION = 'CONFIG.Token.documentClass.prototype.rulesBasedVision'
 
+const HIGHLIGHT_TEMPLATE_GRID = 'CONFIG.MeasuredTemplate.objectClass.prototype.highlightGrid'
+
 const GET_ROLL_CONTEXT = 'CONFIG.Actor.documentClass.prototype.getRollContext'
 const VISION_LEVEL = 'CONFIG.PF2E.Actor.documentClasses.npc.prototype.visionLevel'
 
@@ -44,6 +47,8 @@ Hooks.once('init', () => {
     setupActions()
 
     libWrapper.register(MODULE_ID, CHECK_ROLL, checkRoll)
+
+    libWrapper.register(MODULE_ID, HIGHLIGHT_TEMPLATE_GRID, highlightTemplateGrid, 'OVERRIDE')
 
     libWrapper.register(MODULE_ID, RULES_BASED_VISION, rulesBasedVision, 'OVERRIDE')
 
@@ -122,3 +127,5 @@ Hooks.on('preCreateToken', preCreateToken)
 Hooks.on('canvasPan', () => clearConditionals())
 
 Hooks.on('renderCheckModifiersDialog', renderCheckModifiersDialog)
+
+Hooks.on('preCreateMeasuredTemplate', preCreateMeasuredTemplate)

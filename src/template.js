@@ -1,4 +1,5 @@
 import { MODULE_ID, getFlag, localize } from './module.js'
+import { highlightGrid } from './pf2e/highlight.js'
 
 const templateConversion = {
     burst: 'circle',
@@ -9,11 +10,28 @@ const templateConversion = {
 }
 
 export function createSeekTemplate(type, token) {
+    if (!checkScene(token)) return
+
     createTemplate({
         type,
-        token,
         distance: type === 'cone' ? 30 : 15,
         traits: ['concentrate', 'secret'],
+        flags: {
+            type: 'seek',
+            tokenId: token.id,
+            collisionType: 'sight',
+        },
+    })
+}
+
+export function createDarknessTemplate({ type = 'burst', distance = 20, conceal = false }) {
+    createTemplate({
+        type,
+        distance,
+        flags: {
+            type: 'darkness',
+            conceal,
+        },
     })
 }
 
@@ -31,7 +49,7 @@ export function getTokenTemplateTokens(token) {
 }
 
 export async function deleteTokenTemplate(token) {
-    const templates = token.scene.templates.filter(t => getFlag(t, 'tokenId') === token.id)
+    const templates = token.scene.templates.filter(t => getFlag(t, 'type') === 'seek' && getFlag(t, 'tokenId') === token.id)
     for (const template of templates) {
         await template.delete()
     }
@@ -43,17 +61,13 @@ function checkScene(token) {
     return false
 }
 
-function createTemplate({ type, distance, traits, fillColor, width, token }) {
-    if (!checkScene(token)) return
-
+function createTemplate({ type, distance, traits, fillColor, width, flags }) {
     const templateData = {
         distance,
         t: templateConversion[type],
         fillColor: fillColor || game.user.color,
         flags: {
-            [MODULE_ID]: {
-                tokenId: token.id,
-            },
+            [MODULE_ID]: flags,
         },
     }
 
@@ -70,7 +84,7 @@ function createTemplate({ type, distance, traits, fillColor, width, token }) {
 }
 
 // TODO remove once it is in the system
-function getTokens(template, { collisionOrigin, collisionType = 'move' } = {}) {
+function getTokens(template, { collisionOrigin, collisionType = 'sight' } = {}) {
     if (!canvas.scene) return []
     const { grid, dimensions } = canvas
     if (!(grid && dimensions)) return []
@@ -127,4 +141,37 @@ function getTokens(template, { collisionOrigin, collisionType = 'move' } = {}) {
         }
     }
     return containedTokens
+}
+
+export function preCreateMeasuredTemplate(template) {
+    const { traits = [], castLevel } = template.getFlag('pf2e', 'origin') ?? {}
+    if (castLevel === undefined || !traits.includes('darkness')) return
+
+    template.updateSource({
+        fillColor: '#000000',
+        [`flags.${MODULE_ID}`]: { type: 'darkness', conceal: castLevel >= 4 },
+    })
+}
+
+export function highlightTemplateGrid() {
+    if (!['circle', 'cone'].includes(this.type) || canvas.grid.type !== CONST.GRID_TYPES.SQUARE) {
+        return MeasuredTemplate.prototype.highlightGrid.call(this)
+    }
+
+    // Refrain from highlighting if not visible
+    if (!this.isVisible) {
+        canvas.grid.getHighlightLayer(this.highlightId)?.clear()
+        return
+    }
+
+    const collisionType = getFlag(this.document, 'collisionType')
+
+    highlightGrid({
+        areaType: this.type === 'circle' ? 'burst' : 'cone',
+        object: this,
+        document: this.document,
+        colors: { border: this.borderColor, fill: this.fillColor },
+        preview: true,
+        collisionType,
+    })
 }

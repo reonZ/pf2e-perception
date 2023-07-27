@@ -72,7 +72,8 @@ export function hasStandardCover(origin, target, debug = false) {
     const standard = getSetting('standard-type')
     if (standard === 'center') return lineIntersectWall(origin.center, target.center, debug)
     else if (standard === 'points') return pointToTokenIntersectWall(origin.center, target, debug)
-    // else return allTokenCornersToPointIntersectWall(origin, target.center)
+
+    return false
 }
 
 const SIZES = {

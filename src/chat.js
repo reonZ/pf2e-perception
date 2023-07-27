@@ -59,15 +59,19 @@ export function renderChatMessage(message, html) {
     } else if (pf2eContext?.type === 'skill-check' && pf2eContext.pf2ePerception) {
         if (isGM) {
             if (pf2eContext.options.includes('action:hide')) {
-                addVisibilityValidationButton({
-                    token,
-                    html,
-                    message,
-                    skipWait,
-                    validated,
-                    selected: pf2eContext.pf2ePerception.selected,
-                    ValidationMenu: HideValidationMenu,
-                })
+                addVisibilityValidationButton(
+                    {
+                        html,
+                        skipWait,
+                        validated,
+                        ValidationMenu: HideValidationMenu,
+                    },
+                    {
+                        token,
+                        message,
+                        selected: pf2eContext.pf2ePerception.selected,
+                    }
+                )
             }
         } else if (hasPlayerOwner) {
             if (pf2eContext.options.includes('action:hide')) {
@@ -77,15 +81,20 @@ export function renderChatMessage(message, html) {
     } else if (pf2eContext?.type === 'perception-check' && pf2eContext.pf2ePerception) {
         if (isGM) {
             if (pf2eContext.options.includes('action:seek')) {
-                addVisibilityValidationButton({
-                    token,
-                    html,
-                    message,
-                    skipWait,
-                    validated,
-                    selected: pf2eContext.pf2ePerception.selected,
-                    ValidationMenu: SeekValidationMenu,
-                })
+                addVisibilityValidationButton(
+                    {
+                        html,
+                        skipWait,
+                        validated,
+                        ValidationMenu: SeekValidationMenu,
+                    },
+                    {
+                        token,
+                        message,
+                        selected: pf2eContext.pf2ePerception.selected,
+                        fromTemplate: pf2eContext.pf2ePerception.fromTemplate,
+                    }
+                )
             }
         } else if (hasPlayerOwner) {
             if (pf2eContext.options.includes('action:seek')) {
@@ -161,12 +170,13 @@ function createHint(hint, validated) {
     return `<i style="display: block; font-size: .9em; text-align: end;">${hint}</i>`
 }
 
-function addVisibilityValidationButton({ skipWait, validated, html, message, ValidationMenu, token, selected }) {
+function addVisibilityValidationButton({ skipWait, validated, html, ValidationMenu }, params) {
+    const { message } = params
     const button = createValidateButton({ property: 'visibility', skipWait, validated })
     html.find('.flavor-text').append(button)
     html.find('[data-action=validate-visibility]').on('click', async () => {
         const roll = message.rolls[0]
-        ValidationMenu.openMenu({ token, message, roll, selected })
+        ValidationMenu.openMenu({ ...params, message, roll })
     })
 }
 

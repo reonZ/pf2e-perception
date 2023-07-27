@@ -5,7 +5,7 @@ import { VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { createCoverSource } from './effect.js'
 import { MODULE_ID, getSetting, localize, templatePath } from './module.js'
 import { validateTokens } from './scene.js'
-import { createSeekTemplate, deleteTokenTemplate } from './template.js'
+import { createSeekTemplate, deleteSeekTemplate } from './template.js'
 import { clearTokenData, getTokenData, setTokenData } from './token.js'
 import { getPrototype } from './utils.js'
 
@@ -21,46 +21,6 @@ export function setupActions() {
     setupSeek(SingleCheckAction, SingleCheckActionVariant)
     setupPointOut(BaseAction, BaseActionVariant)
 }
-
-// function setupSneak(SingleCheckAction, SingleCheckActionVariant) {
-//     class SneakVariant extends SingleCheckActionVariant {
-//         // async use(options = {}) {
-//         //     const action = game.i18n.localize('PF2E.Actions.Hide.Title')
-//         //     const token = getSelectedToken(options, action)
-//         //     if (!token) return
-//         //     options.actors = [token.actor]
-//         //     const result = await super.use(options)
-//         //     if (game.user.isGM) {
-//         //         openVisibilityValidationMenu({ token, result, ValidationMenu: HideValidationMenu })
-//         //     }
-//         //     return result
-//         // }
-//     }
-
-//     class Sneak extends SingleCheckAction {
-//         constructor() {
-//             super({
-//                 cost: 1,
-//                 description: `PF2E.Actions.Sneak.Description`,
-//                 name: `PF2E.Actions.Sneak.Title`,
-//                 notes: [
-//                     { outcome: ['success', 'criticalSuccess'], text: `PF2E.Actions.Sneak.Notes.success` },
-//                     { outcome: ['failure'], text: `PF2E.Actions.Sneak.Notes.failure` },
-//                     { outcome: ['criticalFailure'], text: `PF2E.Actions.Sneak.Notes.criticalFailure` },
-//                 ],
-//                 rollOptions: ['action:sneak'],
-//                 slug: 'sneak',
-//                 traits: ['move', 'secret'],
-//             })
-//         }
-
-//         toActionVariant(data) {
-//             return new SneakVariant(this, data)
-//         }
-//     }
-
-//     game.pf2e.actions.set('sneak', new Sneak())
-// }
 
 function setupPointOut(BaseAction, BaseActionVariant) {
     class PointOutVariant extends BaseActionVariant {
@@ -129,14 +89,14 @@ function setupSeek(SingleCheckAction, SingleCheckActionVariant) {
             const token = getSelectedToken(options, action)
             if (!token) return
 
-            if (!(await seek(token))) return deleteTokenTemplate(token)
+            if (!(await seek(token))) return deleteSeekTemplate(token)
 
             options.actors = [token.actor]
             const result = await super.use(options)
 
             if (game.user.isGM) {
-                const { selected } = result[0].message.getFlag('pf2e', 'context.pf2ePerception')
-                if (selected) openVisibilityValidationMenu({ token, result, ValidationMenu: SeekValidationMenu })
+                const { fromTemplate } = result[0].message.getFlag('pf2e', 'context.pf2ePerception')
+                openVisibilityValidationMenu({ result, ValidationMenu: SeekValidationMenu }, { token, fromTemplate })
             }
 
             return result
@@ -217,7 +177,7 @@ async function seek(token) {
                 const content = html.filter('.dialog-content')
                 content.find('[data-action=create-cone], [data-action=create-burst]').on('click', event => {
                     const { action } = event.currentTarget.dataset
-                    deleteTokenTemplate(token)
+                    deleteSeekTemplate(token)
                     createSeekTemplate(action === 'create-cone' ? 'cone' : 'burst', token)
                 })
             },
@@ -225,6 +185,46 @@ async function seek(token) {
         { width: 300, left: 10 }
     )
 }
+
+// function setupSneak(SingleCheckAction, SingleCheckActionVariant) {
+//     class SneakVariant extends SingleCheckActionVariant {
+//         // async use(options = {}) {
+//         //     const action = game.i18n.localize('PF2E.Actions.Hide.Title')
+//         //     const token = getSelectedToken(options, action)
+//         //     if (!token) return
+//         //     options.actors = [token.actor]
+//         //     const result = await super.use(options)
+//         //     if (game.user.isGM) {
+//         //         openVisibilityValidationMenu({ token, result, ValidationMenu: HideValidationMenu })
+//         //     }
+//         //     return result
+//         // }
+//     }
+
+//     class Sneak extends SingleCheckAction {
+//         constructor() {
+//             super({
+//                 cost: 1,
+//                 description: `PF2E.Actions.Sneak.Description`,
+//                 name: `PF2E.Actions.Sneak.Title`,
+//                 notes: [
+//                     { outcome: ['success', 'criticalSuccess'], text: `PF2E.Actions.Sneak.Notes.success` },
+//                     { outcome: ['failure'], text: `PF2E.Actions.Sneak.Notes.failure` },
+//                     { outcome: ['criticalFailure'], text: `PF2E.Actions.Sneak.Notes.criticalFailure` },
+//                 ],
+//                 rollOptions: ['action:sneak'],
+//                 slug: 'sneak',
+//                 traits: ['move', 'secret'],
+//             })
+//         }
+
+//         toActionVariant(data) {
+//             return new SneakVariant(this, data)
+//         }
+//     }
+
+//     game.pf2e.actions.set('sneak', new Sneak())
+// }
 
 function setupHide(SingleCheckAction, SingleCheckActionVariant) {
     class HideVariant extends SingleCheckActionVariant {
@@ -237,7 +237,7 @@ function setupHide(SingleCheckAction, SingleCheckActionVariant) {
             const result = await super.use(options)
 
             if (game.user.isGM) {
-                openVisibilityValidationMenu({ token, result, ValidationMenu: HideValidationMenu })
+                openVisibilityValidationMenu({ result, ValidationMenu: HideValidationMenu }, { token })
             }
 
             return result
@@ -394,9 +394,9 @@ function createButton(action, icon, label) {
 </button>`
 }
 
-function openVisibilityValidationMenu({ token, result, ValidationMenu }) {
+function openVisibilityValidationMenu({ result, ValidationMenu }, params) {
     const roll = result[0].roll
     const message = result[0].message
     const { selected } = message.getFlag('pf2e', 'context.pf2ePerception')
-    ValidationMenu.openMenu({ token, roll, selected, message })
+    ValidationMenu.openMenu({ ...params, roll, selected, message })
 }

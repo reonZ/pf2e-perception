@@ -4,7 +4,7 @@ import { createCoverSource, findChoiceSetRule } from './effect.js'
 import { MODULE_ID, getFlag, getSetting, localize } from './module.js'
 import { getOption, optionsToObject, updateFromOptions } from './options.js'
 import { validateTokens } from './scene.js'
-import { getTokenTemplateTokens } from './template.js'
+import { getSeekTemplateTokens } from './template.js'
 import { getVisibility } from './token.js'
 import { asNumberOnly } from './utils.js'
 
@@ -68,15 +68,14 @@ export async function checkRoll(wrapped, ...args) {
         // } else if (context.options.has('action:sneak')) {
         //     context.selected = game.user.targets.ids
     } else if (context.options.has('action:seek')) {
-        const highlighted = getTokenTemplateTokens(originToken)
-        if (highlighted === undefined) return wrapped(...args)
-
+        const highlighted = getSeekTemplateTokens(originToken)
         const tokens = highlighted ?? Array.from(game.user.targets)
         const selected = validateTokens(originToken, tokens)
             .filter(t => !t.document.hidden)
             .map(t => t.id)
 
         setProperty(context, 'pf2ePerception.selected', selected)
+        setProperty(context, 'pf2ePerception.fromTemplate', !!highlighted)
     }
 
     return wrapped(...args)

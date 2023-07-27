@@ -3,7 +3,7 @@ import { COVERS, VISIBILITIES, VISIBILITY_VALUES, defaultValues } from '../const
 import { MODULE_ID, getSetting, localize, templatePath } from '../module.js'
 import { DegreeOfSuccess } from '../pf2e/success.js'
 import { getValidTokens } from '../scene.js'
-import { deleteTokenTemplate } from '../template.js'
+import { deleteSeekTemplate } from '../template.js'
 import { getTokenData } from '../token.js'
 import { BaseMenu } from './base-menu.js'
 
@@ -25,7 +25,10 @@ class ValidationMenu extends BaseMenu {
     get selected() {
         const selected = super.selected
         if (selected.length) return selected
+        return this.globalSelection
+    }
 
+    get globalSelection() {
         const token = this.token
         const alliance = token.actor.alliance
         return getValidTokens(token)
@@ -249,9 +252,22 @@ class ReverseVisibilityValidationMenu extends VisibilityValidationMenu {
 }
 
 export class SeekValidationMenu extends ReverseVisibilityValidationMenu {
+    #fromTemplate
+
+    constructor(params, options = {}) {
+        super(params, options)
+        this.#fromTemplate = params.fromTemplate
+    }
+
+    get globalSelection() {
+        console.log(this.#fromTemplate)
+        if (this.#fromTemplate) return []
+        return super.globalSelection
+    }
+
     static async openMenu(params, options) {
         const validated = await super.openMenu(params, options)
-        if (validated) deleteTokenTemplate(params.token)
+        if (validated) deleteSeekTemplate(params.token)
     }
 
     processValue({ token, value }) {
