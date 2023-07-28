@@ -3,7 +3,7 @@
 -   added support for mist templates, it works the same way as darkness templates (exposed its functions to the API)
 -   tokens selected (and highlighted) by the seek action templates will now use the position of the token that is seeking as collision origin instead of the template's origin itself, preventing tokens behind corners to be selected by the template
 -   removed GM auto opening of validation menus
--   fixed darkvision removing non light/darkness related `hidden` ([#12](https://github.com/reonZ/pf2e-perception/issues/12))
+-   fixed darkvision removing non light/darkness related `hidden` (#12)
 
 # 0.15.0
 
