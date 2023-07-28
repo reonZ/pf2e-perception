@@ -213,8 +213,6 @@ function addConditionals({ ephemeralEffects, selfToken, targetToken, options }) 
         visibility = undefined
     }
 
-    if (visibility === 'hidden' && targetToken.actor?.hasDarkvision) visibility = undefined
-
     if (COVER_VALUES[cover] > COVER_VALUES.none) ephemeralEffects.push(createCoverSource(cover, coverBonus))
     if (VISIBILITY_VALUES[visibility] > VISIBILITY_VALUES.concealed) ephemeralEffects.push(createFlatFootedSource(visibility))
 }
