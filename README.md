@@ -1,6 +1,6 @@
 # FoundryVTT PF2e Perception
 
-### This module will add the ability to set conditional covers and visibility between tokens on a scene
+### This module will add the ability to set conditional covers and visibility between tokens on a scene, it will also automates covers, light exposure, darkness and more
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/K3K6M2V13)
 
@@ -43,6 +43,10 @@ Bullet points:
 -   the module add the `Point Out` action, which can be found with the other system actions `game.pf2e.actions.get('point-out')`, if you have a target when using it, the module will modify the target's conditional visibility against the allies of the actor that initiated the action
 
 -   there is a lot of functions exposed in `game.modules.get('pf2e-perception')` that can be used, some even have a debug mode to display the computation like `getCreatureCover`, `hasStandardCover` or `inBrightLight`
+
+-   the module handles darkness by using templates, some spells will see their templates automatically turned into darkness templates and you can create darkness templates yourself via the API
+
+-   the module handles mist templates the same way it does for darkness ones
 
 # Roll Options
 

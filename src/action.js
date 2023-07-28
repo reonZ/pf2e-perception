@@ -17,6 +17,7 @@ export function setupActions() {
 
     setupCover(BaseAction, BaseActionVariant)
     setupHide(SingleCheckAction, SingleCheckActionVariant)
+    setupSneak(SingleCheckAction, SingleCheckActionVariant)
     setupSeek(SingleCheckAction, SingleCheckActionVariant)
     setupPointOut(BaseAction, BaseActionVariant)
 }
@@ -178,45 +179,42 @@ async function seek(token) {
     )
 }
 
-// function setupSneak(SingleCheckAction, SingleCheckActionVariant) {
-//     class SneakVariant extends SingleCheckActionVariant {
-//         // async use(options = {}) {
-//         //     const action = game.i18n.localize('PF2E.Actions.Hide.Title')
-//         //     const token = getSelectedToken(options, action)
-//         //     if (!token) return
-//         //     options.actors = [token.actor]
-//         //     const result = await super.use(options)
-//         //     if (game.user.isGM) {
-//         //         openVisibilityValidationMenu({ token, result, ValidationMenu: HideValidationMenu })
-//         //     }
-//         //     return result
-//         // }
-//     }
+function setupSneak(SingleCheckAction, SingleCheckActionVariant) {
+    class SneakVariant extends SingleCheckActionVariant {
+        async use(options = {}) {
+            const action = game.i18n.localize('PF2E.Actions.Sneak.Title')
+            const token = getSelectedToken(options, action)
+            if (!token) return
 
-//     class Sneak extends SingleCheckAction {
-//         constructor() {
-//             super({
-//                 cost: 1,
-//                 description: `PF2E.Actions.Sneak.Description`,
-//                 name: `PF2E.Actions.Sneak.Title`,
-//                 notes: [
-//                     { outcome: ['success', 'criticalSuccess'], text: `PF2E.Actions.Sneak.Notes.success` },
-//                     { outcome: ['failure'], text: `PF2E.Actions.Sneak.Notes.failure` },
-//                     { outcome: ['criticalFailure'], text: `PF2E.Actions.Sneak.Notes.criticalFailure` },
-//                 ],
-//                 rollOptions: ['action:sneak'],
-//                 slug: 'sneak',
-//                 traits: ['move', 'secret'],
-//             })
-//         }
+            options.actors = [token.actor]
+            return super.use(options)
+        }
+    }
 
-//         toActionVariant(data) {
-//             return new SneakVariant(this, data)
-//         }
-//     }
+    class Sneak extends SingleCheckAction {
+        constructor() {
+            super({
+                cost: 1,
+                description: `PF2E.Actions.Sneak.Description`,
+                name: `PF2E.Actions.Sneak.Title`,
+                notes: [
+                    { outcome: ['success', 'criticalSuccess'], text: `PF2E.Actions.Sneak.Notes.success` },
+                    { outcome: ['failure'], text: `PF2E.Actions.Sneak.Notes.failure` },
+                    { outcome: ['criticalFailure'], text: `PF2E.Actions.Sneak.Notes.criticalFailure` },
+                ],
+                rollOptions: ['action:sneak'],
+                slug: 'sneak',
+                traits: ['move', 'secret'],
+            })
+        }
 
-//     game.pf2e.actions.set('sneak', new Sneak())
-// }
+        toActionVariant(data) {
+            return new SneakVariant(this, data)
+        }
+    }
+
+    // game.pf2e.actions.set('sneak', new Sneak())
+}
 
 function setupHide(SingleCheckAction, SingleCheckActionVariant) {
     class HideVariant extends SingleCheckActionVariant {
