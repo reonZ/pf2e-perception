@@ -168,43 +168,47 @@ export function getVisibility(origin, target) {
     const targetLowlight = targetActor?.hasLowLightVision
     const targetDarkvision = targetActor?.hasDarkvision
     const targetGreaterDarkvision = targetActor && hasGreaterDarkvision(targetActor)
-    if (targetGreaterDarkvision) return mergedVisibility
+    if (targetGreaterDarkvision && mergedVisibility === 'concealed') return mergedVisibility
 
     let inDarkness
-    const darknessTemplates = getDarknessTemplates(origin)
-    if (darknessTemplates?.length) {
-        let darknessVisibility
+    if (!targetGreaterDarkvision) {
+        const darknessTemplates = getDarknessTemplates(origin)
+        if (darknessTemplates?.length) {
+            let darknessVisibility
 
-        for (const template of darknessTemplates) {
-            const darknessTokens = getTemplateTokens(template)
-            if (!darknessTokens.length) continue
+            for (const template of darknessTemplates) {
+                const darknessTokens = getTemplateTokens(template)
+                if (!darknessTokens.length) continue
 
-            const inTemplate = darknessTokens.includes(origin) || darknessTokens.includes(target)
-            if (inTemplate) inDarkness = true
-            else continue
+                const inTemplate = darknessTokens.includes(origin) || darknessTokens.includes(target)
+                if (inTemplate) inDarkness = true
+                else continue
 
-            if (!targetDarkvision) return 'hidden'
+                if (!targetDarkvision) return 'hidden'
 
-            const templateConceals = getFlag(template, 'conceal')
-            if (templateConceals) darknessVisibility = 'concealed'
-        }
+                const templateConceals = getFlag(template, 'conceal')
+                if (templateConceals) darknessVisibility = 'concealed'
+            }
 
-        if (darknessVisibility === 'concealed') mergedVisibility = 'concealed'
-        if (inDarkness && mergedVisibility === 'concealed') return mergedVisibility
-    }
-
-    const mistTemplates = getMistTemplates(origin)
-    if (mistTemplates?.length) {
-        for (const template of mistTemplates) {
-            const mistTokens = getTemplateTokens(template)
-            if (!mistTokens.length) continue
-
-            const inTemplate = mistTokens.includes(origin) || mistTokens.includes(target)
-            if (inTemplate) return 'concealed'
+            if (darknessVisibility === 'concealed') mergedVisibility = 'concealed'
+            if (inDarkness && mergedVisibility === 'concealed') return mergedVisibility
         }
     }
 
-    if (inDarkness) return mergedVisibility
+    if (mergedVisibility !== 'concealed') {
+        const mistTemplates = getMistTemplates(origin)
+        if (mistTemplates?.length) {
+            for (const template of mistTemplates) {
+                const mistTokens = getTemplateTokens(template)
+                if (!mistTokens.length) continue
+
+                const inTemplate = mistTokens.includes(origin) || mistTokens.includes(target)
+                if (inTemplate) return 'concealed'
+            }
+        }
+    }
+
+    if (inDarkness || targetGreaterDarkvision) return mergedVisibility
 
     const exposure = getLightExposure(origin)
     let exposedVisibility = exposure === 'dim' ? 'concealed' : exposure === null ? 'hidden' : undefined
@@ -290,7 +294,7 @@ export async function showConditionals(origin, target) {
     $(document.body).append(content)
 }
 
-export function getConditionalCover(origin, target, options, debug = false) {
+export function getCover(origin, target, options, debug = false) {
     const ranged = options.includes('item:ranged')
     const prone = ranged ? isProne(target.actor) : false
 
