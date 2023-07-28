@@ -1,3 +1,12 @@
+# 0.15.0
+
+-   added support for darkness templates, some spells are automatically handled, the module will update the detection as well as use them to modify the visibility on attacks
+-   added button to the seek action chat card to delete the associated template
+-   exposed even more functions to the API including `createSeekTemplate` and `createDarknessTemplate`
+-   the `seek` action now uses a `sight` template which means that walls that don't block sight will not block the seek template
+-   fine tuned how the `seek` action works when no template is used
+-   the warning message about `PF2e Rules-Based NPC Vision` will now indicate which module it refers to instead of the cryptic `this`
+
 # 0.14.0
 
 -   `darkvision` is no longer taken into account for conditional `hidden` in PoV detection
