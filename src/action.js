@@ -1,5 +1,4 @@
 import { getActorToken, getCoverEffect, isProne } from './actor.js'
-import { CoverValidationMenu, HideValidationMenu, SeekValidationMenu } from './apps/validation.js'
 import { createTokenMessage } from './chat.js'
 import { VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { createCoverSource } from './effect.js'
@@ -92,14 +91,7 @@ function setupSeek(SingleCheckAction, SingleCheckActionVariant) {
             if (!(await seek(token))) return deleteSeekTemplate(token)
 
             options.actors = [token.actor]
-            const result = await super.use(options)
-
-            if (game.user.isGM) {
-                const { fromTemplate } = result[0].message.getFlag('pf2e', 'context.pf2ePerception')
-                openVisibilityValidationMenu({ result, ValidationMenu: SeekValidationMenu }, { token, fromTemplate })
-            }
-
-            return result
+            return super.use(options)
         }
     }
 
@@ -234,13 +226,7 @@ function setupHide(SingleCheckAction, SingleCheckActionVariant) {
             if (!token) return
 
             options.actors = [token.actor]
-            const result = await super.use(options)
-
-            if (game.user.isGM) {
-                openVisibilityValidationMenu({ result, ValidationMenu: HideValidationMenu }, { token })
-            }
-
-            return result
+            return super.use(options)
         }
     }
 
@@ -341,8 +327,6 @@ async function takeCover(token) {
                             setProperty(data, `${tokenId}.cover`, cover)
                         }
                         return setTokenData(token, data)
-                    } else if (game.user.isGM) {
-                        CoverValidationMenu.openMenu({ token, selected, value: cover, message })
                     }
                 }
 
@@ -392,11 +376,4 @@ function createButton(action, icon, label) {
     return `<button type="button" data-action="${action}" style="margin: 0 0 5px; padding: 0;">
     <i class="${icon}"></i> ${label}</button>
 </button>`
-}
-
-function openVisibilityValidationMenu({ result, ValidationMenu }, params) {
-    const roll = result[0].roll
-    const message = result[0].message
-    const { selected } = message.getFlag('pf2e', 'context.pf2ePerception')
-    ValidationMenu.openMenu({ ...params, roll, selected, message })
 }
