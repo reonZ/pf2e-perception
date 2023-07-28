@@ -16,7 +16,7 @@ import {
 } from './template.js'
 import {
     clearConditionals,
-    getConditionalCover,
+    getCover,
     getCreatureCover,
     getTokenData,
     getVisibility,
@@ -40,7 +40,7 @@ export const API = {
         showAllConditionals,
         hasStandardCover,
         getTokenData,
-        getConditionalCover,
+        getCover,
     },
     lighting: {
         getLightExposure,

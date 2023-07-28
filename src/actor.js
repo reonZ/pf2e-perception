@@ -2,7 +2,7 @@ import { COVER_UUID, COVER_VALUES, VISIBILITY_VALUES, VISION_LEVELS } from './co
 import { createCoverSource, createFlatFootedSource, findChoiceSetRule } from './effect.js'
 import { getOption, optionsToObject, testOption, updateFromOptions } from './options.js'
 import { extractEphemeralEffects, getRangeIncrement, isOffGuardFromFlanking, traitSlugToObject } from './pf2e/helpers.js'
-import { getConditionalCover, getVisibility } from './token.js'
+import { getCover, getVisibility } from './token.js'
 import { asNumberOnly } from './utils.js'
 
 export async function getRollContext(params) {
@@ -193,7 +193,7 @@ export async function getRollContext(params) {
 }
 
 function addConditionals({ ephemeralEffects, selfToken, targetToken, options }) {
-    let cover = getConditionalCover(selfToken, targetToken, options)
+    let cover = getCover(selfToken, targetToken, options)
     let visibility = getVisibility(selfToken, targetToken)
 
     options = optionsToObject(options)
@@ -259,7 +259,7 @@ export function visionLevel() {
 }
 
 export function hasGreaterDarkvision(actor) {
-    let senses = actor.system.traits.senses.value
+    let senses = actor.system.traits.senses
     if (Array.isArray(senses)) return senses.some(s => s.type === 'greaterDarkvision')
 
     if (typeof senses === 'object') {
