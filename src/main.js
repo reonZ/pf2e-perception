@@ -1,31 +1,23 @@
 import { setupActions } from './action.js'
-import { getActorToken, getCoverEffect, getRollContext, isProne, visionLevel } from './actor.js'
+import { getRollContext, visionLevel } from './actor.js'
+import { API } from './api.js'
 import { renderChatMessage } from './chat.js'
 import { checkRoll, renderCheckModifiersDialog } from './check.js'
 import { renderCombatTracker, renderCombatTrackerConfig } from './combat.js'
-import { basicSightCanDetect, feelTremorCanDetect, hearingCanDetect, isUndetected } from './detection.js'
-import { clearDebug, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
-import { getLightExposure } from './lighting.js'
+import { basicSightCanDetect, feelTremorCanDetect, hearingCanDetect } from './detection.js'
 import { MODULE_ID } from './module.js'
-import { getSceneSetting, getValidTokens, renderSceneConfig, validateTokens } from './scene.js'
+import { renderSceneConfig } from './scene.js'
 import { registerSettings } from './settings.js'
-import { onMeasuredTemplate, highlightTemplateGrid, preCreateMeasuredTemplate } from './template.js'
+import { highlightTemplateGrid, onMeasuredTemplate, preCreateMeasuredTemplate } from './template.js'
 import {
     clearConditionals,
     controlToken,
     deleteToken,
-    getConditionalCover,
-    getCreatureCover,
-    getTokenData,
-    getVisibility,
-    hasStandardCover,
     hoverToken,
     pasteToken,
     preCreateToken,
     renderTokenHUD,
     rulesBasedVision,
-    showAllConditionals,
-    showConditionals,
     updateToken,
 } from './token.js'
 
@@ -69,39 +61,7 @@ Hooks.once('init', () => {
 })
 
 Hooks.once('ready', () => {
-    game.modules.get(MODULE_ID).api = {
-        geometry: {
-            clearDebug,
-            lineIntersectWall,
-            pointToTokenIntersectWall,
-        },
-        token: {
-            getCreatureCover,
-            getVisibility,
-            clearConditionals,
-            showConditionals,
-            showAllConditionals,
-            hasStandardCover,
-            getTokenData,
-        },
-        lighting: {
-            getLightExposure,
-        },
-        actor: {
-            getActorToken,
-            isProne,
-            getCoverEffect,
-            getConditionalCover,
-        },
-        scene: {
-            getValidTokens,
-            validateTokens,
-            getSceneSetting,
-        },
-        detection: {
-            isUndetected,
-        },
-    }
+    game.modules.get(MODULE_ID).api = API
 
     Hooks.on('renderChatMessage', renderChatMessage)
 

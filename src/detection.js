@@ -37,7 +37,7 @@ export function isUndetected(target, mode, unnoticed = false) {
     return reachesThreshold(target, filtered, threshold)
 }
 
-function isHidden(target) {
+export function isHidden(target) {
     let tokens = canvas.tokens.controlled
     if (!game.user.isGM && !tokens.length) {
         tokens = target.scene.tokens.filter(t => t.isOwner)

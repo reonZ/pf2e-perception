@@ -64,7 +64,7 @@ function checkScene(token) {
     return false
 }
 
-function createTemplate({ type, distance, traits, fillColor, width, flags }) {
+export function createTemplate({ type, distance, traits, fillColor, width, flags }) {
     const templateData = {
         distance,
         t: templateConversion[type],
