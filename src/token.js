@@ -163,7 +163,7 @@ export function getVisibility(origin, target) {
     const mergedVisibility = VISIBILITY_VALUES[systemVisibility] > VISIBILITY_VALUES[visibility] ? systemVisibility : visibility
 
     const mergedVisibilityValue = VISIBILITY_VALUES[mergedVisibility]
-    if (mergedVisibilityValue >= VISIBILITY_VALUES.undetected) return mergedVisibility
+    if (mergedVisibilityValue >= VISIBILITY_VALUES.hidden) return mergedVisibility
 
     const targetActor = target.actor
     const targetLowlight = targetActor?.hasLowLightVision
