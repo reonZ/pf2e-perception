@@ -260,7 +260,6 @@ export class SeekValidationMenu extends ReverseVisibilityValidationMenu {
     }
 
     get globalSelection() {
-        console.log(this.#fromTemplate)
         if (this.#fromTemplate) return []
         return super.globalSelection
     }

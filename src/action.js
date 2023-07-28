@@ -178,7 +178,7 @@ async function seek(token) {
                 content.find('[data-action=create-cone], [data-action=create-burst]').on('click', event => {
                     const { action } = event.currentTarget.dataset
                     deleteSeekTemplate(token)
-                    createSeekTemplate(action === 'create-cone' ? 'cone' : 'burst', token)
+                    createSeekTemplate({ type: action === 'create-cone' ? 'cone' : 'burst', token })
                 })
             },
         },

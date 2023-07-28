@@ -9,12 +9,14 @@ const templateConversion = {
     rect: 'rect',
 }
 
-export function createSeekTemplate(type, token) {
+export function createSeekTemplate({ type, token, distance }) {
     if (!checkScene(token)) return
+
+    distance ??= type === 'cone' ? 30 : 15
 
     createTemplate({
         type,
-        distance: type === 'cone' ? 30 : 15,
+        distance,
         traits: ['concentrate', 'secret'],
         flags: {
             type: 'seek',
@@ -35,20 +37,21 @@ export function createDarknessTemplate({ type = 'burst', distance = 20, conceal 
     })
 }
 
-export function getTokenTemplate(token) {
-    return token.scene.templates.find(t => getFlag(t, 'tokenId') === token.id)
+export function getDarknessTemplates(token) {
+    if (!checkScene(token)) return null
+    return token.scene.templates.filter(t => getFlag(t, 'type') === 'darkness') ?? []
 }
 
-export function getTokenTemplateTokens(token) {
+export function getSeekTemplateTokens(token) {
     if (!checkScene(token)) return null
 
-    const template = getTokenTemplate(token)
+    const template = token.scene.templates.find(t => getFlag(t, 'type') === 'seek')
     if (!template) return null
 
-    return getTokens(template.object)
+    return getTemplateTokens(template, { collisionType: 'sight' })
 }
 
-export async function deleteTokenTemplate(token) {
+export async function deleteSeekTemplate(token) {
     const templates = token.scene.templates.filter(t => getFlag(t, 'type') === 'seek' && getFlag(t, 'tokenId') === token.id)
     for (const template of templates) {
         await template.delete()
@@ -84,7 +87,9 @@ function createTemplate({ type, distance, traits, fillColor, width, flags }) {
 }
 
 // TODO remove once it is in the system
-function getTokens(template, { collisionOrigin, collisionType = 'sight' } = {}) {
+export function getTemplateTokens(template, { collisionOrigin, collisionType = 'move' } = {}) {
+    template = template instanceof MeasuredTemplateDocument ? template.object : template
+
     if (!canvas.scene) return []
     const { grid, dimensions } = canvas
     if (!(grid && dimensions)) return []
@@ -143,16 +148,6 @@ function getTokens(template, { collisionOrigin, collisionType = 'sight' } = {}) 
     return containedTokens
 }
 
-export function preCreateMeasuredTemplate(template) {
-    const { traits = [], castLevel } = template.getFlag('pf2e', 'origin') ?? {}
-    if (castLevel === undefined || !traits.includes('darkness')) return
-
-    template.updateSource({
-        fillColor: '#000000',
-        [`flags.${MODULE_ID}`]: { type: 'darkness', conceal: castLevel >= 4 },
-    })
-}
-
 export function highlightTemplateGrid() {
     if (!['circle', 'cone'].includes(this.type) || canvas.grid.type !== CONST.GRID_TYPES.SQUARE) {
         return MeasuredTemplate.prototype.highlightGrid.call(this)
@@ -174,4 +169,18 @@ export function highlightTemplateGrid() {
         preview: true,
         collisionType,
     })
+}
+
+export function preCreateMeasuredTemplate(template) {
+    const { slug, castLevel = 0 } = template.getFlag('pf2e', 'origin') ?? {}
+    if (!['darkness', 'dance-of-darkness', 'ravenous-darkness'].includes(slug)) return
+
+    template.updateSource({
+        fillColor: '#000000',
+        [`flags.${MODULE_ID}`]: { type: 'darkness', conceal: castLevel >= 4 },
+    })
+}
+
+export function onMeasuredTemplate(template) {
+    if (getFlag(template, 'type') === 'darkness') canvas.perception.update({ initializeVision: true })
 }

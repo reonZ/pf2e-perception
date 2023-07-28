@@ -1,4 +1,4 @@
-import { getCoverEffect, isProne } from './actor.js'
+import { getCoverEffect, hasGreaterDarkvision, isProne } from './actor.js'
 import { PerceptionMenu } from './apps/perception.js'
 import { COVER_VALUES, ICONS_PATHS, VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { clearDebug, drawDebugLine, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
@@ -6,6 +6,7 @@ import { getLightExposure } from './lighting.js'
 import { MODULE_ID, getFlag, getSetting, hasPermission, unsetFlag } from './module.js'
 import { optionsToObject } from './options.js'
 import { getSceneSetting, getValidTokens } from './scene.js'
+import { getDarknessTemplates, getTemplateTokens } from './template.js'
 
 export function renderTokenHUD(hud, html) {
     if (!hasPermission() || !hud.object.actor?.isOfType('creature')) return
@@ -146,6 +147,9 @@ export function getCreatureCover(originToken, targetToken, options = [], debug =
 }
 
 export function getVisibility(origin, target) {
+    origin = origin instanceof Token ? origin : origin.object
+    target = target instanceof Token ? target : target.object
+
     const systemVisibility = (() => {
         const originActor = origin.actor
         const visibilities = ['unnoticed', 'undetected', 'hidden', 'concealed']
@@ -161,10 +165,40 @@ export function getVisibility(origin, target) {
     const mergedVisibilityValue = VISIBILITY_VALUES[mergedVisibility]
     if (mergedVisibilityValue >= VISIBILITY_VALUES.undetected) return mergedVisibility
 
+    const targetActor = target.actor
+    const targetLowlight = targetActor?.hasLowLightVision
+    const targetDarkvision = targetActor?.hasDarkvision
+    const targetGreaterDarkvision = targetActor && hasGreaterDarkvision(targetActor)
+    if (targetGreaterDarkvision) return mergedVisibility
+
+    const darknessTemplates = getDarknessTemplates(origin)
+    if (darknessTemplates?.length) {
+        let darknessVisibility
+        let inDarkness
+
+        for (const template of darknessTemplates) {
+            const darknessTokens = getTemplateTokens(template)
+            if (!darknessTokens.length) continue
+
+            const inTemplate = darknessTokens.includes(origin) || darknessTokens.includes(target)
+            if (inTemplate) inDarkness = true
+            else continue
+
+            if (!targetDarkvision) return 'hidden'
+
+            const templateConceals = getFlag(template, 'conceal')
+            if (templateConceals) darknessVisibility = 'concealed'
+        }
+
+        if (inDarkness) {
+            return mergedVisibilityValue > VISIBILITY_VALUES[darknessVisibility] ? mergedVisibility : darknessVisibility
+        }
+    }
+
     const exposure = getLightExposure(origin)
     let exposedVisibility = exposure === 'dim' ? 'concealed' : exposure === null ? 'hidden' : undefined
-    if (exposedVisibility === 'concealed' && target.actor?.hasLowLightVision) exposedVisibility = undefined
-    if (exposedVisibility === 'hidden' && target.actor?.hasDarkvision) exposedVisibility = undefined
+    if (exposedVisibility === 'concealed' && targetLowlight) exposedVisibility = undefined
+    else if (exposedVisibility === 'hidden' && targetDarkvision) exposedVisibility = undefined
 
     return mergedVisibilityValue > VISIBILITY_VALUES[exposedVisibility] ? mergedVisibility : exposedVisibility
 }

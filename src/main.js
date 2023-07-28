@@ -9,7 +9,7 @@ import { getLightExposure } from './lighting.js'
 import { MODULE_ID } from './module.js'
 import { getSceneSetting, getValidTokens, renderSceneConfig, validateTokens } from './scene.js'
 import { registerSettings } from './settings.js'
-import { highlightTemplateGrid, preCreateMeasuredTemplate } from './template.js'
+import { onMeasuredTemplate, highlightTemplateGrid, preCreateMeasuredTemplate } from './template.js'
 import {
     clearConditionals,
     controlToken,
@@ -129,3 +129,6 @@ Hooks.on('canvasPan', () => clearConditionals())
 Hooks.on('renderCheckModifiersDialog', renderCheckModifiersDialog)
 
 Hooks.on('preCreateMeasuredTemplate', preCreateMeasuredTemplate)
+Hooks.on('createMeasuredTemplate', onMeasuredTemplate)
+Hooks.on('updateMeasuredTemplate', onMeasuredTemplate)
+Hooks.on('deleteMeasuredTemplate', onMeasuredTemplate)
