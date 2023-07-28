@@ -177,6 +177,10 @@
                 "player": {
                     "wait": "Wait for a GM to validate..",
                     "validated": "Visibility has been validated"
+                },
+                "small-button": {
+                    "ping-token": "Ping the pointed-out token",
+                    "delete-template": "Remove the associated template"
                 }
             },
             "point-out": {

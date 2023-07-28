@@ -7,6 +7,7 @@ import {
 } from './apps/validation.js'
 import { attackCheckRoll } from './constants.js'
 import { MODULE_ID, getFlag, getFlags, localize, setFlag } from './module.js'
+import { deleteSeekTemplate } from './template.js'
 
 export function renderChatMessage(message, html) {
     const token = message.token
@@ -59,19 +60,16 @@ export function renderChatMessage(message, html) {
     } else if (pf2eContext?.type === 'skill-check' && pf2eContext.pf2ePerception) {
         if (isGM) {
             if (pf2eContext.options.includes('action:hide')) {
-                addVisibilityValidationButton(
-                    {
-                        html,
-                        skipWait,
-                        validated,
-                        ValidationMenu: HideValidationMenu,
-                    },
-                    {
+                const button = createValidateButton({ property: 'visibility', skipWait, validated })
+                html.find('.flavor-text').append(button)
+                html.find('[data-action=validate-visibility]').on('click', () => {
+                    HideValidationMenu.openMenu({
                         token,
                         message,
+                        roll: message.rolls[0],
                         selected: pf2eContext.pf2ePerception.selected,
-                    }
-                )
+                    })
+                })
             }
         } else if (hasPlayerOwner) {
             if (pf2eContext.options.includes('action:hide')) {
@@ -81,20 +79,29 @@ export function renderChatMessage(message, html) {
     } else if (pf2eContext?.type === 'perception-check' && pf2eContext.pf2ePerception) {
         if (isGM) {
             if (pf2eContext.options.includes('action:seek')) {
-                addVisibilityValidationButton(
-                    {
-                        html,
-                        skipWait,
-                        validated,
-                        ValidationMenu: SeekValidationMenu,
-                    },
-                    {
+                const buttons = createValidateCombo({
+                    skipWait,
+                    validated,
+                    smallAction: 'delete-template',
+                    smallIcon: 'fa-thin fa-cubes',
+                    smallSlashed: true,
+                })
+
+                html.find('.flavor-text').append(buttons)
+
+                html.find('[data-action=validate-visibility]').on('click', () => {
+                    SeekValidationMenu.openMenu({
                         token,
                         message,
+                        roll: message.rolls[0],
                         selected: pf2eContext.pf2ePerception.selected,
                         fromTemplate: pf2eContext.pf2ePerception.fromTemplate,
-                    }
-                )
+                    })
+                })
+
+                html.find('[data-action=delete-template').on('click', () => {
+                    deleteSeekTemplate(token)
+                })
             }
         } else if (hasPlayerOwner) {
             if (pf2eContext.options.includes('action:seek')) {
@@ -106,16 +113,16 @@ export function renderChatMessage(message, html) {
         if (!selectedToken) return
 
         if (isGM) {
-            let buttons = '<div style="display: grid; grid-template-columns: 1fr auto; gap: 3px">'
-
-            buttons += createValidateButton({ property: 'visibility', skipWait, validated })
-            buttons += createChatButton({ action: 'ping-token', icon: 'fa-solid fa-signal-stream' })
-
-            buttons += '</div>'
+            const buttons = createValidateCombo({
+                skipWait,
+                validated,
+                smallAction: 'ping-token',
+                smallIcon: 'fa-solid fa-signal-stream',
+            })
 
             html.find('.message-content').append(buttons)
 
-            html.find('[data-action=validate-visibility]').on('click', async () => {
+            html.find('[data-action=validate-visibility]').on('click', () => {
                 PointOutValidationMenu.openMenu({
                     message,
                     token: selectedToken,
@@ -152,6 +159,22 @@ export function validateMessage(message) {
     if (!getFlag(message, 'validated')) setFlag(message, 'validated', true)
 }
 
+function createValidateCombo({ skipWait, validated, smallIcon, smallAction, smallSlashed }) {
+    let buttons = '<div style="display: grid; grid-template-columns: 1fr auto; gap: 3px">'
+
+    buttons += createValidateButton({ property: 'visibility', skipWait, validated })
+    buttons += createChatButton({
+        action: smallAction,
+        icon: smallIcon,
+        slashed: smallSlashed,
+        tooltip: localize(`message.visibility.small-button.${smallAction}`),
+    })
+
+    buttons += '</div>'
+
+    return buttons
+}
+
 function addBlindSkillCheckFlavor({ html, token, message, validated }) {
     html.find('.message-sender').text(token.name)
     let flavor = message.getFlag('pf2e', 'modifierName')
@@ -170,16 +193,6 @@ function createHint(hint, validated) {
     return `<i style="display: block; font-size: .9em; text-align: end;">${hint}</i>`
 }
 
-function addVisibilityValidationButton({ skipWait, validated, html, ValidationMenu }, params) {
-    const { message } = params
-    const button = createValidateButton({ property: 'visibility', skipWait, validated })
-    html.find('.flavor-text').append(button)
-    html.find('[data-action=validate-visibility]').on('click', async () => {
-        const roll = message.rolls[0]
-        ValidationMenu.openMenu({ ...params, message, roll })
-    })
-}
-
 function createValidateButton({ skipWait, validated, property }) {
     let label = localize(`message.${property}.gm.${skipWait ? 'check' : validated ? 'validated' : 'validate'}`)
     if (!skipWait && validated) label += '<i class="fa-solid fa-check" style="color: green; margin-left: 0.3em;"></i>'
@@ -190,10 +203,16 @@ function createValidateButton({ skipWait, validated, property }) {
     })
 }
 
-export function createChatButton({ action, icon, label }) {
-    let button = `<button type="button" style="margin: 0 0 5px; padding-block: 0;" data-action="${action}">`
+export function createChatButton({ action, icon, label, tooltip, slashed = false }) {
+    let button = `<button type="button" style="margin: 0 0 5px; padding-block: 0; position: relative;" data-action="${action}" title="${tooltip}">`
 
-    if (icon) button += `<i class="${icon}" ${label ? '' : 'style="margin: 0;"'}></i>`
+    if (icon) {
+        button += `<i class="${icon}" ${label ? '' : `style="margin: 0;"`}></i>`
+        if (slashed) {
+            const style = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.2em;'
+            button += `<i class="fa-solid fa-slash-forward" style="${style}"></i>`
+        }
+    }
     if (label) button += `${icon ? ' ' : ''}${label}`
 
     button += '</button>'
