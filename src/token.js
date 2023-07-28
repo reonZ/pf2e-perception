@@ -6,7 +6,7 @@ import { getLightExposure } from './lighting.js'
 import { MODULE_ID, getFlag, getSetting, hasPermission, unsetFlag } from './module.js'
 import { optionsToObject } from './options.js'
 import { getSceneSetting, getValidTokens } from './scene.js'
-import { getDarknessTemplates, getTemplateTokens } from './template.js'
+import { getDarknessTemplates, getMistTemplates, getTemplateTokens } from './template.js'
 
 export function renderTokenHUD(hud, html) {
     if (!hasPermission() || !hud.object.actor?.isOfType('creature')) return
@@ -160,10 +160,9 @@ export function getVisibility(origin, target) {
     })()
 
     const visibility = getTokenData(origin, target.id, 'visibility')
-    const mergedVisibility = VISIBILITY_VALUES[systemVisibility] > VISIBILITY_VALUES[visibility] ? systemVisibility : visibility
+    let mergedVisibility = VISIBILITY_VALUES[systemVisibility] > VISIBILITY_VALUES[visibility] ? systemVisibility : visibility
 
-    const mergedVisibilityValue = VISIBILITY_VALUES[mergedVisibility]
-    if (mergedVisibilityValue >= VISIBILITY_VALUES.hidden) return mergedVisibility
+    if (VISIBILITY_VALUES[mergedVisibility] >= VISIBILITY_VALUES.hidden) return mergedVisibility
 
     const targetActor = target.actor
     const targetLowlight = targetActor?.hasLowLightVision
@@ -171,10 +170,10 @@ export function getVisibility(origin, target) {
     const targetGreaterDarkvision = targetActor && hasGreaterDarkvision(targetActor)
     if (targetGreaterDarkvision) return mergedVisibility
 
+    let inDarkness
     const darknessTemplates = getDarknessTemplates(origin)
     if (darknessTemplates?.length) {
         let darknessVisibility
-        let inDarkness
 
         for (const template of darknessTemplates) {
             const darknessTokens = getTemplateTokens(template)
@@ -190,17 +189,29 @@ export function getVisibility(origin, target) {
             if (templateConceals) darknessVisibility = 'concealed'
         }
 
-        if (inDarkness) {
-            return mergedVisibilityValue > VISIBILITY_VALUES[darknessVisibility] ? mergedVisibility : darknessVisibility
+        if (darknessVisibility === 'concealed') mergedVisibility = 'concealed'
+        if (inDarkness && mergedVisibility === 'concealed') return mergedVisibility
+    }
+
+    const mistTemplates = getMistTemplates(origin)
+    if (mistTemplates?.length) {
+        for (const template of mistTemplates) {
+            const mistTokens = getTemplateTokens(template)
+            if (!mistTokens.length) continue
+
+            const inTemplate = mistTokens.includes(origin) || mistTokens.includes(target)
+            if (inTemplate) return 'concealed'
         }
     }
+
+    if (inDarkness) return mergedVisibility
 
     const exposure = getLightExposure(origin)
     let exposedVisibility = exposure === 'dim' ? 'concealed' : exposure === null ? 'hidden' : undefined
     if (exposedVisibility === 'concealed' && targetLowlight) exposedVisibility = undefined
     else if (exposedVisibility === 'hidden' && targetDarkvision) exposedVisibility = undefined
 
-    return mergedVisibilityValue > VISIBILITY_VALUES[exposedVisibility] ? mergedVisibility : exposedVisibility
+    return VISIBILITY_VALUES[mergedVisibility] > VISIBILITY_VALUES[exposedVisibility] ? mergedVisibility : exposedVisibility
 }
 
 export function updateToken(token, data, context, userId) {

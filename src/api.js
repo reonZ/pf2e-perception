@@ -5,10 +5,12 @@ import { getLightExposure } from './lighting.js'
 import { getSceneSetting, getValidTokens, validateTokens } from './scene.js'
 import {
     createDarknessTemplate,
+    createMistTemplate,
     createSeekTemplate,
     createTemplate,
     deleteSeekTemplate,
     getDarknessTemplates,
+    getMistTemplates,
     getSeekTemplateTokens,
     getTemplateTokens,
 } from './template.js'
@@ -61,7 +63,9 @@ export const API = {
     template: {
         createSeekTemplate,
         createDarknessTemplate,
+        createMistTemplate,
         getDarknessTemplates,
+        getMistTemplates,
         getSeekTemplateTokens,
         deleteSeekTemplate,
         createTemplate,

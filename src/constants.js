@@ -45,3 +45,9 @@ export const VISION_LEVELS = {
     LOWLIGHT: 2,
     DARKVISION: 3,
 }
+
+export const DARKNESS_COLOR = '#000000'
+export const MIST_COLOR = '#656665'
+
+export const DARKNESS_SLUGS = ['darkness', 'dance-of-darkness', 'ravenous-darkness']
+export const MIST_SLUGS = ['obscuring-mist']

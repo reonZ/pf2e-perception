@@ -1,3 +1,4 @@
+import { DARKNESS_COLOR, DARKNESS_SLUGS, MIST_COLOR, MIST_SLUGS } from './constants.js'
 import { MODULE_ID, getFlag, localize } from './module.js'
 import { highlightGrid } from './pf2e/highlight.js'
 
@@ -27,10 +28,11 @@ export function createSeekTemplate({ type, token, distance }) {
     })
 }
 
-export function createDarknessTemplate({ type = 'burst', distance = 20, conceal = false }) {
+export function createDarknessTemplate({ type = 'burst', distance = 20, conceal = false } = {}) {
     createTemplate({
         type,
         distance,
+        fillColor: DARKNESS_COLOR,
         flags: {
             type: 'darkness',
             conceal,
@@ -38,15 +40,34 @@ export function createDarknessTemplate({ type = 'burst', distance = 20, conceal 
     })
 }
 
+export function createMistTemplate({ type = 'burst', distance = 20 } = {}) {
+    createTemplate({
+        type,
+        distance,
+        fillColor: MIST_COLOR,
+        flags: {
+            type: 'mist',
+        },
+    })
+}
+
+function getTemplates(type, token) {
+    if (token && !checkScene(token)) return null
+    return canvas.scene.templates.filter(t => getFlag(t, 'type') === type) ?? []
+}
+
 export function getDarknessTemplates(token) {
-    if (!checkScene(token)) return null
-    return token.scene.templates.filter(t => getFlag(t, 'type') === 'darkness') ?? []
+    return getTemplates('darkness', token)
+}
+
+export function getMistTemplates(token) {
+    return getTemplates('mist', token)
 }
 
 export function getSeekTemplateTokens(token) {
     if (!checkScene(token)) return null
 
-    const template = token.scene.templates.find(t => getFlag(t, 'type') === 'seek')
+    const template = canvas.scene.templates.find(t => getFlag(t, 'type') === 'seek')
     if (!template) return null
 
     token = token instanceof Token ? token.document : token
@@ -178,12 +199,18 @@ export function highlightTemplateGrid() {
 
 export function preCreateMeasuredTemplate(template) {
     const { slug, castLevel = 0 } = template.getFlag('pf2e', 'origin') ?? {}
-    if (!['darkness', 'dance-of-darkness', 'ravenous-darkness'].includes(slug)) return
 
-    template.updateSource({
-        fillColor: '#000000',
-        [`flags.${MODULE_ID}`]: { type: 'darkness', conceal: castLevel >= 4 },
-    })
+    if (DARKNESS_SLUGS.includes(slug)) {
+        template.updateSource({
+            fillColor: DARKNESS_COLOR,
+            [`flags.${MODULE_ID}`]: { type: 'darkness', conceal: castLevel >= 4 },
+        })
+    } else if (MIST_SLUGS.includes(slug)) {
+        template.updateSource({
+            fillColor: MIST_COLOR,
+            [`flags.${MODULE_ID}`]: { type: 'mist' },
+        })
+    }
 }
 
 export function onMeasuredTemplate(template) {
