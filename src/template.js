@@ -22,6 +22,7 @@ export function createSeekTemplate({ type, token, distance }) {
             type: 'seek',
             tokenId: token.id,
             collisionType: 'sight',
+            collisionOrigin: token.center,
         },
     })
 }
@@ -48,7 +49,9 @@ export function getSeekTemplateTokens(token) {
     const template = token.scene.templates.find(t => getFlag(t, 'type') === 'seek')
     if (!template) return null
 
-    return getTemplateTokens(template, { collisionType: 'sight' })
+    token = token instanceof Token ? token.document : token
+
+    return getTemplateTokens(template, { collisionType: 'sight', collisionOrigin: token.center })
 }
 
 export async function deleteSeekTemplate(token) {
@@ -160,6 +163,7 @@ export function highlightTemplateGrid() {
     }
 
     const collisionType = getFlag(this.document, 'collisionType')
+    const collisionOrigin = getFlag(this.document, 'collisionOrigin')
 
     highlightGrid({
         areaType: this.type === 'circle' ? 'burst' : 'cone',
@@ -168,6 +172,7 @@ export function highlightTemplateGrid() {
         colors: { border: this.borderColor, fill: this.fillColor },
         preview: true,
         collisionType,
+        collisionOrigin,
     })
 }
 

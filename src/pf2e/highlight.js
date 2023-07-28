@@ -48,7 +48,7 @@ function measureDistanceOnGrid(segment, { reach = null } = {}) {
 }
 
 /** Highlight grid according to Pathfinder 2e effect-area shapes */
-export function highlightGrid({ areaType, object, colors, document, collisionType = 'move', preview = false }) {
+export function highlightGrid({ areaType, object, colors, document, collisionType = 'move', preview = false, collisionOrigin }) {
     // Only highlight for objects that are non-previews (have IDs)
     if (!object.id && !preview) return
 
@@ -154,7 +154,7 @@ export function highlightGrid({ areaType, object, colors, document, collisionTyp
 
             const hasCollision =
                 canvas.ready &&
-                CONFIG.Canvas.polygonBackends[collisionType].testCollision(origin, destination, {
+                CONFIG.Canvas.polygonBackends[collisionType].testCollision(collisionOrigin ?? origin, destination, {
                     type: collisionType,
                     mode: 'any',
                 })
