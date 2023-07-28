@@ -42,12 +42,11 @@ export function updateFromOptions(value, options, type) {
     if (value && testOption(value, options, type, 'cancel')) return undefined
 
     const setValue = getOption(options, type, 'set')?.[0]
-    if (setValue && list.includes(setValue)) return setValue === list[0] ? undefined : setValue
-
-    if (value && testOption(value, options, type, 'reduce')) {
+    if (setValue && list.includes(setValue)) value = setValue
+    else if (value && testOption(value, options, type, 'reduce')) {
         const index = list.indexOf(value)
-        return list[Math.max(0, index - 1)]
+        value = list[Math.max(0, index - 1)]
     }
 
-    return value
+    return value === list[0] ? undefined : value
 }
