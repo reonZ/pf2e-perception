@@ -50,4 +50,4 @@ export const DARKNESS_COLOR = '#000000'
 export const MIST_COLOR = '#656665'
 
 export const DARKNESS_SLUGS = ['darkness', 'dance-of-darkness', 'ravenous-darkness']
-export const MIST_SLUGS = ['obscuring-mist']
+export const MIST_SLUGS = ['obscuring-mist', 'stinking-cloud']
