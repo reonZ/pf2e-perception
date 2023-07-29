@@ -1,4 +1,3 @@
-import { isProne } from '../actor.js'
 import { COVERS, VISIBILITIES, defaultValues } from '../constants.js'
 import { MODULE_ID, localize } from '../module.js'
 import { validateTokens } from '../scene.js'
@@ -118,11 +117,9 @@ export class BaseMenu extends Application {
     }
 
     getData(options) {
-        const covers = COVERS.map(value => ({ value, label: localize(`cover.${value}`) }))
-
         return {
             i18n: localize,
-            covers: isProne(this.actor) ? covers : covers.slice(0, -1),
+            covers: COVERS.map(value => ({ value, label: localize(`cover.${value}`) })),
             visibilities: VISIBILITIES.map(value => ({ value, label: localize(`visibility.${value}`) })),
         }
     }
