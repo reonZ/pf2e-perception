@@ -1,5 +1,4 @@
 import { getActorToken, getCoverEffect, hasGreaterDarkvision, isProne } from './actor.js'
-import { isHidden, isUndetected } from './detection.js'
 import { clearDebug, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { getLightExposure } from './lighting.js'
 import { getOption, optionsToObject, testOption, updateFromOptions } from './options.js'
@@ -56,10 +55,6 @@ export const API = {
         getValidTokens,
         validateTokens,
         getSceneSetting,
-    },
-    detection: {
-        isUndetected,
-        isHidden,
     },
     template: {
         createSeekTemplate,

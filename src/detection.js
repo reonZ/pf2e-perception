@@ -1,68 +1,63 @@
 import { VISIBILITY_VALUES } from './constants.js'
-import { getDarknessTemplates, getTemplateTokens } from './template.js'
-import { getTokenData } from './token.js'
+import { getVisibility } from './token.js'
 
-export function basicSightCanDetect(wrapped, visionSource, target) {
-    if (!wrapped(visionSource, target)) return false
-    return !isValidTarget(target) || (!isUndetected(target, 'basicSight') && !isHidden(target))
+export function detectionModeTestVisibility(visionSource, mode, config = {}) {
+    if (!mode.enabled) return false
+    if (!this._canDetect(visionSource, config.object, config)) return false
+    return config.tests.some(test => this._testPoint(visionSource, mode, config.object, test))
 }
 
-export function hearingCanDetect(wrapped, visionSource, target) {
-    if (!wrapped(visionSource, target)) return false
+export function basicSightCanDetect(visionSource, target, config) {
+    const origin = visionSource.object
+    const originDocument = origin.document
+    if (originDocument instanceof TokenDocument && originDocument.hasStatusEffect(CONFIG.specialStatusEffects.BLIND)) return false
+
+    if (!(target instanceof Token)) return true
+
+    if (!(origin instanceof Token)) {
+        return (
+            !target.document?.hasStatusEffect(CONFIG.specialStatusEffects.INVISIBLE) &&
+            !target.actor?.hasCondition('hidden', 'undetected', 'unnoticed')
+        )
+    }
+
+    return !reachesThreshold(origin, target, VISIBILITY_VALUES.hidden, config)
+}
+
+export function hearingCanDetect(visionSource, target, config) {
     if (!game.settings.get('pf2e', 'automation.rulesBasedVision')) return true
-    return !visionSource.object.actor?.hasCondition('deafened') && isValidTarget(target) && !isUndetected(target, 'hearing')
-}
 
-export function feelTremorCanDetect(wrapped, visionSource, target) {
-    if (!wrapped(visionSource, target)) return false
-    return isValidTarget(target) && !isUndetected(target, 'feelTremor')
-}
+    const origin = visionSource.object
+    if (!(target instanceof Token) || !target.actor?.emitsSound || origin.actor?.hasCondition('deafened')) return false
 
-function isValidTarget(target) {
-    return !!(target instanceof Token && target.actor)
-}
-
-function reachesThreshold(target, tokens, threshold) {
-    for (const origin of tokens) {
-        const visibility = getTokenData(target, origin.id, 'visibility')
-        if (VISIBILITY_VALUES[visibility] >= threshold) return true
-    }
-    return false
-}
-
-export function isUndetected(target, mode, unnoticed = false) {
-    const tokens = game.user.isGM ? canvas.tokens.controlled : target.scene.tokens.filter(t => t.isOwner)
-    const filtered = tokens.filter(t => t.detectionModes.some(d => d.id === mode))
-    const threshold = unnoticed ? VISIBILITY_VALUES.unnoticed : VISIBILITY_VALUES.undetected
-    return reachesThreshold(target, filtered, threshold)
-}
-
-export function isHidden(target) {
-    let tokens = canvas.tokens.controlled
-    if (!game.user.isGM && !tokens.length) {
-        tokens = target.scene.tokens.filter(t => t.isOwner)
-        if (tokens.length !== 1) return false
+    if (!(origin instanceof Token)) {
+        return !target.actor?.hasCondition('undetected', 'unnoticed')
     }
 
-    const isHidden = reachesThreshold(target, tokens, VISIBILITY_VALUES.hidden)
-    if (isHidden) return true
+    return !reachesThreshold(origin, target, VISIBILITY_VALUES.undetected, config)
+}
 
-    const darknessTemplates = getDarknessTemplates(target)
-    if (!darknessTemplates) return false
+export function feelTremorCanDetect(visionSource, target, config) {
+    if (
+        !(target instanceof Token) ||
+        target.document.elevation > canvas.primary.background.elevation ||
+        target.actor?.isOfType('loot')
+    )
+        return false
 
-    tokens = tokens.filter(t => !t.actor.hasDarkvision)
-    if (!tokens.length) return false
+    const origin = visionSource.object
+    if (!(origin instanceof Token)) return false
 
-    for (const template of darknessTemplates) {
-        const darknessTokens = getTemplateTokens(template)
-        if (!darknessTokens.length) continue
+    return !reachesThreshold(origin, target, VISIBILITY_VALUES.undetected, config)
+}
 
-        if (darknessTokens.includes(target)) return true
-
-        for (const origin of tokens) {
-            if (darknessTokens.includes(origin)) return true
-        }
+function reachesThreshold(origin, target, threshold, config = {}) {
+    if (!config.visibility) {
+        const originOptions = origin.actor?.getSelfRollOptions('origin') ?? []
+        const targetOptions = target.actor?.getSelfRollOptions('target') ?? []
+        const options = [...originOptions, ...targetOptions]
+        config.visibility = getVisibility(target, origin, options, 'target')
     }
 
-    return false
+    return VISIBILITY_VALUES[config.visibility] >= threshold
 }

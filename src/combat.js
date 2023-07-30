@@ -1,9 +1,8 @@
-import { isUndetected } from './detection.js'
 import { getSetting, localize, setSetting } from './module.js'
 
 export function renderCombatTracker(tracker, html) {
     if (getSetting('target')) setupToggleTarget(html)
-    hideUndetected(html)
+    // hideUndetected(html)
 }
 
 function hideUndetected(html) {
@@ -16,7 +15,8 @@ function hideUndetected(html) {
         const { combatantId } = li.dataset
         const token = combatants.get(combatantId ?? '')?.token
         if (!token) return
-        if (isUndetected(token, 'basicSight', true)) li.remove()
+
+        // if (isUndetected(token, 'basicSight', true)) li.remove()
     })
 }
 

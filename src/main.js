@@ -4,7 +4,7 @@ import { API } from './api.js'
 import { renderChatMessage } from './chat.js'
 import { checkRoll, renderCheckModifiersDialog } from './check.js'
 import { renderCombatTracker, renderCombatTrackerConfig } from './combat.js'
-import { basicSightCanDetect, feelTremorCanDetect, hearingCanDetect } from './detection.js'
+import { basicSightCanDetect, detectionModeTestVisibility, feelTremorCanDetect, hearingCanDetect } from './detection.js'
 import { MODULE_ID } from './module.js'
 import { renderSceneConfig } from './scene.js'
 import { registerSettings } from './settings.js'
@@ -30,6 +30,7 @@ const HIGHLIGHT_TEMPLATE_GRID = 'CONFIG.MeasuredTemplate.objectClass.prototype.h
 const GET_ROLL_CONTEXT = 'CONFIG.Actor.documentClass.prototype.getRollContext'
 const VISION_LEVEL = 'CONFIG.PF2E.Actor.documentClasses.npc.prototype.visionLevel'
 
+const DETECTION_MODE_TEST_VISIBILITY = 'DetectionMode.prototype.testVisibility'
 const BASIC_SIGHT_CAN_DETECT = 'CONFIG.Canvas.detectionModes.basicSight._canDetect'
 const HEARING_CAN_DETECT = 'CONFIG.Canvas.detectionModes.hearing._canDetect'
 const FEEL_TREMOR_CAN_DETECT = 'CONFIG.Canvas.detectionModes.feelTremor._canDetect'
@@ -47,9 +48,10 @@ Hooks.once('init', () => {
     libWrapper.register(MODULE_ID, GET_ROLL_CONTEXT, getRollContext, 'OVERRIDE')
     libWrapper.register(MODULE_ID, VISION_LEVEL, visionLevel, 'OVERRIDE')
 
-    libWrapper.register(MODULE_ID, BASIC_SIGHT_CAN_DETECT, basicSightCanDetect)
-    libWrapper.register(MODULE_ID, HEARING_CAN_DETECT, hearingCanDetect)
-    libWrapper.register(MODULE_ID, FEEL_TREMOR_CAN_DETECT, feelTremorCanDetect)
+    libWrapper.register(MODULE_ID, DETECTION_MODE_TEST_VISIBILITY, detectionModeTestVisibility, 'OVERRIDE')
+    libWrapper.register(MODULE_ID, BASIC_SIGHT_CAN_DETECT, basicSightCanDetect, 'OVERRIDE')
+    libWrapper.register(MODULE_ID, HEARING_CAN_DETECT, hearingCanDetect, 'OVERRIDE')
+    libWrapper.register(MODULE_ID, FEEL_TREMOR_CAN_DETECT, feelTremorCanDetect, 'OVERRIDE')
 
     const isGM = game.data.users.find(x => x._id === game.data.userId).role >= CONST.USER_ROLES.GAMEMASTER
     if (isGM) {
