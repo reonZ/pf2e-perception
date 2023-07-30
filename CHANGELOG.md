@@ -1,6 +1,6 @@
 # 0.17.0
 
--   complet rework of the detection, the module now respects the vision source (i.e. no more tokens undetected for all owned/observed tokens for players), the detection now also completely uses the conditionals and the rollOptions
+-   complete rework of the detection, the module now respects the vision source (i.e. no more tokens undetected for all owned/observed tokens for players), the detection now also completely uses the conditionals and the rollOptions
 -   added support for the `invisible` condition, it will automatically apply the `hidden` state to the token if the current one isn't at least that high
 -   added `visibility:seeinvis:all` rollOption which will reduce the `hidden` or `undetected` state of a token to `concealed` if they are `invisible`
 -   added `Stinking Cloud` to the list of automated mist templates
