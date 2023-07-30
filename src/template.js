@@ -1,4 +1,4 @@
-import { DARKNESS_COLOR, DARKNESS_SLUGS, MIST_COLOR, MIST_SLUGS } from './constants.js'
+import { DARKNESS_COLOR, DARKNESS_SLUGS, MIST_COLOR, MIST_SLUGS, POISON_GREEN } from './constants.js'
 import { MODULE_ID, getFlag, localize } from './module.js'
 import { highlightGrid } from './pf2e/highlight.js'
 
@@ -209,6 +209,11 @@ export function preCreateMeasuredTemplate(template) {
     } else if (MIST_SLUGS.includes(slug)) {
         template.updateSource({
             fillColor: MIST_COLOR,
+            [`flags.${MODULE_ID}`]: { type: 'mist' },
+        })
+    } else if (slug === 'cloudkill') {
+        template.updateSource({
+            fillColor: POISON_GREEN,
             [`flags.${MODULE_ID}`]: { type: 'mist' },
         })
     }
