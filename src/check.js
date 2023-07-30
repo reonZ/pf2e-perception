@@ -2,7 +2,7 @@ import { getActorToken, getCoverEffect, isProne } from './actor.js'
 import { COVERS, COVER_UUID, VISIBILITY_VALUES, attackCheckRoll, validCheckRoll } from './constants.js'
 import { createCoverSource, findChoiceSetRule } from './effect.js'
 import { MODULE_ID, getFlag, getSetting, localize } from './module.js'
-import { getOption, optionsToObject, updateFromOptions } from './options.js'
+import { getOption, optionsToObject } from './options.js'
 import { validateTokens } from './scene.js'
 import { getSeekTemplateTokens } from './template.js'
 import { getVisibility } from './token.js'
@@ -31,11 +31,11 @@ export async function checkRoll(wrapped, ...args) {
 
     if (isAttackRoll && targetToken.actor) {
         const options = optionsToObject(context.options)
-        const visibility = updateFromOptions(getVisibility(targetToken, originToken), options, 'visibility')
+        const visibility = getVisibility(targetToken, originToken, options, 'target')
 
         if (!visibility) return wrapped(...args)
 
-        let optionDC = getOption(options, visibility === 'concealed' ? 'concealed' : 'hidden', 'dc')?.[0]
+        let optionDC = getOption('target', options, visibility === 'concealed' ? 'concealed' : 'hidden', 'dc')?.first()
         optionDC = asNumberOnly(optionDC)
         if (optionDC === 0) return wrapped(...args)
 

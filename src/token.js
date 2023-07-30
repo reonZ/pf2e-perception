@@ -4,7 +4,7 @@ import { COVER_VALUES, ICONS_PATHS, VISIBILITY_VALUES, defaultValues } from './c
 import { clearDebug, drawDebugLine, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { getLightExposure } from './lighting.js'
 import { MODULE_ID, getFlag, getSetting, hasPermission, unsetFlag } from './module.js'
-import { optionsToObject } from './options.js'
+import { optionsToObject, updateFromOptions } from './options.js'
 import { getSceneSetting, getValidTokens } from './scene.js'
 import { getDarknessTemplates, getMistTemplates, getTemplateTokens } from './template.js'
 
@@ -86,7 +86,7 @@ const SIZES = {
     grg: 5,
 }
 
-export function getCreatureCover(originToken, targetToken, options = [], debug = false) {
+export function getCreatureCover(originToken, targetToken, options = {}, debug = false) {
     const setting = getSetting('lesser')
     if (setting === 'none') return undefined
 
@@ -94,7 +94,12 @@ export function getCreatureCover(originToken, targetToken, options = [], debug =
     targetToken = targetToken instanceof Token ? targetToken.document : targetToken
 
     options = optionsToObject(options)
-    const ignoreIds = [...(options.target?.cover?.ignore ?? []), ...(options.origin?.cover?.ignore ?? [])]
+
+    const ignoreIds = (() => {
+        const originIds = options.origin?.cover?.ignore ?? []
+        const targetIds = options.target?.cover?.ignore ?? []
+        return new Set([...originIds, ...targetIds])
+    })()
 
     let cover = undefined
     const origin = originToken.center
@@ -114,7 +119,7 @@ export function getCreatureCover(originToken, targetToken, options = [], debug =
     const targetSize = SIZES[targetToken.actor.size]
 
     const tokens = originToken.scene.tokens.contents
-        .filter(t => t.actor && !t.hidden && t !== originToken && t !== targetToken && !ignoreIds.includes(t.id))
+        .filter(t => t.actor && !t.hidden && t !== originToken && t !== targetToken && !ignoreIds.has(t.id))
         .sort((a, b) => SIZES[b.actor.size] - SIZES[a.actor.size])
 
     let extralarges = originSize < SIZES.huge && targetSize < SIZES.huge && tokens.filter(isExtraLarge).length
@@ -146,12 +151,14 @@ export function getCreatureCover(originToken, targetToken, options = [], debug =
     return cover
 }
 
-export function getVisibility(origin, target) {
+export function getVisibility(origin, target, options = {}, affects = 'origin', debug = false) {
     origin = origin instanceof Token ? origin : origin.object
     target = target instanceof Token ? target : target.object
 
-    const systemVisibility = (() => {
-        const originActor = origin.actor
+    const originActor = origin.actor
+    const targetActor = target.actor
+
+    let systemVisibility = (() => {
         const visibilities = ['unnoticed', 'undetected', 'hidden', 'concealed']
 
         for (const visibility of visibilities) {
@@ -159,16 +166,28 @@ export function getVisibility(origin, target) {
         }
     })()
 
+    // if (originActor.hasCondition('invisible')) {
+    //     const seeinvis = testOption('all', options, 'visibility', 'seeinvis')
+    //     if (seeinvis) systemVisibility = 'concealed'
+    //     else if (VISIBILITY_VALUES[systemVisibility] < VISIBILITY_VALUES.hidden) systemVisibility = 'hidden'
+    // }
+
+    const returnValue = value => {
+        value = updateFromOptions(value, options, 'visibility', affects)
+        if (VISIBILITY_VALUES[value] >= VISIBILITY_VALUES.hidden || !originActor.hasCondition('invisible')) return value
+
+        return value
+    }
+
     const visibility = getTokenData(origin, target.id, 'visibility')
     let mergedVisibility = VISIBILITY_VALUES[systemVisibility] > VISIBILITY_VALUES[visibility] ? systemVisibility : visibility
 
-    if (VISIBILITY_VALUES[mergedVisibility] >= VISIBILITY_VALUES.hidden) return mergedVisibility
+    if (VISIBILITY_VALUES[mergedVisibility] >= VISIBILITY_VALUES.hidden) return returnValue(mergedVisibility)
 
-    const targetActor = target.actor
     const targetLowlight = targetActor?.hasLowLightVision
     const targetDarkvision = targetActor?.hasDarkvision
     const targetGreaterDarkvision = targetActor && hasGreaterDarkvision(targetActor)
-    if (targetGreaterDarkvision && mergedVisibility === 'concealed') return mergedVisibility
+    if (targetGreaterDarkvision && mergedVisibility === 'concealed') return returnValue(mergedVisibility)
 
     let inDarkness
     if (!targetGreaterDarkvision) {
@@ -184,14 +203,14 @@ export function getVisibility(origin, target) {
                 if (inTemplate) inDarkness = true
                 else continue
 
-                if (!targetDarkvision) return 'hidden'
+                if (!targetDarkvision) return returnValue('hidden')
 
                 const templateConceals = getFlag(template, 'conceal')
                 if (templateConceals) darknessVisibility = 'concealed'
             }
 
             if (darknessVisibility === 'concealed') mergedVisibility = 'concealed'
-            if (inDarkness && mergedVisibility === 'concealed') return mergedVisibility
+            if (inDarkness && mergedVisibility === 'concealed') return returnValue(mergedVisibility)
         }
     }
 
@@ -203,19 +222,20 @@ export function getVisibility(origin, target) {
                 if (!mistTokens.length) continue
 
                 const inTemplate = mistTokens.includes(origin) || mistTokens.includes(target)
-                if (inTemplate) return 'concealed'
+                if (inTemplate) return returnValue('concealed')
             }
         }
     }
 
-    if (inDarkness || targetGreaterDarkvision) return mergedVisibility
+    if (inDarkness || targetGreaterDarkvision) return returnValue(mergedVisibility)
 
-    const exposure = getLightExposure(origin)
+    const exposure = getLightExposure(origin, debug)
     let exposedVisibility = exposure === 'dim' ? 'concealed' : exposure === null ? 'hidden' : undefined
     if (exposedVisibility === 'concealed' && targetLowlight) exposedVisibility = undefined
     else if (exposedVisibility === 'hidden' && targetDarkvision) exposedVisibility = undefined
 
-    return VISIBILITY_VALUES[mergedVisibility] > VISIBILITY_VALUES[exposedVisibility] ? mergedVisibility : exposedVisibility
+    if (VISIBILITY_VALUES[exposedVisibility] > VISIBILITY_VALUES[mergedVisibility]) mergedVisibility = exposedVisibility
+    return returnValue(mergedVisibility)
 }
 
 export function updateToken(token, data, context, userId) {
@@ -294,16 +314,22 @@ export async function showConditionals(origin, target) {
     $(document.body).append(content)
 }
 
-export function getCover(origin, target, options, debug = false) {
-    const ranged = options.includes('item:ranged')
+export function getCover(origin, target, options = {}, affects, debug = false) {
+    options = optionsToObject(options)
+
+    const ranged = options.isRanged
     const prone = ranged ? isProne(target.actor) : false
 
+    const returnValue = value => {
+        return updateFromOptions(value, options, 'cover', affects)
+    }
+
     let systemCover = getCoverEffect(target.actor, true)
-    if (prone && COVER_VALUES[systemCover] > COVER_VALUES.lesser) return 'greater-prone'
+    if (prone && COVER_VALUES[systemCover] > COVER_VALUES.lesser) return returnValue('greater-prone')
     if (!prone && systemCover === 'greater-prone') systemCover = undefined
 
     let cover = getTokenData(target, origin.id, 'cover')
-    if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return 'greater-prone'
+    if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return returnValue('greater-prone')
     if (!prone && cover === 'greater-prone') cover = undefined
 
     if (
@@ -316,9 +342,9 @@ export function getCover(origin, target, options, debug = false) {
         cover = getCreatureCover(origin, target, options, debug)
     }
 
-    if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return 'greater-prone'
+    if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return returnValue('greater-prone')
 
-    return COVER_VALUES[cover] > COVER_VALUES[systemCover] ? cover : undefined
+    return returnValue(COVER_VALUES[cover] > COVER_VALUES[systemCover] ? cover : undefined)
 }
 
 export function rulesBasedVision() {

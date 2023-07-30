@@ -1,6 +1,6 @@
 import { COVER_UUID, COVER_VALUES, VISIBILITY_VALUES, VISION_LEVELS } from './constants.js'
 import { createCoverSource, createFlatFootedSource, findChoiceSetRule } from './effect.js'
-import { getOption, optionsToObject, testOption, updateFromOptions } from './options.js'
+import { getOption, optionsToObject, testOption } from './options.js'
 import { extractEphemeralEffects, getRangeIncrement, isOffGuardFromFlanking, traitSlugToObject } from './pf2e/helpers.js'
 import { getCover, getVisibility } from './token.js'
 import { asNumberOnly } from './utils.js'
@@ -193,23 +193,20 @@ export async function getRollContext(params) {
 }
 
 function addConditionals({ ephemeralEffects, selfToken, targetToken, options }) {
-    let cover = getCover(selfToken, targetToken, options)
-    let visibility = getVisibility(selfToken, targetToken)
-
     options = optionsToObject(options)
 
-    cover = updateFromOptions(cover, options, 'cover')
-    visibility = updateFromOptions(visibility, options, 'visibility')
+    let cover = getCover(selfToken, targetToken, options, 'target')
+    let visibility = getVisibility(selfToken, targetToken, options, 'origin')
 
     let coverBonus = undefined
     if (cover) {
-        let ac = getOption(options, cover, 'ac')?.[0]
+        let ac = getOption('target', options, cover, 'ac')?.first()
         ac = asNumberOnly(ac)
         if (ac === 0) cover = undefined
         else if (ac) coverBonus = ac
     }
 
-    if (visibility && testOption(visibility, options, 'visibility', 'noff')) {
+    if (visibility && testOption(visibility, 'target', options, 'visibility', 'noff')) {
         visibility = undefined
     }
 
