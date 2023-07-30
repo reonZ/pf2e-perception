@@ -198,7 +198,8 @@ export function highlightTemplateGrid() {
 }
 
 export function preCreateMeasuredTemplate(template) {
-    const { slug, castLevel = 0 } = template.getFlag('pf2e', 'origin') ?? {}
+    const { type, slug, castLevel = 0 } = template.getFlag('pf2e', 'origin') ?? {}
+    if (type !== 'spell') return
 
     if (DARKNESS_SLUGS.includes(slug)) {
         template.updateSource({

@@ -4,7 +4,7 @@ import { COVER_VALUES, ICONS_PATHS, VISIBILITY_VALUES, defaultValues } from './c
 import { clearDebug, drawDebugLine, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { getLightExposure } from './lighting.js'
 import { MODULE_ID, getFlag, getSetting, hasPermission, unsetFlag } from './module.js'
-import { optionsToObject, updateFromOptions } from './options.js'
+import { optionsToObject, testOption, updateFromOptions } from './options.js'
 import { getSceneSetting, getValidTokens } from './scene.js'
 import { getDarknessTemplates, getMistTemplates, getTemplateTokens } from './template.js'
 
@@ -166,17 +166,16 @@ export function getVisibility(origin, target, options = {}, affects = 'origin', 
         }
     })()
 
-    // if (originActor.hasCondition('invisible')) {
-    //     const seeinvis = testOption('all', options, 'visibility', 'seeinvis')
-    //     if (seeinvis) systemVisibility = 'concealed'
-    //     else if (VISIBILITY_VALUES[systemVisibility] < VISIBILITY_VALUES.hidden) systemVisibility = 'hidden'
-    // }
-
     const returnValue = value => {
         value = updateFromOptions(value, options, 'visibility', affects)
-        if (VISIBILITY_VALUES[value] >= VISIBILITY_VALUES.hidden || !originActor.hasCondition('invisible')) return value
+        if (!originActor.hasCondition('invisible')) return value
 
-        return value
+        if (VISIBILITY_VALUES[value] < VISIBILITY_VALUES.hidden) value = 'hidden'
+
+        const seeInvis = testOption('all', affects, options, 'visibility', 'seeinvis')
+        if (seeInvis) value = 'concealed'
+
+        return updateFromOptions(value, options, 'visibility', affects)
     }
 
     const visibility = getTokenData(origin, target.id, 'visibility')

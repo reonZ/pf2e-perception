@@ -2,6 +2,7 @@ import { getActorToken, getCoverEffect, hasGreaterDarkvision, isProne } from './
 import { isHidden, isUndetected } from './detection.js'
 import { clearDebug, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { getLightExposure } from './lighting.js'
+import { getOption, optionsToObject, testOption, updateFromOptions } from './options.js'
 import { getSceneSetting, getValidTokens, validateTokens } from './scene.js'
 import {
     createDarknessTemplate,
@@ -70,5 +71,11 @@ export const API = {
         deleteSeekTemplate,
         createTemplate,
         getTemplateTokens,
+    },
+    options: {
+        optionsToObject,
+        testOption,
+        getOption,
+        updateFromOptions,
     },
 }
