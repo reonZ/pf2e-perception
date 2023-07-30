@@ -48,6 +48,8 @@ Bullet points:
 
 -   the module handles mist templates the same way it does for darkness ones
 
+-   the module handle the `invisible` condition by forcing the `hidden` state on the token if not already (this can be reduced by the `visibility:seeinvis:all` rollOption)
+
 # Roll Options
 
 you can use custom rollOptions to adjust cover and visibility during attacks, this can be done either by adding system `RollOption` to feats/features/effect/etc. or passing them directly in the attack options argument. here is an example of how to implement the `Blind-Fight` feat, just add those 3 REs to the feat itself:
@@ -68,6 +70,7 @@ you can replace `x` by `all` for the rollOption to trigger on all cover|visibili
 -   `cover|visibility:set:x` to force a cover|visibility state equal to `x`, here `x` cannot be `all` but accept `none` for cover and `observed` for visibitlity
 -   `cover|visibility:reduce:x` to reduce the cover|visibility by one tier if it is equal to `x`
 -   `visibility:noff:x` do not add the flat-footed condition when the visibility is equal to `x`
+-   `visibility:seeinvis:all` will reduce the `hidden` or `undetected` state of a token to `concealed` if they are `invisible`
 -   `cover:ignore:xxx` to ignore a certain token (replace `xxx` by the token id) when testing for creature cover
 -   `lesser|standard|greater|greater-prone:ac:0` to force a certain AC value for a cover
 -   `concealed|hidden:dc:0` to force a certain DC value for a visibility
