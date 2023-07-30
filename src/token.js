@@ -152,6 +152,7 @@ export function getCreatureCover(originToken, targetToken, options = {}, debug =
 }
 
 export function getVisibility(origin, target, options = {}, affects = 'origin', debug = false) {
+    options = optionsToObject(options)
     origin = origin instanceof Token ? origin : origin.object
     target = target instanceof Token ? target : target.object
 
@@ -159,16 +160,15 @@ export function getVisibility(origin, target, options = {}, affects = 'origin', 
     const targetActor = target.actor
 
     let systemVisibility = (() => {
-        const visibilities = ['unnoticed', 'undetected', 'hidden', 'concealed']
-
-        for (const visibility of visibilities) {
+        if (!originActor) return
+        for (const visibility of ['unnoticed', 'undetected', 'hidden', 'concealed']) {
             if (originActor.hasCondition(visibility)) return visibility
         }
     })()
 
     const returnValue = value => {
         value = updateFromOptions(value, options, 'visibility', affects)
-        if (!originActor.hasCondition('invisible')) return value
+        if (!originActor?.hasCondition('invisible')) return value
 
         if (VISIBILITY_VALUES[value] < VISIBILITY_VALUES.hidden) value = 'hidden'
 
@@ -263,8 +263,9 @@ export function deleteToken(token) {
     if (!game.user.isGM) ui.combat.render()
 }
 
-export function controlToken(token) {
-    clearConditionals(token)
+export function controlToken(token, controlled) {
+    if (!controlled) return
+    clearConditionals()
     Hooks.once('sightRefresh', () => token.hover && showAllConditionals(token))
 }
 
