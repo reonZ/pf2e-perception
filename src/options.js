@@ -61,3 +61,40 @@ export function updateFromOptions(value, options, type, affects) {
 
     return value === list[0] ? undefined : value
 }
+
+export function generateOptions(origin, target, { originOptions, targetOptions, distance }) {
+    if (!origin.actor || !target.actor) return []
+
+    const selfOriginOptions =
+        originOptions?.map(x => x.replace(/^origin/, 'self')) ??
+        Object.keys(origin.actor.rollOptions.all).filter(x => x.startsWith('self:'))
+
+    const selfTargetOptions =
+        targetOptions?.map(x => x.replace(/^target/, 'self')) ??
+        Object.keys(target.actor.rollOptions.all).filter(x => x.startsWith('self:'))
+
+    originOptions = originOptions?.slice() ?? selfOriginOptions.map(x => x.replace(/^self/, 'origin'))
+    targetOptions = targetOptions?.slice() ?? selfTargetOptions.map(x => x.replace(/^self/, 'target'))
+
+    distance ??= origin.distanceTo(target)
+    const distances = [`origin:distance:${distance}`, `target:distance:${distance}`]
+
+    const tempObjects = [
+        { token: origin, options: originOptions, selfOptions: selfOriginOptions, otherOptions: targetOptions, prefix: 'origin' },
+        { token: target, options: targetOptions, selfOptions: selfTargetOptions, otherOptions: originOptions, prefix: 'target' },
+    ]
+
+    for (const { token, options, selfOptions, otherOptions, prefix } of tempObjects) {
+        for (const rule of token.actor.rules) {
+            if (rule.key !== 'RollOption') continue
+
+            const option = rule.option.replace(/^self/, prefix)
+            if (options.includes(option)) continue
+
+            const test = rule.test([...selfOptions, ...otherOptions, ...distances])
+            if (test) options.push(option)
+        }
+    }
+
+    return [...originOptions, ...targetOptions, ...distances]
+}

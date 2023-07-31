@@ -1,6 +1,6 @@
 import { COVER_UUID, COVER_VALUES, VISIBILITY_VALUES, VISION_LEVELS } from './constants.js'
 import { createCoverSource, createFlatFootedSource, findChoiceSetRule } from './effect.js'
-import { getOption, optionsToObject, testOption } from './options.js'
+import { generateOptions, getOption, optionsToObject, testOption } from './options.js'
 import { extractEphemeralEffects, getRangeIncrement, isOffGuardFromFlanking, traitSlugToObject } from './pf2e/helpers.js'
 import { getCover, getVisibility } from './token.js'
 import { asNumberOnly } from './utils.js'
@@ -124,12 +124,13 @@ export async function getRollContext(params) {
     /**
      * WE ADDED STUFF HERE
      */
-    if (selfToken && targetToken) {
+    if (selfToken?.actor && targetToken?.actor && !params.viewOnly) {
+        const tempOptions = generateOptions(selfToken, targetToken, { targetOptions: targetRollOptions, distance })
         addConditionals({
             selfToken,
             targetToken,
             ephemeralEffects: targetEphemeralEffects,
-            options: [...params.options, ...selfActor.getSelfRollOptions('origin'), ...itemOptions, ...targetRollOptions],
+            options: [...params.options, ...itemOptions, ...tempOptions],
         })
     }
     /**
