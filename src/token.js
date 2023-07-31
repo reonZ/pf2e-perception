@@ -1,4 +1,4 @@
-import { getCoverEffect, hasGreaterDarkvision, isProne } from './actor.js'
+import { getCoverEffect, hasGreaterDarkvision, isProne, seeInvisibility } from './actor.js'
 import { PerceptionMenu } from './apps/perception.js'
 import { COVER_VALUES, ICONS_PATHS, VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { clearDebug, drawDebugLine, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
@@ -167,21 +167,21 @@ export function getVisibility(origin, target, options = {}, affects = 'origin', 
     })()
 
     const returnValue = value => {
-        value = updateFromOptions(value, options, 'visibility', affects)
-        if (!originActor?.hasCondition('invisible')) return value
+        if (!isInvisible) return updateFromOptions(value, options, 'visibility', affects)
 
         if (VISIBILITY_VALUES[value] < VISIBILITY_VALUES.hidden) value = 'hidden'
 
-        const seeInvis = testOption('all', affects, options, 'visibility', 'seeinvis')
+        const seeInvis = seeInvisibility(targetActor) || testOption('all', affects, options, 'visibility', 'seeinvis')
         if (seeInvis) value = 'concealed'
 
         return updateFromOptions(value, options, 'visibility', affects)
     }
 
+    const isInvisible = originActor?.hasCondition('invisible')
     const visibility = getTokenData(origin, target.id, 'visibility')
     let mergedVisibility = VISIBILITY_VALUES[systemVisibility] > VISIBILITY_VALUES[visibility] ? systemVisibility : visibility
 
-    if (VISIBILITY_VALUES[mergedVisibility] >= VISIBILITY_VALUES.hidden) return returnValue(mergedVisibility)
+    if (VISIBILITY_VALUES[mergedVisibility] >= VISIBILITY_VALUES.hidden || isInvisible) return returnValue(mergedVisibility)
 
     const targetLowlight = targetActor?.hasLowLightVision
     const targetDarkvision = targetActor?.hasDarkvision

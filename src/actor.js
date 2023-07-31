@@ -255,16 +255,24 @@ export function visionLevel() {
         : VISION_LEVELS.NORMAL
 }
 
-export function hasGreaterDarkvision(actor) {
+function hasSense(actor, sense) {
+    if (!actor || !sense) return false
+
+    sense = sense.toLowerCase()
+
     let senses = actor.system.traits.senses
-    if (Array.isArray(senses)) return senses.some(s => s.type === 'greaterDarkvision')
+    if (Array.isArray(senses)) senses = senses.map(s => s.type.toLowerCase())
+    else senses = splitNPCSenses(senses.value)
 
-    if (typeof senses === 'object') {
-        senses = splitNPCSenses(senses.value)
-        return senses.includes('greaterdarkvision')
-    }
+    return senses.includes(sense)
+}
 
-    return false
+export function hasGreaterDarkvision(actor) {
+    return hasSense(actor, 'greaterdarkvision')
+}
+
+export function seeInvisibility(actor) {
+    return hasSense(actor, 'seeinvisibility')
 }
 
 function splitNPCSenses(sensesStr) {
