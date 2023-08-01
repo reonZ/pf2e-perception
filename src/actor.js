@@ -257,7 +257,7 @@ export function visionLevel() {
 }
 
 function hasSense(actor, sense) {
-    if (!actor || !sense) return false
+    if (!actor || !sense || !actor.system.traits) return false
 
     sense = sense.toLowerCase()
 
