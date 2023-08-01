@@ -62,7 +62,7 @@ export function updateFromOptions(value, options, type, affects) {
     return value === list[0] ? undefined : value
 }
 
-export function generateOptions(origin, target, { originOptions, targetOptions, distance }) {
+export function generateOptions(origin, target, { originOptions, targetOptions, distance } = {}) {
     if (!origin.actor || !target.actor) return []
 
     const selfOriginOptions =
@@ -85,13 +85,15 @@ export function generateOptions(origin, target, { originOptions, targetOptions, 
     ]
 
     for (const { token, options, selfOptions, otherOptions, prefix } of tempObjects) {
+        const testOptions = [...selfOptions, ...otherOptions, ...distances]
+
         for (const rule of token.actor.rules) {
-            if (rule.key !== 'RollOption') continue
+            if (rule.key !== 'RollOption' || !rule.option.startsWith('self:pf2perception:')) continue
 
             const option = rule.option.replace(/^self/, prefix)
             if (options.includes(option)) continue
 
-            const test = rule.test([...selfOptions, ...otherOptions, ...distances])
+            const test = rule.test(testOptions)
             if (test) options.push(option)
         }
     }

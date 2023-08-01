@@ -1,4 +1,5 @@
 import { VISIBILITY_VALUES } from './constants.js'
+import { generateOptions } from './options.js'
 import { getVisibility } from './token.js'
 
 export function detectionModeTestVisibility(visionSource, mode, config = {}) {
@@ -53,9 +54,7 @@ export function feelTremorCanDetect(visionSource, target, config) {
 
 function reachesThreshold(origin, target, threshold, config = {}) {
     if (!config.visibility) {
-        const originOptions = origin.actor?.getSelfRollOptions('origin') ?? []
-        const targetOptions = target.actor?.getSelfRollOptions('target') ?? []
-        const options = [...originOptions, ...targetOptions]
+        const options = generateOptions(origin, target)
         config.visibility = getVisibility(target, origin, options, 'target')
     }
 
