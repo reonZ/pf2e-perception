@@ -42,7 +42,7 @@ export async function checkRoll(wrapped, ...args) {
         if (dc === 0) return wrapped(...args)
 
         const isUndetected = VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected
-        const isBlind = event.ctrlKey || event.metaKey
+        const isBlind = event?.ctrlKey || event?.metaKey
 
         const roll = await new originToken.actor.perception.constructor(originToken.actor, {
             slug: 'visibility-check',
