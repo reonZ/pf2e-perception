@@ -1,7 +1,7 @@
 import { COVER_UUID, COVER_VALUES, VISIBILITY_VALUES, VISION_LEVELS } from './constants.js'
 import { createCoverSource, createFlatFootedSource, findChoiceSetRule } from './effect.js'
-import { generateOptions, getOption, optionsToObject, testOption } from './options.js'
 import { extractEphemeralEffects, getRangeIncrement, isOffGuardFromFlanking, traitSlugToObject } from './pf2e/helpers.js'
+import { getPerception, perceptionRules } from './rule-element.js'
 import { getCover, getVisibility } from './token.js'
 import { asNumberOnly } from './utils.js'
 
@@ -125,13 +125,30 @@ export async function getRollContext(params) {
      * WE ADDED STUFF HERE
      */
     if (selfToken?.actor && targetToken?.actor && !params.viewOnly) {
-        const tempOptions = generateOptions(selfToken, targetToken, { targetOptions: targetRollOptions, distance })
-        addConditionals({
-            selfToken,
-            targetToken,
-            ephemeralEffects: targetEphemeralEffects,
-            options: [...params.options, ...itemOptions, ...tempOptions],
+        const perception = perceptionRules(selfToken, targetToken, {
+            extraOptions: itemOptions,
+            distance,
         })
+
+        let visibility = getVisibility(selfToken, targetToken, { perception, affects: 'origin' })
+
+        if (visibility && getPerception(perception, 'target', 'visibility', 'noff', visibility)) {
+            visibility = undefined
+        }
+
+        if (VISIBILITY_VALUES[visibility] > VISIBILITY_VALUES.concealed)
+            targetEphemeralEffects.push(createFlatFootedSource(visibility))
+
+        let cover = getCover(selfToken, targetToken, { perception, affects: 'target', options: itemOptions })
+        let coverBonus = undefined
+
+        if (cover) {
+            let ac = asNumberOnly(getPerception(perception, 'target', 'cover', 'ac', cover)?.first())
+            if (ac === 0) cover = undefined
+            else if (ac) coverBonus = ac
+        }
+
+        if (COVER_VALUES[cover] > COVER_VALUES.none) targetEphemeralEffects.push(createCoverSource(cover, coverBonus))
     }
     /**
      * END OF THE ADDED STUFF
@@ -191,28 +208,6 @@ export async function getRollContext(params) {
         target,
         traits,
     }
-}
-
-function addConditionals({ ephemeralEffects, selfToken, targetToken, options }) {
-    options = optionsToObject(options)
-
-    let cover = getCover(selfToken, targetToken, options, 'target')
-    let visibility = getVisibility(selfToken, targetToken, options, 'origin')
-
-    let coverBonus = undefined
-    if (cover) {
-        let ac = getOption('target', options, cover, 'ac')?.first()
-        ac = asNumberOnly(ac)
-        if (ac === 0) cover = undefined
-        else if (ac) coverBonus = ac
-    }
-
-    if (visibility && testOption(visibility, 'target', options, 'visibility', 'noff')) {
-        visibility = undefined
-    }
-
-    if (COVER_VALUES[cover] > COVER_VALUES.none) ephemeralEffects.push(createCoverSource(cover, coverBonus))
-    if (VISIBILITY_VALUES[visibility] > VISIBILITY_VALUES.concealed) ephemeralEffects.push(createFlatFootedSource(visibility))
 }
 
 export function getActorToken(actor, target = false) {

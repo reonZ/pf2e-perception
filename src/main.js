@@ -6,6 +6,7 @@ import { checkRoll, renderCheckModifiersDialog } from './check.js'
 import { renderCombatTracker, renderCombatTrackerConfig } from './combat.js'
 import { basicSightCanDetect, detectionModeTestVisibility, feelTremorCanDetect, hearingCanDetect } from './detection.js'
 import { MODULE_ID } from './module.js'
+import { setupRuleElement } from './rule-element.js'
 import { renderSceneConfig } from './scene.js'
 import { registerSettings } from './settings.js'
 import { highlightTemplateGrid, onMeasuredTemplate, preCreateMeasuredTemplate } from './template.js'
@@ -38,6 +39,7 @@ const FEEL_TREMOR_CAN_DETECT = 'CONFIG.Canvas.detectionModes.feelTremor._canDete
 Hooks.once('init', () => {
     registerSettings()
     setupActions()
+    setupRuleElement()
 
     libWrapper.register(MODULE_ID, CHECK_ROLL, checkRoll)
 

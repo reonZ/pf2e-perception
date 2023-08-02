@@ -4,7 +4,7 @@ import { COVER_VALUES, ICONS_PATHS, VISIBILITY_VALUES, defaultValues } from './c
 import { clearDebug, drawDebugLine, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { getLightExposure } from './lighting.js'
 import { MODULE_ID, getFlag, getSetting, hasPermission, unsetFlag } from './module.js'
-import { optionsToObject, testOption, updateFromOptions } from './options.js'
+import { getPerception, updateFromPerceptionRules } from './rule-element.js'
 import { getSceneSetting, getValidTokens } from './scene.js'
 import { getDarknessTemplates, getMistTemplates, getTemplateTokens } from './template.js'
 
@@ -86,18 +86,47 @@ const SIZES = {
     grg: 5,
 }
 
-export function getCreatureCover(originToken, targetToken, options = {}, debug = false) {
+export function getCover(origin, target, { perception = {}, options = [], affects = 'origin', debug = false } = {}) {
+    const prone = options.includes('item:ranged') ? isProne(target.actor) : false
+
+    const returnValue = value => {
+        return updateFromPerceptionRules(perception, affects, 'cover', value)
+    }
+
+    let systemCover = getCoverEffect(target.actor, true)
+    if (prone && COVER_VALUES[systemCover] > COVER_VALUES.lesser) return returnValue('greater-prone')
+
+    if (!prone && systemCover === 'greater-prone') systemCover = undefined
+
+    let cover = getTokenData(target, origin.id, 'cover')
+    if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return returnValue('greater-prone')
+
+    if (!prone && cover === 'greater-prone') cover = undefined
+
+    if (
+        COVER_VALUES[cover] < COVER_VALUES.standard &&
+        COVER_VALUES[systemCover] < COVER_VALUES.standard &&
+        hasStandardCover(origin, target, debug)
+    ) {
+        cover = 'standard'
+    } else if (!cover && !systemCover && origin.distanceTo(target) > 5) {
+        cover = getCreatureCover(origin, target, { perception, debug })
+    }
+
+    if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return returnValue('greater-prone')
+    return returnValue(COVER_VALUES[cover] > COVER_VALUES[systemCover] ? cover : undefined)
+}
+
+export function getCreatureCover(originToken, targetToken, { perception = {}, debug = false }) {
     const setting = getSetting('lesser')
     if (setting === 'none') return undefined
 
     originToken = originToken instanceof Token ? originToken.document : originToken
     targetToken = targetToken instanceof Token ? targetToken.document : targetToken
 
-    options = optionsToObject(options)
-
     const ignoreIds = (() => {
-        const originIds = options.origin?.cover?.ignore ?? []
-        const targetIds = options.target?.cover?.ignore ?? []
+        const originIds = Object.keys(perception.origin?.cover?.ignore ?? {})
+        const targetIds = Object.keys(perception.target?.cover?.ignore ?? {})
         return new Set([...originIds, ...targetIds])
     })()
 
@@ -130,6 +159,7 @@ export function getCreatureCover(originToken, targetToken, options = {}, debug =
         if (debug) drawDebugLine(edge.A, edge.B, 'red')
         return lineSegmentIntersects(origin, target, edge.A, edge.B)
     }
+
     const intersectsWith =
         setting === 'cross'
             ? edges => {
@@ -143,7 +173,6 @@ export function getCreatureCover(originToken, targetToken, options = {}, debug =
     for (const tokenDocument of tokens) {
         const token = tokenDocument.object
         const edges = getRectEdges(token.bounds, margin)
-
         if (intersectsWith(edges)) return extralarges ? 'standard' : 'lesser'
         else if (isExtraLarge(tokenDocument)) extralarges--
     }
@@ -151,8 +180,7 @@ export function getCreatureCover(originToken, targetToken, options = {}, debug =
     return cover
 }
 
-export function getVisibility(origin, target, options = {}, affects = 'origin', debug = false) {
-    options = optionsToObject(options)
+export function getVisibility(origin, target, { perception = {}, affects = 'origin', debug = false } = {}) {
     origin = origin instanceof Token ? origin : origin.object
     target = target instanceof Token ? target : target.object
 
@@ -167,14 +195,14 @@ export function getVisibility(origin, target, options = {}, affects = 'origin', 
     })()
 
     const returnValue = value => {
-        if (!isInvisible) return updateFromOptions(value, options, 'visibility', affects)
+        if (!isInvisible) return updateFromPerceptionRules(perception, affects, 'visibility', value)
 
         if (VISIBILITY_VALUES[value] < VISIBILITY_VALUES.hidden) value = 'hidden'
 
-        const seeInvis = seeInvisibility(targetActor) || testOption('all', affects, options, 'visibility', 'seeinvis')
+        const seeInvis = seeInvisibility(targetActor) || getPerception(perception, affects, 'visibility', 'noinvis')
         if (seeInvis) value = 'concealed'
 
-        return updateFromOptions(value, options, 'visibility', affects)
+        return updateFromPerceptionRules(perception, affects, 'visibility', value)
     }
 
     const isInvisible = originActor?.hasCondition('invisible')
@@ -312,39 +340,6 @@ export async function showConditionals(origin, target) {
     content += '</div>'
 
     $(document.body).append(content)
-}
-
-export function getCover(origin, target, options = {}, affects, debug = false) {
-    options = optionsToObject(options)
-
-    const ranged = options.isRanged
-    const prone = ranged ? isProne(target.actor) : false
-
-    const returnValue = value => {
-        return updateFromOptions(value, options, 'cover', affects)
-    }
-
-    let systemCover = getCoverEffect(target.actor, true)
-    if (prone && COVER_VALUES[systemCover] > COVER_VALUES.lesser) return returnValue('greater-prone')
-    if (!prone && systemCover === 'greater-prone') systemCover = undefined
-
-    let cover = getTokenData(target, origin.id, 'cover')
-    if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return returnValue('greater-prone')
-    if (!prone && cover === 'greater-prone') cover = undefined
-
-    if (
-        COVER_VALUES[cover] < COVER_VALUES.standard &&
-        COVER_VALUES[systemCover] < COVER_VALUES.standard &&
-        hasStandardCover(origin, target, debug)
-    ) {
-        cover = 'standard'
-    } else if (!cover && !systemCover && origin.distanceTo(target) > 5) {
-        cover = getCreatureCover(origin, target, options, debug)
-    }
-
-    if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return returnValue('greater-prone')
-
-    return returnValue(COVER_VALUES[cover] > COVER_VALUES[systemCover] ? cover : undefined)
 }
 
 export function rulesBasedVision() {

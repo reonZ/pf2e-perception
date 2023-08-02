@@ -1,7 +1,7 @@
 import { getActorToken, getCoverEffect, hasGreaterDarkvision, isProne } from './actor.js'
 import { clearDebug, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { getLightExposure } from './lighting.js'
-import { getOption, optionsToObject, testOption, updateFromOptions } from './options.js'
+import { getPerception, perceptionRules, updateFromPerceptionRules } from './rule-element.js'
 import { getSceneSetting, getValidTokens, validateTokens } from './scene.js'
 import {
     createDarknessTemplate,
@@ -67,10 +67,9 @@ export const API = {
         createTemplate,
         getTemplateTokens,
     },
-    options: {
-        optionsToObject,
-        testOption,
-        getOption,
-        updateFromOptions,
+    ruleElement: {
+        perceptionRules,
+        getPerception,
+        updateFromPerceptionRules,
     },
 }

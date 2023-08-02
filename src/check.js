@@ -2,7 +2,7 @@ import { getActorToken, getCoverEffect, isProne } from './actor.js'
 import { COVERS, COVER_UUID, VISIBILITY_VALUES, attackCheckRoll, validCheckRoll } from './constants.js'
 import { createCoverSource, findChoiceSetRule } from './effect.js'
 import { MODULE_ID, getFlag, getSetting, localize } from './module.js'
-import { getOption, optionsToObject } from './options.js'
+import { getPerception, perceptionRules } from './rule-element.js'
 import { validateTokens } from './scene.js'
 import { getSeekTemplateTokens } from './template.js'
 import { getVisibility } from './token.js'
@@ -30,26 +30,28 @@ export async function checkRoll(wrapped, ...args) {
         return wrapped(...args)
 
     if (isAttackRoll && targetToken.actor) {
-        const options = optionsToObject(context.options)
-        const visibility = getVisibility(targetToken, originToken, options, 'target')
+        const event = args[2]
+        const perception = perceptionRules(originToken, targetToken, {
+            extraOptions: context.options.filter(o => o.startsWith('item:')),
+        })
 
+        const visibility = getVisibility(targetToken, originToken, { perception, affects: 'target' })
         if (!visibility) return wrapped(...args)
 
-        let optionDC = getOption('target', options, visibility === 'concealed' ? 'concealed' : 'hidden', 'dc')?.first()
-        optionDC = asNumberOnly(optionDC)
-        if (optionDC === 0) return wrapped(...args)
+        let dc = asNumberOnly(getPerception(perception, 'target', 'visibility', 'dc', visibility)?.first())
+        if (dc === 0) return wrapped(...args)
 
-        const dc = optionDC ?? (visibility === 'concealed' ? 5 : 11)
         const isUndetected = VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected
+        const isBlind = event.ctrlKey || event.metaKey
 
         const roll = await new originToken.actor.perception.constructor(originToken.actor, {
             slug: 'visibility-check',
             label: `${game.i18n.localize('PF2E.FlatCheck')}: ${game.i18n.localize(`PF2E.condition.${visibility}.name`)}`,
             check: { type: 'flat-check' },
         }).roll({
-            dc,
+            dc: dc ?? visibility === 'concealed' ? 5 : 11,
             target: targetToken.actor,
-            rollMode: isUndetected ? (game.user.isGM ? 'gmroll' : 'blindroll') : 'roll',
+            rollMode: isUndetected || isBlind ? (game.user.isGM ? 'gmroll' : 'blindroll') : 'roll',
         })
 
         const isSuccess = roll.degreeOfSuccess > 1
