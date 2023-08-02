@@ -1,3 +1,7 @@
+# 0.18.1
+
+-   fixed attacks without event error
+
 # 0.18.0
 
 -   the module doesn't use `RollOption` anymore to modify cover & visibility, it now has its own custom `Rule Element` instead
