@@ -50,36 +50,9 @@ Bullet points:
 
 -   the module handle the `invisible` condition by forcing the `hidden` state on the token if not already (this can be reduced by the `visibility:seeinvis:all` rollOption)
 
-# Roll Options
+# Rule Element
 
-you can use custom rollOptions to adjust cover and visibility during attacks, this can be done either by adding system `RollOption` to feats/features/effect/etc. or passing them directly in the attack options argument. here is an example of how to implement the `Blind-Fight` feat, just add those 3 REs to the feat itself:
-
-```json
-{"key":"RollOption","domain":"all","option":"self:pf2perception:visibility:noff-self:all"}
-{"key":"RollOption","domain":"all","option":"self:pf2perception:concealed:dc:0"}
-{"key":"RollOption","domain":"all","option":"self:pf2perception:hidden:dc:5"}
-```
-
-when the changes are supposed to be made when the token the rollOption exists on is targeted instead of being the attacker, you need to add a `-self` to the option (e.g. `cover:cancel-self:all`, `hidden:dc-self:0`)
-
-all rollOptions must be prefixed with `self:pf2perception:`
-
-you can replace `x` by `all` for the rollOption to trigger on all cover|visibility values
-
--   `cover|visibility:cancel:x` to completely cancel the cover|visibility if it is equal to `x`
--   `cover|visibility:set:x` to force a cover|visibility state equal to `x`, here `x` cannot be `all` but accept `none` for cover and `observed` for visibitlity
--   `cover|visibility:reduce:x` to reduce the cover|visibility by one tier if it is equal to `x`
--   `visibility:noff:x` do not add the flat-footed condition when the visibility is equal to `x`
--   `visibility:seeinvis:all` will reduce the `hidden` or `undetected` state of a token to `concealed` if they are `invisible`
--   `cover:ignore:xxx` to ignore a certain token (replace `xxx` by the token id) when testing for creature cover
--   `lesser|standard|greater|greater-prone:ac:0` to force a certain AC value for a cover
--   `concealed|hidden:dc:0` to force a certain DC value for a visibility
-
-the priority of rollOptions is: `cancel` > `set` > `reduce` > ...
-
-# Wiki
-
-take a look at the [wiki](https://github.com/reonZ/pf2e-perception/wiki/Roll-Options) to find some pre-built rollOptions and macros to use with the module
+take a look at the [wiki](https://github.com/reonZ/pf2e-perception/wiki#rule-element) to learn how the module's `Rule Element` works and also some already pre-designed feats, effects and macros to illustrate it
 
 # CHANGELOG
 
