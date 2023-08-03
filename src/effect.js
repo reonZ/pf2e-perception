@@ -2,9 +2,10 @@ import { COVER_UUID, COVER_VALUES } from './constants.js'
 import { MODULE_ID, localize } from './module.js'
 
 export function createFlatFootedSource(visibility) {
-    const name = game.i18n.localize(`PF2E.condition.${visibility}.name`)
-    const condition = game.pf2e.ConditionManager.getCondition('flat-footed', { name })
-    return condition.toObject()
+    const condition = game.pf2e.ConditionManager.getCondition('off-guard')
+    const source = condition.toObject()
+    source.name += ` (${game.i18n.localize(`PF2E.condition.${visibility}.name`)})`
+    return source
 }
 
 export function createCoverSource(level, bonus) {

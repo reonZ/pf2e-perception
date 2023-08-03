@@ -159,12 +159,12 @@ export async function getRollContext(params) {
         isMelee &&
         typeof reach === 'number' &&
         params.statistic instanceof game.pf2e.StatisticModifier &&
-        targetToken &&
+        targetToken?.actor &&
         selfToken?.isFlanking(targetToken, { reach })
     )
-    if (isFlankingStrike && params.target?.token?.actor && isOffGuardFromFlanking(params.target.token.actor)) {
+    if (isFlankingStrike && isOffGuardFromFlanking(targetToken.actor, selfActor)) {
         const name = game.i18n.localize('PF2E.Item.Condition.Flanked')
-        const condition = game.pf2e.ConditionManager.getCondition('flat-footed', { name })
+        const condition = game.pf2e.ConditionManager.getCondition('off-guard', { name })
         targetEphemeralEffects.push(condition.toObject())
     }
 

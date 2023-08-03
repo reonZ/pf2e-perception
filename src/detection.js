@@ -9,11 +9,12 @@ export function detectionModeTestVisibility(visionSource, mode, config = {}) {
 }
 
 export function basicSightCanDetect(visionSource, target, config) {
+    if (target instanceof PlaceableObject && target.document.hidden) return false
+    if (!(target instanceof Token)) return true
+
     const origin = visionSource.object
     const originDocument = origin.document
     if (originDocument instanceof TokenDocument && originDocument.hasStatusEffect(CONFIG.specialStatusEffects.BLIND)) return false
-
-    if (!(target instanceof Token)) return true
 
     if (!(origin instanceof Token)) {
         return (
@@ -26,10 +27,11 @@ export function basicSightCanDetect(visionSource, target, config) {
 }
 
 export function hearingCanDetect(visionSource, target, config) {
+    if (target.document.hidden || !(target instanceof Token) || !target.actor?.emitsSound) return false
     if (!game.settings.get('pf2e', 'automation.rulesBasedVision')) return true
 
     const origin = visionSource.object
-    if (!(target instanceof Token) || !target.actor?.emitsSound || origin.actor?.hasCondition('deafened')) return false
+    if (origin.actor?.hasCondition('deafened')) return false
 
     if (!(origin instanceof Token)) {
         return !target.actor?.hasCondition('undetected', 'unnoticed')
@@ -40,6 +42,7 @@ export function hearingCanDetect(visionSource, target, config) {
 
 export function feelTremorCanDetect(visionSource, target, config) {
     if (
+        target.document.hidden ||
         !(target instanceof Token) ||
         target.document.elevation > canvas.primary.background.elevation ||
         target.actor?.isOfType('loot')
@@ -47,7 +50,9 @@ export function feelTremorCanDetect(visionSource, target, config) {
         return false
 
     const origin = visionSource.object
-    if (!(origin instanceof Token)) return false
+    if (!(origin instanceof Token)) {
+        return !target.actor?.hasCondition('undetected', 'unnoticed')
+    }
 
     return !reachesThreshold(origin, target, VISIBILITY_VALUES.undetected, config)
 }
