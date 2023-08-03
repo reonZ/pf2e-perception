@@ -10,7 +10,7 @@ export function getLightExposure(token, debug = false) {
 
     if (debug) clearDebug()
 
-    const rect = token.document.bounds
+    const center = token.document.center
     let exposure = null
 
     for (const light of canvas.effects.lightSources) {
@@ -25,38 +25,33 @@ export function getLightExposure(token, debug = false) {
             continue
         }
 
-        const contained = []
-        for (const point of rectCorners(rect)) {
-            if (light.shape.contains(point.x, point.y)) contained.push(point)
-            else if (debug) drawDebugLine(light, point, 'red')
+        if (!light.shape.contains(center.x, center.y)) {
+            if (debug) drawDebugLine(light, center, 'red')
+            continue
         }
 
-        if (!contained.length) continue
-
         if (light.ratio === 1) {
-            if (debug) drawDebugLine(light, contained, 'green')
+            if (debug) drawDebugLine(light, center, 'green')
             return 'bright'
         }
 
         if (light.ratio === 0) {
-            if (debug) drawDebugLine(light, contained, 'blue')
+            if (debug) drawDebugLine(light, center, 'blue')
             exposure = 'dim'
             continue
         }
 
-        for (const point of contained) {
-            const distance = new Ray(light, point).distance
-            if (distance <= bright) {
-                if (debug) {
-                    drawDebugLine(light, point, 'green')
-                    exposure = 'bright'
-                } else return 'bright'
-            } else {
-                if (debug) {
-                    drawDebugLine(light, point, 'blue')
-                    if (exposure !== 'bright') exposure = 'dim'
-                } else exposure = 'dim'
-            }
+        const distance = new Ray(light, center).distance
+        if (distance <= bright) {
+            if (debug) {
+                drawDebugLine(light, center, 'green')
+                exposure = 'bright'
+            } else return 'bright'
+        } else {
+            if (debug) {
+                drawDebugLine(light, center, 'blue')
+                if (exposure !== 'bright') exposure = 'dim'
+            } else exposure = 'dim'
         }
     }
 
