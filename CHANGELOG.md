@@ -1,3 +1,7 @@
+# 0.19.0
+
+-   this is an attempts at making the module compatible with all the system's `5.3.0` changes
+
 # 0.18.1
 
 -   fixed attacks without event error
