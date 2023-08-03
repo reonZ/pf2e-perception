@@ -1,5 +1,3 @@
-import { PredicatePF2e } from './predicate.js'
-
 export async function extractEphemeralEffects({ affects, origin, target, item, domains, options }) {
     if (!(origin && target)) return []
 
@@ -41,18 +39,15 @@ export function getRangeIncrement(attackItem, distance) {
         : null
 }
 
-export function isOffGuardFromFlanking(actor) {
-    if (!actor.isOfType('creature')) return false
+export function isOffGuardFromFlanking(target, origin) {
+    if (!target?.isOfType('creature')) return false
 
-    const { flanking } = actor.attributes
-    if (!flanking.flankable) return false
-
-    const rollOptions = actor.getRollOptions()
-    if (typeof flanking.flatFootable === 'number') {
-        return !PredicatePF2e.test([{ lte: ['origin:level', flanking.flatFootable] }], rollOptions)
-    }
-
-    return flanking.flatFootable
+    const { flanking } = target.attributes
+    return !flanking.flankable
+        ? false
+        : typeof flanking.offGuardable === 'number'
+        ? origin.level > flanking.offGuardable
+        : flanking.offGuardable
 }
 
 export function isObject(value) {

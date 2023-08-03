@@ -3,7 +3,7 @@ import { MODULE_ID, localize } from './module.js'
 
 export function createFlatFootedSource(visibility) {
     const name = game.i18n.localize(`PF2E.condition.${visibility}.name`)
-    const condition = game.pf2e.ConditionManager.getCondition('flat-footed', { name })
+    const condition = game.pf2e.ConditionManager.getCondition('off-guard', { name })
     return condition.toObject()
 }
 
