@@ -55,7 +55,7 @@ export function registerSettings() {
         },
     })
 
-    register('flat-check', String, 'cancel', {
+    register('flat-check', String, 'roll', {
         choices: {
             none: path('flat-check', 'choices.none'),
             roll: path('flat-check', 'choices.roll'),
