@@ -1,3 +1,7 @@
+# 0.20.1
+
+-   fixed not being able to re-use confirmation menus in certains circumstances
+
 # 0.20.0
 
 -   light exposure calculation will now only use the center the the tokens, this will not only reduce the amount of computation but will also fix the issue with tokens partially overlapping with walls
