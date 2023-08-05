@@ -66,7 +66,7 @@ export function setupRuleElement() {
             }
 
             if (source.selector === 'ignore' && !source.targets?.length) {
-                const msg = `The selector "${source.selector}" requires a targets property with the id of a token on the scene.`
+                const msg = `The selector "${source.selector}" requires a targets property with the ids of the tokens on the scene that should not give cover.`
                 this.failValidation(msg)
                 return
             }

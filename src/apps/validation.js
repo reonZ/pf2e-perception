@@ -232,7 +232,7 @@ class ReverseVisibilityValidationMenu extends VisibilityValidationMenu {
             if (token) {
                 if (data.visibility === defaultValues.visibility) delete data.visibility
 
-                const original = getTokenData(token, thisId)
+                const original = getTokenData(token, thisId) ?? {}
                 if (original?.visibility === data.visibility) continue
 
                 if (!original.cover && !data.visibility) {
