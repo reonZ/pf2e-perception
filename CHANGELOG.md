@@ -1,6 +1,11 @@
+# 0.20.2
+
+-   the `Flat Check` setting now defaults to `Roll Flat-Check` instead of `Cancel the Attack on failure`
+-   fixed token actors without senses error
+
 # 0.20.1
 
--   fixed not being able to re-use confirmation menus in certains circumstances
+-   fixed not being able to re-use confirmation menus in certain circumstances
 
 # 0.20.0
 
