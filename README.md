@@ -4,6 +4,12 @@
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/K3K6M2V13)
 
+Important Notes:
+
+-   using the `Shared party vision` PF2e metagame setting will break the conditional visibilities for players.
+-   the module doesn't add, modify or remove any data on the actors themselves, it only adds a very small amount of data on tokens. due to the temporary nature of tokens and with the module preventing its own data from being copied from one token to another, the module's footprint on your world is insignificant
+-   to achieve everything that was needed, quite a lot of core foundry and pf2e system parts have been overridden, because of that, it may not play well with some other modules, especially any module that also modify the detection part of foundry (sight, hearring, ...), those will most likely see issues when paied with this module
+
 Bullet points:
 
 -   the GM can use a new icon (eye) in the token HUD to open the Perception menu for that token, in that menu, you can manually select the conditional covers and visibilities this token has against the other tokens in the scene
