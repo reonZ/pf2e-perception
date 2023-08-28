@@ -1,3 +1,13 @@
+# 0.21.0
+
+-   the `hasStandardCover` api function has been replaced with `getWallCover`
+-   you can now register your own wall cover calculation function:
+
+```js
+game.modules.get('pf2e-perception').custom.getWallCover = (originToken, targetToken) =>
+    undefined | 'none' | 'lesser' | 'standard' | 'greater' | 'greater-prone'
+```
+
 # 0.20.2
 
 -   the `Flat Check` setting now defaults to `Roll Flat-Check` instead of `Cancel the Attack on failure`
