@@ -54,9 +54,9 @@ Bullet points:
 
 -   the module handle the `invisible` condition by forcing the `hidden` state on the token if not already
 
----
+# Custom
 
--   you can register you own `getWallCover` function if you need something different or more in depth (it needs to be registered after the foundry `init` hook)
+-   you can register you own wall cover calculation function function if you need something different or more in depth (it needs to be registered after the foundry `init` hook)
 
 ```js
 game.modules.get('pf2e-perception').custom.getWallCover = (originToken, targetToken) =>
