@@ -20,7 +20,7 @@ import {
     getCreatureCover,
     getTokenData,
     getVisibility,
-    hasStandardCover,
+    getWallCover,
     showAllConditionals,
     showConditionals,
 } from './token.js'
@@ -34,11 +34,11 @@ export const API = {
     },
     token: {
         getCreatureCover,
+        getWallCover,
         getVisibility,
         clearConditionals,
         showConditionals,
         showAllConditionals,
-        hasStandardCover,
         getTokenData,
         getCover,
     },

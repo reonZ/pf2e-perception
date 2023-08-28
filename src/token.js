@@ -1,6 +1,6 @@
 import { getCoverEffect, hasGreaterDarkvision, isProne, seeInvisibility } from './actor.js'
 import { PerceptionMenu } from './apps/perception.js'
-import { COVER_VALUES, ICONS_PATHS, VISIBILITY_VALUES, defaultValues } from './constants.js'
+import { COVERS, COVER_VALUES, ICONS_PATHS, VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { clearDebug, drawDebugLine, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { getLightExposure } from './lighting.js'
 import { MODULE_ID, getFlag, getSetting, hasPermission, unsetFlag } from './module.js'
@@ -64,17 +64,17 @@ export async function setTokenData(token, data) {
     return token.update(updates)
 }
 
-export function hasStandardCover(origin, target, debug = false) {
+export function getWallCover(origin, target, debug = false) {
     const scene = origin.scene
     if (!getSceneSetting(scene, 'standard')) return false
 
     if (debug) clearDebug()
 
     const standard = getSetting('standard-type')
-    if (standard === 'center') return lineIntersectWall(origin.center, target.center, debug)
-    else if (standard === 'points') return pointToTokenIntersectWall(origin.center, target, debug)
+    const intersection = standard === 'points' ? pointToTokenIntersectWall : lineIntersectWall
+    const intersects = intersection(origin.center, target.center, debug)
 
-    return false
+    return intersects ? 'standard' : undefined
 }
 
 const SIZES = {
@@ -103,21 +103,29 @@ export function getCover(origin, target, { perception = {}, options = [], affect
 
     if (!prone && cover === 'greater-prone') cover = undefined
 
-    if (
-        COVER_VALUES[cover] < COVER_VALUES.standard &&
-        COVER_VALUES[systemCover] < COVER_VALUES.standard &&
-        hasStandardCover(origin, target, debug)
-    ) {
-        cover = 'standard'
-    } else if (!cover && !systemCover && origin.distanceTo(target) > 5) {
-        cover = getCreatureCover(origin, target, { perception, debug })
+    if (COVER_VALUES[systemCover] < COVER_VALUES.standard) {
+        if (COVER_VALUES[cover] < COVER_VALUES.standard) {
+            const custom = game.modules.get(MODULE_ID).custom?.getWallCover
+
+            if (typeof custom === 'function') {
+                const customCover = custom(origin, target)
+
+                if (COVERS.includes(customCover)) cover = customCover
+                else cover = getWallCover(origin, target, debug)
+            } else {
+                cover = getWallCover(origin, target, debug)
+            }
+        }
+
+        if (COVER_VALUES[cover] < COVER_VALUES.standard && origin.distanceTo(target) > 5)
+            cover = getCreatureCover(origin, target, { perception, debug })
     }
 
     if (prone && COVER_VALUES[cover] > COVER_VALUES.lesser) return returnValue('greater-prone')
     return returnValue(COVER_VALUES[cover] > COVER_VALUES[systemCover] ? cover : undefined)
 }
 
-export function getCreatureCover(originToken, targetToken, { perception = {}, debug = false }) {
+export function getCreatureCover(originToken, targetToken, { perception = {}, debug = false } = {}) {
     const setting = getSetting('lesser')
     if (setting === 'none') return undefined
 

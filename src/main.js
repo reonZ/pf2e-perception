@@ -62,6 +62,10 @@ Hooks.once('init', () => {
     } else {
         Hooks.on('renderCombatTracker', renderCombatTracker)
     }
+
+    game.modules.get(MODULE_ID).custom = {
+        getWallCover: undefined,
+    }
 })
 
 Hooks.once('ready', () => {
