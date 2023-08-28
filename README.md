@@ -54,6 +54,15 @@ Bullet points:
 
 -   the module handle the `invisible` condition by forcing the `hidden` state on the token if not already
 
+---
+
+-   you can register you own `getWallCover` function if you need something different or more in depth
+
+```js
+game.modules.get('pf2e-perception').custom.getWallCover = (originToken, targetToken) =>
+    undefined | 'none' | 'lesser' | 'standard' | 'greater' | 'greater-prone'
+```
+
 # Rule Element
 
 take a look at the [wiki](https://github.com/reonZ/pf2e-perception/wiki#rule-element) to learn how the module's `Rule Element` works and also some already pre-designed feats, effects and macros to illustrate it
