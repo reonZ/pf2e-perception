@@ -5,7 +5,7 @@
 
 ```js
 game.modules.get('pf2e-perception').custom.getWallCover = (originToken, targetToken) =>
-    undefined | 'none' | 'lesser' | 'standard' | 'greater' | 'greater-prone'
+    'none' | 'lesser' | 'standard' | 'greater' | 'greater-prone'
 ```
 
 # 0.20.2
