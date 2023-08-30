@@ -1,3 +1,8 @@
+# 0.22.0
+
+-   this is a system `5.4.0` release
+-   fixed check roll dc issue
+
 # 0.21.0
 
 -   the `hasStandardCover` api function has been replaced with `getWallCover`
