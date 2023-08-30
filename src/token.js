@@ -108,7 +108,7 @@ export function getCover(origin, target, { perception = {}, options = [], affect
             const custom = game.modules.get(MODULE_ID).custom?.getWallCover
 
             if (typeof custom === 'function') {
-                const customCover = custom(origin, target)
+                const customCover = custom(origin, target, debug)
 
                 if (COVERS.includes(customCover)) cover = customCover
                 else cover = getWallCover(origin, target, debug)

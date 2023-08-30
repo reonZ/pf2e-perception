@@ -49,7 +49,7 @@ export async function checkRoll(wrapped, ...args) {
             label: `${game.i18n.localize('PF2E.FlatCheck')}: ${game.i18n.localize(`PF2E.condition.${visibility}.name`)}`,
             check: { type: 'flat-check' },
         }).roll({
-            dc: dc ?? visibility === 'concealed' ? 5 : 11,
+            dc: { value: dc ?? visibility === 'concealed' ? 5 : 11 },
             target: targetToken.actor,
             rollMode: isUndetected || isBlind ? (game.user.isGM ? 'gmroll' : 'blindroll') : 'roll',
         })
