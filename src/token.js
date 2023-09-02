@@ -71,8 +71,10 @@ export function getWallCover(origin, target, debug = false) {
     if (debug) clearDebug()
 
     const standard = getSetting('standard-type')
-    const intersection = standard === 'points' ? pointToTokenIntersectWall : lineIntersectWall
-    const intersects = intersection(origin.center, target.center, debug)
+    const intersects =
+        standard === 'points'
+            ? pointToTokenIntersectWall(origin.center, target, debug)
+            : lineIntersectWall(origin.center, target.center, debug)
 
     return intersects ? 'standard' : undefined
 }
