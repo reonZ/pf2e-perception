@@ -1,3 +1,7 @@
+# 0.22.1
+
+-   fixed issue with `Center to Spread` standard cover option
+
 # 0.22.0
 
 -   this is a system `5.4.0` release

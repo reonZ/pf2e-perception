@@ -1,4 +1,4 @@
-import { clearDebug, drawDebugLine, rectCorners } from './geometry.js'
+import { clearDebug, drawDebugLine } from './geometry.js'
 
 export function getLightExposure(token, debug = false) {
     token = token instanceof Token ? token : token.object
