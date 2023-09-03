@@ -1,3 +1,7 @@
+# 0.23.0
+
+-   updated the `getRollContext` override and all its helpers to be in sync with latest system version
+
 # 0.22.1
 
 -   fixed issue with `Center to Spread` standard cover option
