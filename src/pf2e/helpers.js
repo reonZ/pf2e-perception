@@ -32,16 +32,14 @@ export function objectHasKey(obj, key) {
 }
 
 export function getRangeIncrement(attackItem, distance) {
-    if (attackItem.isOfType('spell')) return null
+    if (!attackItem.isOfType('action', 'melee', 'weapon')) return null
 
-    return attackItem.rangeIncrement && typeof distance === 'number'
-        ? Math.max(Math.ceil(distance / attackItem.rangeIncrement), 1)
-        : null
+    const { increment } = attackItem.range ?? {}
+    return increment && typeof distance === 'number' ? Math.max(Math.ceil(distance / increment), 1) : null
 }
 
 export function isOffGuardFromFlanking(target, origin) {
     if (!target?.isOfType('creature')) return false
-
     const { flanking } = target.attributes
     return !flanking.flankable
         ? false

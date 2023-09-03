@@ -3,7 +3,7 @@ import { createCoverSource, createFlatFootedSource, findChoiceSetRule } from './
 import { extractEphemeralEffects, getRangeIncrement, isOffGuardFromFlanking, traitSlugToObject } from './pf2e/helpers.js'
 import { getPerception, perceptionRules } from './rule-element.js'
 import { getCover, getVisibility } from './token.js'
-import { asNumberOnly } from './utils.js'
+import { R, asNumberOnly } from './utils.js'
 
 export async function getRollContext(params) {
     const [selfToken, targetToken] =
@@ -14,7 +14,19 @@ export async function getRollContext(params) {
               ]
             : [null, null]
 
-    const selfOptions = this.getRollOptions(params.domains ?? [])
+    const isAttackAction = ['attack', 'attack-roll', 'attack-damage'].some(d => params.domains.includes(d))
+    const isMelee = !!(params.melee || (params.item?.isOfType('weapon', 'melee') && params.item.isMelee))
+    const reach =
+        isMelee && params.item?.isOfType('action', 'weapon', 'melee')
+            ? this.getReach({ action: 'attack', weapon: params.item })
+            : this.getReach({ action: 'attack' })
+    const isFlankingAttack = !!(
+        isAttackAction &&
+        isMelee &&
+        typeof reach === 'number' &&
+        targetToken?.actor &&
+        selfToken?.isFlanking(targetToken, { reach })
+    )
 
     // Get ephemeral effects from the target that affect this actor while attacking
     const originEphemeralEffects = await extractEphemeralEffects({
@@ -29,7 +41,16 @@ export async function getRollContext(params) {
     const selfActor =
         params.viewOnly || !targetToken?.actor
             ? this
-            : this.getContextualClone([...selfOptions, ...targetToken.actor.getSelfRollOptions('target')], originEphemeralEffects)
+            : this.getContextualClone(
+                  R.compact(
+                      [
+                          Array.from(params.options),
+                          targetToken.actor.getSelfRollOptions('target'),
+                          isFlankingAttack ? 'self:flanking' : null,
+                      ].flat()
+                  ),
+                  originEphemeralEffects
+              )
 
     const isStrike = params.statistic instanceof game.pf2e.StatisticModifier
     const strikeActions = isStrike ? selfActor.system.actions?.flatMap(a => [a, a.altUsages ?? []].flat()) ?? [] : []
@@ -58,7 +79,7 @@ export async function getRollContext(params) {
             statistic &&
             'item' in statistic &&
             statistic.item instanceof Item &&
-            statistic.item.isOfType('melee', 'spell', 'weapon')
+            statistic.item.isOfType('action', 'melee', 'spell', 'weapon')
         ) {
             return statistic.item
         }
@@ -72,7 +93,6 @@ export async function getRollContext(params) {
     })()
 
     const itemOptions = selfItem?.getRollOptions('item') ?? []
-    const isAttackAction = ['attack', 'strike-damage', 'attack-spell-damage'].some(d => params.domains.includes(d))
 
     const traitSlugs = [
         isAttackAction ? 'attack' : [],
@@ -101,7 +121,7 @@ export async function getRollContext(params) {
             const mark = this.synthetics.targetMarks.get(targetToken.document.uuid)
             if (mark) targetOptions.push(`target:mark:${mark}`)
         }
-        return targetOptions
+        return targetOptions.sort()
     }
     const targetRollOptions = getTargetRollOptions(targetToken?.actor)
 
@@ -114,12 +134,6 @@ export async function getRollContext(params) {
         domains: params.domains,
         options: [...params.options, ...itemOptions, ...targetRollOptions],
     })
-
-    const [reach, isMelee] = params.item?.isOfType('melee')
-        ? [params.item.reach, params.item.isMelee]
-        : params.item?.isOfType('weapon')
-        ? [this.getReach({ action: 'attack', weapon: params.item }), params.item.isMelee]
-        : [null, false]
 
     /**
      * WE ADDED STUFF HERE
@@ -155,14 +169,7 @@ export async function getRollContext(params) {
      */
 
     // Add an epehemeral effect from flanking
-    const isFlankingStrike = !!(
-        isMelee &&
-        typeof reach === 'number' &&
-        params.statistic instanceof game.pf2e.StatisticModifier &&
-        targetToken?.actor &&
-        selfToken?.isFlanking(targetToken, { reach })
-    )
-    if (isFlankingStrike && isOffGuardFromFlanking(targetToken.actor, selfActor)) {
+    if (isFlankingAttack && isOffGuardFromFlanking(targetToken.actor, selfActor)) {
         const name = game.i18n.localize('PF2E.Item.Condition.Flanked')
         const condition = game.pf2e.ConditionManager.getCondition('off-guard', { name })
         targetEphemeralEffects.push(condition.toObject())
@@ -172,18 +179,25 @@ export async function getRollContext(params) {
     const targetActor = params.viewOnly
         ? null
         : (params.target?.actor ?? targetToken?.actor)?.getContextualClone(
-              [...selfActor.getSelfRollOptions('origin'), ...itemOptions, ...(originDistance ? [originDistance] : [])],
+              [
+                  ...selfActor.getSelfRollOptions('origin'),
+                  ...params.options,
+                  ...itemOptions,
+                  ...(originDistance ? [originDistance] : []),
+              ],
               targetEphemeralEffects
           ) ?? null
 
-    const rollOptions = new Set([
-        ...params.options,
-        ...selfOptions,
-        ...(targetActor ? getTargetRollOptions(targetActor) : targetRollOptions),
-        ...itemOptions,
-        // Backward compatibility for predication looking for an "attack" trait by its lonesome
-        'attack',
-    ])
+    const rollOptions = new Set(
+        R.compact([
+            ...params.options,
+            ...selfActor.getRollOptions(params.domains),
+            ...(targetActor ? getTargetRollOptions(targetActor) : targetRollOptions),
+            ...itemOptions,
+            // Backward compatibility for predication looking for an "attack" trait by its lonesome
+            isAttackAction ? 'attack' : null,
+        ]).sort()
+    )
 
     if (targetDistance) rollOptions.add(targetDistance)
     const rangeIncrement = selfItem ? getRangeIncrement(selfItem, distance) : null
