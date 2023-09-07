@@ -1,3 +1,7 @@
+# 0.24.0
+
+-   added support for signed `dc` RE value (note that only one dc value will still be taken into account though)
+
 # 0.23.0
 
 -   updated the `getRollContext` override and all its helpers to be in sync with latest system version
