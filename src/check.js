@@ -38,7 +38,16 @@ export async function checkRoll(wrapped, ...args) {
         const visibility = getVisibility(targetToken, originToken, { perception, affects: 'target' })
         if (!visibility) return wrapped(...args)
 
-        let dc = asNumberOnly(getPerception(perception, 'target', 'visibility', 'dc', visibility)?.first())
+        const dc = (() => {
+            const dc = getPerception(perception, 'target', 'visibility', 'dc', visibility)?.first()
+            const numberedDC = asNumberOnly(dc)
+            if (!numberedDC) return numberedDC
+
+            const sign = dc[0]
+            if (!['-', '+'].includes(sign)) return numberedDC
+
+            return (visibility === 'concealed' ? 5 : 11) + numberedDC
+        })()
         if (dc === 0) return wrapped(...args)
 
         const isUndetected = VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected
@@ -49,7 +58,7 @@ export async function checkRoll(wrapped, ...args) {
             label: `${game.i18n.localize('PF2E.FlatCheck')}: ${game.i18n.localize(`PF2E.condition.${visibility}.name`)}`,
             check: { type: 'flat-check' },
         }).roll({
-            dc: { value: dc ?? visibility === 'concealed' ? 5 : 11 },
+            dc: { value: dc ?? (visibility === 'concealed' ? 5 : 11) },
             target: targetToken.actor,
             rollMode: isUndetected || isBlind ? (game.user.isGM ? 'gmroll' : 'blindroll') : 'roll',
         })

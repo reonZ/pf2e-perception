@@ -1,4 +1,4 @@
-import { COVERS, VISIBILITIES, defaultValues } from './constants.js'
+import { COVERS, VISIBILITIES } from './constants.js'
 
 const DATA = {
     cover: {
@@ -9,7 +9,7 @@ const DATA = {
         },
         reduce: { targets: ['lesser', 'standard', 'greater', 'greater-prone'] },
         ignore: { targets: 'string' },
-        ac: { targets: ['lesser', 'standard', 'greater', 'greater-prone'], value: 'number' },
+        ac: { targets: ['lesser', 'standard', 'greater', 'greater-prone'], value: ['number'] },
     },
     visibility: {
         cancel: { targets: ['concealed', 'hidden', 'undetected', 'unnoticed'] },
@@ -20,7 +20,7 @@ const DATA = {
         reduce: { targets: ['concealed', 'hidden', 'undetected', 'unnoticed'] },
         noff: { targets: ['hidden', 'undetected', 'unnoticed'] },
         noinvis: {},
-        dc: { targets: ['concealed', 'hidden'], value: 'number' },
+        dc: { targets: ['concealed', 'hidden'], value: ['number', 'string'] },
     },
 }
 
@@ -87,8 +87,10 @@ export function setupRuleElement() {
                 return
             }
 
-            if (valueType && typeof source.value !== valueType) {
-                this.failValidation(`The selector "${source.selector}" only accept a value property of type ${valueType}.`)
+            const sourcevalueType = typeof source.value
+            if (valueType && !valueType.includes(sourcevalueType)) {
+                const msg = `The selector "${source.selector}" does not accept a value property of type ${sourcevalueType}.`
+                this.failValidation(msg)
             }
         }
 

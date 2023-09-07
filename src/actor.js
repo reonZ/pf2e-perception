@@ -157,7 +157,8 @@ export async function getRollContext(params) {
         let coverBonus = undefined
 
         if (cover) {
-            let ac = asNumberOnly(getPerception(perception, 'target', 'cover', 'ac', cover)?.first())
+            let ac = getPerception(perception, 'target', 'cover', 'ac', cover)?.first()
+            if (ac != null) ac = Math.clamped(asNumberOnly(ac), 0, 4)
             if (ac === 0) cover = undefined
             else if (ac) coverBonus = ac
         }
