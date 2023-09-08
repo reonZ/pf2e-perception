@@ -1,3 +1,12 @@
+# 0.25.0
+
+-   added `ignored` cover RE selector, it is used to ignore a specific token as cover when the attacking token is its ally, enemy or both
+    -   it works differently than all the other REs because it is neither applied to the attacker nor the target but instead to potentially covering tokens ; because of that, predicates to the RE are way less powerful
+    -   this is useful for things like the `Aim-Aiding Rune`:
+    ```json
+    { "key": "PF2ePerception", "type": "cover", "selector": "ignored", "targets": "allies" }
+    ```
+
 # 0.24.0
 
 -   added support for signed `dc` RE value (note that only one dc value will still be taken into account though)
