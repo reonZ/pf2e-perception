@@ -9,6 +9,7 @@ const DATA = {
         },
         reduce: { targets: ['lesser', 'standard', 'greater', 'greater-prone'] },
         ignore: { targets: 'string' },
+        ignored: { targets: ['allies', 'enemies'] },
         ac: { targets: ['lesser', 'standard', 'greater', 'greater-prone'], value: ['number'] },
     },
     visibility: {
@@ -190,22 +191,24 @@ export function setupRuleElement() {
 }
 
 export function perceptionRules(origin, target, { distance, extraOptions = [] } = {}) {
-    if (!origin.actor || !target.actor) return {}
+    const originActor = origin.actor
+    const targetActor = target.actor
+    if (!originActor || !targetActor) return {}
 
     const rules = {
-        origin: origin.actor?.rules.filter(r => !r.ignored && r.key === 'PF2ePerception') ?? [],
-        target: target.actor?.rules.filter(r => !r.ignored && r.key === 'PF2ePerception') ?? [],
+        origin: originActor.rules.filter(r => !r.ignored && r.key === 'PF2ePerception') ?? [],
+        target: targetActor.rules.filter(r => !r.ignored && r.key === 'PF2ePerception') ?? [],
     }
     if (!rules.origin.length && !rules.target.length) return {}
 
     const selfOptions = {
-        origin: origin.actor.getRollOptions(),
-        target: target.actor.getRollOptions(),
+        origin: originActor.getRollOptions(),
+        target: targetActor.getRollOptions(),
     }
 
     const otherOptions = {
-        origin: target.actor.getSelfRollOptions('target'),
-        target: origin.actor.getSelfRollOptions('origin'),
+        origin: targetActor.getSelfRollOptions('target'),
+        target: originActor.getSelfRollOptions('origin'),
     }
 
     origin = origin instanceof Token ? origin : origin.object
@@ -224,6 +227,16 @@ export function perceptionRules(origin, target, { distance, extraOptions = [] } 
     }
 
     return perception
+}
+
+export function getIgnoredPerception(token) {
+    const actor = token.actor
+    if (!actor) return []
+
+    const rules =
+        actor.rules.filter(r => !r.ignored && r.key === 'PF2ePerception' && r.type === 'cover' && r.selector === 'ignored') ?? []
+
+    return rules.flatMap(r => r.targets)
 }
 
 export function getPerception(perception, affects, type, selector, targets) {

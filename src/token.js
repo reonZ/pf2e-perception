@@ -4,7 +4,7 @@ import { COVERS, COVER_VALUES, ICONS_PATHS, VISIBILITY_VALUES, defaultValues } f
 import { clearDebug, drawDebugLine, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { getLightExposure } from './lighting.js'
 import { MODULE_ID, getFlag, getSetting, hasPermission, unsetFlag } from './module.js'
-import { getPerception, updateFromPerceptionRules } from './rule-element.js'
+import { getIgnoredPerception, getPerception, updateFromPerceptionRules } from './rule-element.js'
 import { getSceneSetting, getValidTokens } from './scene.js'
 import { getDarknessTemplates, getMistTemplates, getTemplateTokens } from './template.js'
 
@@ -144,6 +144,9 @@ export function getCreatureCover(originToken, targetToken, { perception = {}, de
     const origin = originToken.center
     const target = targetToken.center
 
+    const originActor = originToken.actor
+    const targetActor = targetToken.actor
+
     if (debug) {
         clearDebug()
         drawDebugLine(origin, target)
@@ -154,11 +157,26 @@ export function getCreatureCover(originToken, targetToken, { perception = {}, de
         return size - originSize >= 2 && size - targetSize >= 2
     }
 
-    const originSize = SIZES[originToken.actor.size]
-    const targetSize = SIZES[targetToken.actor.size]
+    const originSize = SIZES[originActor.size]
+    const targetSize = SIZES[targetActor.size]
+
+    const originAlliance = originActor.alliance
 
     const tokens = originToken.scene.tokens.contents
-        .filter(t => t.actor && !t.hidden && t !== originToken && t !== targetToken && !ignoreIds.has(t.id))
+        .filter(token => {
+            const actor = token.actor
+            const alliance = actor.alliance
+            const ignored = getIgnoredPerception(token)
+
+            return (
+                actor &&
+                !token.hidden &&
+                token !== originToken &&
+                token !== targetToken &&
+                !ignoreIds.has(token.id) &&
+                !(ignored.includes('all') || ignored.includes(alliance === originAlliance ? 'allies' : 'enemies'))
+            )
+        })
         .sort((a, b) => SIZES[b.actor.size] - SIZES[a.actor.size])
 
     let extralarges = originSize < SIZES.huge && targetSize < SIZES.huge && tokens.filter(isExtraLarge).length
