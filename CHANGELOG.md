@@ -1,3 +1,7 @@
+# 0.25.1
+
+-   added `token.openHUD` to the API allowing the use of macros to open the perception HUD
+
 # 0.25.0
 
 -   added `ignored` cover RE selector, it is used to ignore a specific token as cover when the attacking token is its ally, enemy or both
