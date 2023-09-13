@@ -11,7 +11,11 @@ import { getDarknessTemplates, getMistTemplates, getTemplateTokens } from './tem
 export function renderTokenHUD(hud, html) {
     if (!hasPermission() || !hud.object.actor?.isOfType('creature')) return
     html.find('.col.left').append(`<div class="control-icon" data-action="pf2e-perception"><i class="fa-solid fa-eye"></i></div>`)
-    html.find('[data-action=pf2e-perception]').on('click', event => PerceptionMenu.openMenu({ token: hud.object }))
+    html.find('[data-action=pf2e-perception]').on('click', event => openHUD(hud.object))
+}
+
+export function openHUD(token) {
+    return PerceptionMenu.openMenu({ token })
 }
 
 export function pasteToken(originals, sources) {

@@ -21,6 +21,7 @@ import {
     getTokenData,
     getVisibility,
     getWallCover,
+    openHUD,
     showAllConditionals,
     showConditionals,
 } from './token.js'
@@ -41,6 +42,7 @@ export const API = {
         showAllConditionals,
         getTokenData,
         getCover,
+        openHUD,
     },
     lighting: {
         getLightExposure,

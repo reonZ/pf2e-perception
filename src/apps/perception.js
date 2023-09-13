@@ -1,6 +1,5 @@
 import { localize, templatePath } from '../module.js'
 import { getValidTokens } from '../scene.js'
-import { setTokenData } from '../token.js'
 import { BaseMenu } from './base-menu.js'
 
 export class PerceptionMenu extends BaseMenu {
