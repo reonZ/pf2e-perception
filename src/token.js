@@ -221,9 +221,17 @@ export function getVisibility(origin, target, { perception = {}, affects = 'orig
 
     let systemVisibility = (() => {
         if (!originActor) return
-        for (const visibility of ['unnoticed', 'undetected', 'hidden', 'concealed']) {
-            if (originActor.hasCondition(visibility)) return visibility
+
+        let visibility
+
+        if (targetActor.hasCondition('blinded')) visibility = 'hidden'
+        else if (targetActor.hasCondition('dazzled')) visibility = 'concealed'
+
+        for (const condition of ['unnoticed', 'undetected', 'hidden', 'concealed']) {
+            if (originActor.hasCondition(condition) && VISIBILITY_VALUES[condition] > visibility) visibility = condition
         }
+
+        return visibility
     })()
 
     const returnValue = value => {
