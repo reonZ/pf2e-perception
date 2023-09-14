@@ -1,3 +1,7 @@
+# 0.26.0
+
+-   added support for `Blinded` and `Dazzled` conditions
+
 # 0.25.1
 
 -   added `token.openHUD` to the API allowing the use of macros to open the perception HUD
