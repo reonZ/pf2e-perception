@@ -51,4 +51,4 @@ export const MIST_COLOR = '#656665'
 export const POISON_GREEN = '#809e71'
 
 export const DARKNESS_SLUGS = ['darkness', 'dance-of-darkness', 'ravenous-darkness']
-export const MIST_SLUGS = ['obscuring-mist', 'stinking-cloud']
+export const MIST_SLUGS = ['obscuring-mist', 'stinking-cloud', 'noxious-vapors']

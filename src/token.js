@@ -228,7 +228,7 @@ export function getVisibility(origin, target, { perception = {}, affects = 'orig
         else if (targetActor.hasCondition('dazzled')) visibility = 'concealed'
 
         for (const condition of ['unnoticed', 'undetected', 'hidden', 'concealed']) {
-            if (originActor.hasCondition(condition) && VISIBILITY_VALUES[condition] > visibility) visibility = condition
+            if (VISIBILITY_VALUES[condition] > visibility && originActor.hasCondition(condition)) visibility = condition
         }
 
         return visibility
