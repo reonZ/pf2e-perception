@@ -81,6 +81,10 @@
                 "name": "Force NPC Vision",
                 "hint": "When enabled, the module will force the 'Vision Enabled' option on newly created NPC tokens. This can be taxing on your client when a lot of NPCs are present in the scene. This setting can also be set on a per-scene basis.",
                 "short": "The module will force the <strong>Vision Enabled</strong> option on newly created NPC tokens. This can be taxing on your client when a lot of NPCs are present in the scene."
+            },
+            "dead-cover": {
+                "name": "Dead Give Cover",
+                "hint": "When disabled, dead and unconscious creatures will not give cover anymore"
             }
         },
         "warning": {

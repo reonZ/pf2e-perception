@@ -38,6 +38,8 @@ export function registerSettings() {
 
     register('standard', Boolean, true)
 
+    register('dead-cover', Boolean, true)
+
     register('standard-type', String, 'center', {
         choices: {
             center: path('standard-type', 'choices.center'),
