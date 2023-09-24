@@ -166,6 +166,7 @@ export function getCreatureCover(originToken, targetToken, { perception = {}, de
 
     const originAlliance = originActor.alliance
     const deadCover = getSetting('dead-cover')
+    const proneCover = getSetting('prone-cover')
 
     const tokens = originToken.scene.tokens.contents
         .filter(token => {
@@ -179,6 +180,7 @@ export function getCreatureCover(originToken, targetToken, { perception = {}, de
                 !token.hidden &&
                 token !== originToken &&
                 token !== targetToken &&
+                (proneCover || !isProne(actor)) &&
                 (deadCover || hp !== 0) &&
                 !ignoreIds.has(token.id) &&
                 !(ignored.includes('all') || ignored.includes(alliance === originAlliance ? 'allies' : 'enemies'))

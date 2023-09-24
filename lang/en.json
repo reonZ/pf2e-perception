@@ -84,7 +84,11 @@
             },
             "dead-cover": {
                 "name": "Dead Give Cover",
-                "hint": "When disabled, dead and unconscious creatures will not give cover anymore"
+                "hint": "When disabled, dead and unconscious creatures will not provide cover."
+            },
+            "prone-cover": {
+                "name": "Prone Give Cover",
+                "hint": "When disabled, prone creatures will not provide cover."
             }
         },
         "warning": {
