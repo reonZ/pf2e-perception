@@ -1,3 +1,10 @@
+# 0.27.0
+
+-   added `Noxious Vapors` to the list of mist templates
+-   added `Dead Give Cover` setting (enabled by default)
+-   added `Prone Give Cover` setting (enabled by default)
+-   fixed system visibility conditions not being handled
+
 # 0.26.0
 
 -   added support for `Blinded` and `Dazzled` conditions
