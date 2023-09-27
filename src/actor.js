@@ -38,6 +38,11 @@ export async function getRollContext(params) {
         options: [...params.options, ...(params.item?.getRollOptions('item') ?? [])],
     })
 
+    const tokenMarkOption = (() => {
+        const tokenMark = targetToken ? this.synthetics.tokenMarks.get(targetToken.document.uuid) : null
+        return tokenMark ? `target:mark:${tokenMark}` : null
+    })()
+
     const selfActor =
         params.viewOnly || !targetToken?.actor
             ? this
@@ -46,6 +51,7 @@ export async function getRollContext(params) {
                       [
                           Array.from(params.options),
                           targetToken.actor.getSelfRollOptions('target'),
+                          tokenMarkOption,
                           isFlankingAttack ? 'self:flanking' : null,
                       ].flat()
                   ),
@@ -118,8 +124,7 @@ export async function getRollContext(params) {
         const targetOptions = actor?.getSelfRollOptions('target') ?? []
         if (targetToken) {
             targetOptions.push('target') // An indicator that there is a target of any kind
-            const mark = this.synthetics.targetMarks.get(targetToken.document.uuid)
-            if (mark) targetOptions.push(`target:mark:${mark}`)
+            if (tokenMarkOption) targetOptions.push(tokenMarkOption)
         }
         return targetOptions.sort()
     }
