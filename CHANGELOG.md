@@ -1,3 +1,7 @@
+# 0.28.0
+
+-   updated for system version `5.6.0`
+
 # 0.27.0
 
 -   added `Noxious Vapors` to the list of mist templates
