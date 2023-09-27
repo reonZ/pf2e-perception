@@ -225,7 +225,7 @@ export function getVisibility(origin, target, { perception = {}, affects = 'orig
     const targetActor = target.actor
 
     let systemVisibility = (() => {
-        if (!originActor) return
+        if (!originActor || !targetActor) return
 
         let visibility
 
