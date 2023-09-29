@@ -1,3 +1,7 @@
+# 0.28.2
+
+-   fixed another issue with actorless
+
 # 0.28.1
 
 -   fixed actorless error
