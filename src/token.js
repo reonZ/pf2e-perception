@@ -171,9 +171,7 @@ export function getCreatureCover(originToken, targetToken, { perception = {}, de
     const tokens = originToken.scene.tokens.contents
         .filter(token => {
             const actor = token.actor
-            const alliance = actor.alliance
             const ignored = getIgnoredPerception(token)
-            const hp = actor.hitPoints?.value
 
             return (
                 actor &&
@@ -181,9 +179,9 @@ export function getCreatureCover(originToken, targetToken, { perception = {}, de
                 token !== originToken &&
                 token !== targetToken &&
                 (proneCover || !isProne(actor)) &&
-                (deadCover || hp !== 0) &&
+                (deadCover || actor.hitPoints?.value !== 0) &&
                 !ignoreIds.has(token.id) &&
-                !(ignored.includes('all') || ignored.includes(alliance === originAlliance ? 'allies' : 'enemies'))
+                !(ignored.includes('all') || ignored.includes(actor.alliance === originAlliance ? 'allies' : 'enemies'))
             )
         })
         .sort((a, b) => SIZES[b.actor.size] - SIZES[a.actor.size])
