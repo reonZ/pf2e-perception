@@ -2,7 +2,7 @@ export async function extractEphemeralEffects({ affects, origin, target, item, d
     if (!(origin && target)) return []
 
     const [effectsFrom, effectsTo] = affects === 'target' ? [origin, target] : [target, origin]
-    const fullOptions = [...options, ...effectsTo.getSelfRollOptions(affects)]
+    const fullOptions = [...options, effectsFrom.getRollOptions(domains), effectsTo.getSelfRollOptions(affects)].flat()
     const resolvables = item ? (item.isOfType('spell') ? { spell: item } : { weapon: item }) : {}
     return (
         await Promise.all(
