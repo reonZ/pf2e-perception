@@ -1,6 +1,6 @@
 # 0.28.3
 
--   updated system ephemerals issues extraction to be in sync with recent changes
+-   updated system ephemerals extraction to be in sync with recent changes
 -   fixed issue with manually added lesser cover never being accounted for
 
 # 0.28.2
