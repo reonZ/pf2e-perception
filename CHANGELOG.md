@@ -1,3 +1,9 @@
+# 0.29.0
+
+-   newly created hidden tokens (holding `alt` before dropping them onto the scene) will now automatically be `unnoticed` from targeted tokens
+-   migrated all chat messages styles to a style sheet instead of having them inlined
+-   now moves the `unhide` button to the left if the message has the `Critical & Fumble` buttons shown
+
 # 0.28.3
 
 -   updated system ephemerals extraction to be in sync with recent changes

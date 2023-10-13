@@ -16,6 +16,8 @@ Bullet points:
 
 -   hovering over a token will display the conditional covers and visibilities other tokens in the scene have gainst this one
 
+-   the module will automatically set newly created hidden tokens (holding `alt` before dropping it onto the scene) as `unnoticed` from all targeted tokens
+
 -   the module will hide tokens that are undetected from the currently selected tokens for the GM
 
 -   the module will hide tokens that are undetected from any owned token in the scene for the players
