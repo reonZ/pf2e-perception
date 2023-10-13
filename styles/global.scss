@@ -73,3 +73,78 @@
         }
     }
 }
+
+.message {
+    .message-header {
+        .pf2e-perception-chat-combo {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 3px;
+        }
+
+        .pf2e-perception-chat-button {
+            margin: 0 0 5px;
+            padding-block: 0;
+            position: relative;
+
+            i.no-label {
+                margin: 0;
+            }
+
+            i.slashed {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 1.2em;
+            }
+
+            i.validated {
+                color: green;
+                margin-left: 0.3em;
+            }
+        }
+
+        .pf2e-perception-hint {
+            display: block;
+            font-size: 0.9em;
+            text-align: end;
+
+            i.validated {
+                color: green;
+            }
+
+            i.canceled {
+                color: red;
+            }
+        }
+    }
+
+    .dice-roll {
+        .dice-total {
+            .pf2e-perception-unhide {
+                position: absolute;
+                right: 0px;
+                bottom: 1px;
+
+                button {
+                    width: 22px;
+                    height: 22px;
+                    font-size: 10px;
+                    line-height: 1px;
+
+                    i {
+                        right: 1px;
+                    }
+                }
+            }
+
+            .dmgBtn-container + .pf2e-perception-unhide,
+            .pf2e-perception-unhide:has(+ .dmgBtn-container),
+            span > .pf2e-perception-unhide {
+                right: auto;
+                left: 0px;
+            }
+        }
+    }
+}

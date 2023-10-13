@@ -142,11 +142,12 @@ export function renderChatMessage(message, html) {
 
     if (isGM && attackCheckRoll.includes(pf2eContext?.type)) {
         const tooltip = localize('message.unhide.tooltip')
-        const button = `<span style="position: absolute; right: 0px; bottom: 1px;">
-    <button data-action="unhide" title="${tooltip}" style="width: 22px; height: 22px; font-size: 10px; line-height: 1px;">
-        <i class="fa-duotone fa-eye-slash" style="right: 1px;"></i>
+        const button = `<span class="pf2e-perception-unhide">
+    <button data-action="unhide" title="${tooltip}">
+        <i class="fa-duotone fa-eye-slash"></i>
     </button>
 </span>`
+
         html.find('.dice-result .dice-total').append(button)
         html.find('[data-action=unhide]').on('click', event => {
             event.stopPropagation()
@@ -160,7 +161,7 @@ export function validateMessage(message) {
 }
 
 function createValidateCombo({ skipWait, validated, smallIcon, smallAction, smallSlashed }) {
-    let buttons = '<div style="display: grid; grid-template-columns: 1fr auto; gap: 3px">'
+    let buttons = '<div class="pf2e-perception-chat-combo">'
 
     buttons += createValidateButton({ property: 'visibility', skipWait, validated })
     buttons += createChatButton({
@@ -188,14 +189,14 @@ function createWaitHint(property, validated) {
 }
 
 function createHint(hint, validated) {
-    if (validated === true) hint = '<i class="fa-solid fa-check" style="color: green;"></i> ' + hint
-    else if (validated === false) hint = '<i class="fa-solid fa-xmark" style="color: red;"></i> ' + hint
-    return `<i style="display: block; font-size: .9em; text-align: end;">${hint}</i>`
+    if (validated === true) hint = '<i class="fa-solid fa-check validated"></i> ' + hint
+    else if (validated === false) hint = '<i class="fa-solid fa-xmark canceled"></i> ' + hint
+    return `<i class="pf2e-perception-hint">${hint}</i>`
 }
 
 function createValidateButton({ skipWait, validated, property }) {
     let label = localize(`message.${property}.gm.${skipWait ? 'check' : validated ? 'validated' : 'validate'}`)
-    if (!skipWait && validated) label += '<i class="fa-solid fa-check" style="color: green; margin-left: 0.3em;"></i>'
+    if (!skipWait && validated) label += '<i class="fa-solid fa-check validated"></i>'
     return createChatButton({
         action: `validate-${property}`,
         icon: 'fa-solid fa-list',
@@ -204,13 +205,12 @@ function createValidateButton({ skipWait, validated, property }) {
 }
 
 export function createChatButton({ action, icon, label, tooltip, slashed = false }) {
-    let button = `<button type="button" style="margin: 0 0 5px; padding-block: 0; position: relative;" data-action="${action}" title="${tooltip}">`
+    let button = `<button type="button" class="pf2e-perception-chat-button" data-action="${action}" title="${tooltip}">`
 
     if (icon) {
-        button += `<i class="${icon}" ${label ? '' : `style="margin: 0;"`}></i>`
+        button += `<i class="${icon} ${label ? '' : 'no-label'}"></i>`
         if (slashed) {
-            const style = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.2em;'
-            button += `<i class="fa-solid fa-slash-forward" style="${style}"></i>`
+            button += `<i class="fa-solid fa-slash-forward slashed"></i>`
         }
     }
     if (label) button += `${icon ? ' ' : ''}${label}`
