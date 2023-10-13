@@ -394,7 +394,23 @@ export function rulesBasedVision() {
 }
 
 export function preCreateToken(token) {
-    if (!getSceneSetting(token.scene, 'npc-vision')) return
-    if (!token.actor?.isOfType('npc')) return
-    token.updateSource({ 'sight.enabled': true })
+    const actor = token.actor
+    if (!actor?.isOfType('creature')) return
+
+    if (actor.isOfType('npc') && getSceneSetting(token.scene, 'npc-vision')) {
+        token.updateSource({ 'sight.enabled': true })
+    }
+
+    if (game.user.isGM && token.hidden) {
+        const targets = game.user.targets
+        const updates = {}
+
+        for (const target of targets) {
+            updates[target.id] = { visibility: 'unnoticed' }
+        }
+
+        if (targets.size) {
+            token.updateSource({ [`flags.${MODULE_ID}.data`]: updates })
+        }
+    }
 }
