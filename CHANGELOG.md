@@ -1,3 +1,7 @@
+# 0.29.1
+
+-   fixed some styling
+
 # 0.29.0
 
 -   newly created hidden tokens (holding `alt` before dropping them onto the scene) will now automatically be `unnoticed` from targeted tokens
