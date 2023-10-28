@@ -7,7 +7,6 @@ import {
     createDarknessTemplate,
     createMistTemplate,
     createSeekTemplate,
-    createTemplate,
     deleteSeekTemplate,
     getDarknessTemplates,
     getMistTemplates,
@@ -50,8 +49,8 @@ export const API = {
     actor: {
         isProne,
         getCoverEffect,
-        hasGreaterDarkvision,
         seeInvisibility,
+        hasGreaterDarkvision,
     },
     scene: {
         getValidTokens,
@@ -66,7 +65,6 @@ export const API = {
         getMistTemplates,
         getSeekTemplateTokens,
         deleteSeekTemplate,
-        createTemplate,
         getTemplateTokens,
     },
     ruleElement: {
