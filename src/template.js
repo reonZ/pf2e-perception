@@ -10,7 +10,7 @@ const templateConversion = {
     rect: 'rect',
 }
 
-export function createSeekTemplate({ type, token, distance }) {
+export function createSeekTemplate({ type = 'burst', token, distance }) {
     if (!checkScene(token)) return
 
     distance ??= type === 'cone' ? 30 : 15
