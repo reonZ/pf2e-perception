@@ -1,3 +1,8 @@
+# 0.30.0
+
+-   some minor tweaks that shouldn't impact anything on the user end
+-   added a fully detailled list of the api function that have been exposed in the global
+
 # 0.29.1
 
 -   fixed some styling

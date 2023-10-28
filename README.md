@@ -69,6 +69,10 @@ game.modules.get('pf2e-perception').custom.getWallCover = (originToken, targetTo
 
 take a look at the [wiki](https://github.com/reonZ/pf2e-perception/wiki#rule-element) to learn how the module's `Rule Element` works and also some already pre-designed feats, effects and macros to illustrate it
 
+# APi
+
+the list of all the function exposed in the global can be found in the [wiki](https://github.com/reonZ/pf2e-perception/wiki#api)
+
 # CHANGELOG
 
 You can see the changelog [HERE](./CHANGELOG.md)
