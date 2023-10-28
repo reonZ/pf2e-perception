@@ -1,4 +1,4 @@
-import { getActorToken, getCoverEffect, hasGreaterDarkvision, isProne } from './actor.js'
+import { getCoverEffect, hasGreaterDarkvision, isProne } from './actor.js'
 import { clearDebug, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
 import { getLightExposure } from './lighting.js'
 import { getPerception, perceptionRules, updateFromPerceptionRules } from './rule-element.js'
@@ -48,7 +48,6 @@ export const API = {
         getLightExposure,
     },
     actor: {
-        getActorToken,
         isProne,
         getCoverEffect,
         hasGreaterDarkvision,
