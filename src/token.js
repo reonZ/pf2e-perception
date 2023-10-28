@@ -70,7 +70,7 @@ export async function setTokenData(token, data) {
 
 export function getWallCover(origin, target, debug = false) {
     const scene = origin.scene
-    if (!getSceneSetting(scene, 'standard')) return false
+    if (!getSceneSetting(scene, 'standard')) return
 
     if (debug) clearDebug()
 
