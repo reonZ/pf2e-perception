@@ -1,7 +1,12 @@
+# 0.31.0
+
+-   this is a `5.9.1` release
+-   fixed not being able to strike after the latest system update
+
 # 0.30.0
 
 -   some minor tweaks that shouldn't impact anything on the user end
--   added a fully detailled list of the api function that have been exposed in the global to the wiki
+-   added a fully detailed list of the api functions that have been exposed in the global to the wiki
 
 # 0.29.1
 
