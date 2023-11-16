@@ -1,9 +1,11 @@
 import { COVER_VALUES, VISIBILITY_VALUES } from '../constants'
 import { createCoverSource, createFlatFootedSource } from '../effect'
+import { R } from '../remeda'
 import { getPerception, perceptionRules } from '../rule-element'
 import { getCover, getVisibility } from '../token'
-import { R, asNumberOnly } from '../utils'
-import { extractEphemeralEffects, getRangeIncrement, isOffGuardFromFlanking, traitSlugToObject } from './helpers'
+import { asNumberOnly } from '../utils'
+import { extractEphemeralEffects, getRangeIncrement, isOffGuardFromFlanking } from './helpers'
+import { getPropertyRuneStrikeAdjustments } from './rune'
 
 export async function getRollContext(params) {
     const [selfToken, targetToken] =
@@ -38,7 +40,7 @@ export async function getRollContext(params) {
         options: [...params.options, ...(params.item?.getRollOptions('item') ?? [])],
     })
 
-    const tokenMarkOption = (() => {
+    const targetMarkOption = (() => {
         const tokenMark = targetToken ? this.synthetics.tokenMarks.get(targetToken.document.uuid) : null
         return tokenMark ? `target:mark:${tokenMark}` : null
     })()
@@ -47,14 +49,12 @@ export async function getRollContext(params) {
         params.viewOnly || !targetToken?.actor
             ? this
             : this.getContextualClone(
-                  R.compact(
-                      [
-                          Array.from(params.options),
-                          targetToken.actor.getSelfRollOptions('target'),
-                          tokenMarkOption,
-                          isFlankingAttack ? 'self:flanking' : null,
-                      ].flat()
-                  ),
+                  R.compact([
+                      ...Array.from(params.options),
+                      ...targetToken.actor.getSelfRollOptions('target'),
+                      targetMarkOption,
+                      isFlankingAttack ? 'self:flanking' : null,
+                  ]),
                   originEphemeralEffects
               )
 
@@ -100,20 +100,21 @@ export async function getRollContext(params) {
 
     const itemOptions = selfItem?.getRollOptions('item') ?? []
 
-    const traitSlugs = [
-        isAttackAction ? 'attack' : [],
-        // CRB p. 544: "Due to the complexity involved in preparing bombs, Strikes to throw alchemical bombs gain
-        // the manipulate trait."
-        isStrike && selfItem?.isOfType('weapon') && selfItem.baseType === 'alchemical-bomb' ? 'manipulate' : [],
-    ].flat()
-
-    if (selfItem?.isOfType('weapon', 'melee')) {
-        for (const adjustment of this.synthetics.strikeAdjustments) {
-            adjustment.adjustTraits?.(selfItem, traitSlugs)
+    const actionTraits = (() => {
+        const traits = R.compact([params.traits].flat())
+        if (selfItem?.isOfType('weapon', 'melee')) {
+            const strikeAdjustments = [
+                selfActor.synthetics.strikeAdjustments,
+                getPropertyRuneStrikeAdjustments(selfItem.system.runes.property),
+            ].flat()
+            for (const adjustment of strikeAdjustments) {
+                adjustment.adjustTraits?.(selfItem, traits)
+            }
         }
-    }
 
-    const traits = traitSlugs.map(t => traitSlugToObject(t, CONFIG.PF2E.actionTraits))
+        return R.uniq(traits).sort()
+    })()
+
     // Calculate distance and range increment, set as a roll option
     const distance = selfToken && targetToken ? selfToken.distanceTo(targetToken) : null
     const [originDistance, targetDistance] =
@@ -124,7 +125,7 @@ export async function getRollContext(params) {
         const targetOptions = actor?.getSelfRollOptions('target') ?? []
         if (targetToken) {
             targetOptions.push('target') // An indicator that there is a target of any kind
-            if (tokenMarkOption) targetOptions.push(tokenMarkOption)
+            if (targetMarkOption) targetOptions.push(targetMarkOption)
         }
         return targetOptions.sort()
     }
@@ -181,16 +182,22 @@ export async function getRollContext(params) {
         targetEphemeralEffects.push(condition.toObject())
     }
 
+    const originMarkOption = (() => {
+        const tokenMark = selfToken ? targetToken?.actor?.synthetics.tokenMarks.get(selfToken.document.uuid) : null
+        return tokenMark ? `origin:mark:${tokenMark}` : null
+    })()
+
     // Clone the actor to recalculate its AC with contextual roll options
     const targetActor = params.viewOnly
         ? null
         : (params.target?.actor ?? targetToken?.actor)?.getContextualClone(
-              [
+              R.compact([
                   ...selfActor.getSelfRollOptions('origin'),
                   ...params.options,
                   ...itemOptions,
                   ...(originDistance ? [originDistance] : []),
-              ],
+                  originMarkOption,
+              ]),
               targetEphemeralEffects
           ) ?? null
 
@@ -226,6 +233,6 @@ export async function getRollContext(params) {
         options: rollOptions,
         self,
         target,
-        traits,
+        traits: actionTraits,
     }
 }

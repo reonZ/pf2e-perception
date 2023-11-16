@@ -24,7 +24,3 @@ export function asNumberOnly(value) {
     value = Number(value)
     return isNaN(value) ? undefined : value
 }
-
-export const R = {
-    compact: arr => arr.filter(Boolean),
-}
