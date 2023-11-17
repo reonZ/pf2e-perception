@@ -44,6 +44,7 @@ export async function getRollContext(params) {
         const tokenMark = targetToken ? this.synthetics.tokenMarks.get(targetToken.document.uuid) : null
         return tokenMark ? `target:mark:${tokenMark}` : null
     })()
+    const initialActionOptions = params.traits?.map(t => `self:action:trait:${t}`) ?? []
 
     const selfActor =
         params.viewOnly || !targetToken?.actor
@@ -53,6 +54,7 @@ export async function getRollContext(params) {
                       ...Array.from(params.options),
                       ...targetToken.actor.getSelfRollOptions('target'),
                       targetMarkOption,
+                      ...initialActionOptions,
                       isFlankingAttack ? 'self:flanking' : null,
                   ]),
                   originEphemeralEffects
@@ -92,7 +94,7 @@ export async function getRollContext(params) {
 
         // 3. Get the item directly from the context clone
         const itemClone = selfActor.items.get(params.item?.id ?? '')
-        if (itemClone?.isOfType('melee', 'spell', 'weapon')) return itemClone
+        if (itemClone?.isOfType('melee', 'weapon')) return itemClone
 
         // 4 Give up :(
         return params.item ?? null
@@ -193,6 +195,7 @@ export async function getRollContext(params) {
         : (params.target?.actor ?? targetToken?.actor)?.getContextualClone(
               R.compact([
                   ...selfActor.getSelfRollOptions('origin'),
+                  ...actionTraits.map(t => `origin:action:trait${t}`),
                   ...params.options,
                   ...itemOptions,
                   ...(originDistance ? [originDistance] : []),
@@ -206,6 +209,7 @@ export async function getRollContext(params) {
             ...params.options,
             ...selfActor.getRollOptions(params.domains),
             ...(targetActor ? getTargetRollOptions(targetActor) : targetRollOptions),
+            ...actionTraits.map(t => `self:action:trait:${t}`),
             ...itemOptions,
             // Backward compatibility for predication looking for an "attack" trait by its lonesome
             isAttackAction ? 'attack' : null,
