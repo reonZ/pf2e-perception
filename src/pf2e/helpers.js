@@ -51,3 +51,7 @@ export function isOffGuardFromFlanking(target, origin) {
 export function isObject(value) {
     return typeof value === 'object' && value !== null
 }
+
+export function tupleHasValue(array, value) {
+    return array.includes(value)
+}

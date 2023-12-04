@@ -1,5 +1,6 @@
 import { DARKNESS_COLOR, DARKNESS_SLUGS, MIST_COLOR, MIST_SLUGS, POISON_GREEN } from './constants.js'
 import { MODULE_ID, getFlag, localize } from './module.js'
+import { tupleHasValue } from './pf2e/helpers.js'
 import { highlightGrid } from './pf2e/highlight.js'
 
 const templateConversion = {
@@ -110,7 +111,6 @@ export function createTemplate({ type, distance, traits, fillColor, width, flags
     new CONFIG.MeasuredTemplate.objectClass(templateDoc).drawPreview()
 }
 
-// TODO remove once it is in the system
 export function getTemplateTokens(template, { collisionOrigin, collisionType = 'move' } = {}) {
     template = template instanceof MeasuredTemplateDocument ? template.object : template
 
@@ -173,7 +173,9 @@ export function getTemplateTokens(template, { collisionOrigin, collisionType = '
 }
 
 export function highlightTemplateGrid() {
-    if (!['circle', 'cone'].includes(this.type) || canvas.grid.type !== CONST.GRID_TYPES.SQUARE) {
+    const isCircleOrCone = ['circle', 'cone'].includes(this.document.t)
+    const hasSquareGrid = canvas.grid.type === CONST.GRID_TYPES.SQUARE
+    if (!isCircleOrCone || !hasSquareGrid) {
         return MeasuredTemplate.prototype.highlightGrid.call(this)
     }
 
@@ -186,8 +188,9 @@ export function highlightTemplateGrid() {
     const collisionType = getFlag(this.document, 'collisionType')
     const collisionOrigin = getFlag(this.document, 'collisionOrigin')
 
+    this.snapForShape()
     highlightGrid({
-        areaType: this.type === 'circle' ? 'burst' : 'cone',
+        areaType: tupleHasValue(['burst', 'cone', 'emanation'], this.areaType) ? this.areaType : 'burst',
         object: this,
         document: this.document,
         colors: { border: this.borderColor, fill: this.fillColor },
