@@ -1,3 +1,8 @@
+# 0.33.0
+
+-   this is a `5.10.3` release
+-   fix templates not colliding with walls
+
 # 0.32.0
 
 -   this is a `5.9.2` release

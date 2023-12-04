@@ -26,7 +26,7 @@ export function getFeatWithUUID(actor, uuid) {
     return actor.itemTypes.feat.find(f => f.sourceId === uuid)
 }
 
-export function visionLevel() {
+export function npcVisionLevel() {
     const sensesStr = this.system.traits.senses.value
     const senses = splitNPCSenses(sensesStr)
 

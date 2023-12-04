@@ -1,5 +1,5 @@
 import { setupActions } from './action.js'
-import { visionLevel } from './actor.js'
+import { npcVisionLevel } from './actor.js'
 import { API } from './api.js'
 import { renderChatMessage } from './chat.js'
 import { checkRoll, renderCheckModifiersDialog } from './check.js'
@@ -30,7 +30,7 @@ const RULES_BASED_VISION = 'CONFIG.Token.documentClass.prototype.rulesBasedVisio
 const HIGHLIGHT_TEMPLATE_GRID = 'CONFIG.MeasuredTemplate.objectClass.prototype.highlightGrid'
 
 const GET_ROLL_CONTEXT = 'CONFIG.Actor.documentClass.prototype.getRollContext'
-const VISION_LEVEL = 'CONFIG.PF2E.Actor.documentClasses.npc.prototype.visionLevel'
+const NPC_VISION_LEVEL = 'CONFIG.PF2E.Actor.documentClasses.npc.prototype.visionLevel'
 
 const DETECTION_MODE_TEST_VISIBILITY = 'DetectionMode.prototype.testVisibility'
 const BASIC_SIGHT_CAN_DETECT = 'CONFIG.Canvas.detectionModes.basicSight._canDetect'
@@ -49,7 +49,7 @@ Hooks.once('init', () => {
     libWrapper.register(MODULE_ID, RULES_BASED_VISION, rulesBasedVision, 'OVERRIDE')
 
     libWrapper.register(MODULE_ID, GET_ROLL_CONTEXT, getRollContext, 'OVERRIDE')
-    libWrapper.register(MODULE_ID, VISION_LEVEL, visionLevel, 'OVERRIDE')
+    libWrapper.register(MODULE_ID, NPC_VISION_LEVEL, npcVisionLevel, 'OVERRIDE')
 
     libWrapper.register(MODULE_ID, DETECTION_MODE_TEST_VISIBILITY, detectionModeTestVisibility, 'OVERRIDE')
     libWrapper.register(MODULE_ID, BASIC_SIGHT_CAN_DETECT, basicSightCanDetect, 'OVERRIDE')
