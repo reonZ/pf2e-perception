@@ -82,16 +82,23 @@ export function setupRuleElement() {
                 return
             }
 
-            const valueType = selector.value
-            if (!valueType && selector.value) {
+            if (!selector.value && source.value) {
                 selectorWarn(`The selector "${source.selector}" doesn't accept any value property.`)
                 return
             }
 
-            const sourcevalueType = typeof source.value
-            if (valueType && !valueType.includes(sourcevalueType)) {
-                const msg = `The selector "${source.selector}" does not accept a value property of type ${sourcevalueType}.`
-                this.failValidation(msg)
+            if (source.selector === 'set') {
+                if (!selector.value.includes(source.value)) {
+                    const joinedValues = selector.value.join(', ')
+                    const msg = `The selector "${source.selector}" only accepts the following: ${joinedValues}.`
+                    this.failValidation(msg)
+                }
+            } else {
+                const sourcevalueType = typeof source.value
+                if (selector.value && !selector.value.includes(sourcevalueType)) {
+                    const msg = `The selector "${source.selector}" does not accept a value property of type ${sourcevalueType}.`
+                    this.failValidation(msg)
+                }
             }
         }
 
@@ -245,13 +252,18 @@ export function getPerception(perception, affects, type, selector, targets) {
 }
 
 export function updateFromPerceptionRules(perception, affects, type, value) {
+    if (value === undefined) {
+        value = type === 'cover' ? 'none' : 'observed'
+    }
+
     const list = type === 'cover' ? COVERS : VISIBILITIES
 
     if (value && getPerception(perception, affects, type, 'cancel', value)) return undefined
 
     const setValue = getPerception(perception, affects, type, 'set', value)?.first()
-    if (setValue && list.includes(setValue)) value = setValue
-    else if (value && getPerception(perception, affects, type, 'reduce', value)) {
+    if (setValue && list.includes(setValue)) {
+        value = setValue
+    } else if (value && getPerception(perception, affects, type, 'reduce', value)) {
         const index = list.indexOf(value)
         value = list[Math.max(0, index - 1)]
     }
