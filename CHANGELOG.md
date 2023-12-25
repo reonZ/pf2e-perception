@@ -1,3 +1,7 @@
+# 0.33.1
+
+-   fixed the `set` rule element selector
+
 # 0.33.0
 
 -   this is a `5.10.3` release
