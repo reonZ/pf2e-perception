@@ -27,8 +27,7 @@ export function getFeatWithUUID(actor, uuid) {
 }
 
 export function npcVisionLevel() {
-    const sensesStr = this.system.traits.senses.value
-    const senses = splitNPCSenses(sensesStr)
+    const senses = this.system.perception.senses.map(x => x.type)
 
     const sensesRules = this.rules.filter(r => r.key === 'Sense').map(r => r.selector.toLowerCase())
     senses.push(...sensesRules)
@@ -43,15 +42,9 @@ export function npcVisionLevel() {
 }
 
 function hasSense(actor, sense) {
-    if (!actor || !sense || !actor.system.traits?.senses) return false
-
+    if (!actor || !sense || !actor.system.perception?.senses) return false
     sense = sense.toLowerCase()
-
-    let senses = actor.system.traits.senses
-    if (Array.isArray(senses)) senses = senses.map(s => s.type.toLowerCase())
-    else senses = splitNPCSenses(senses.value)
-
-    return senses.includes(sense)
+    return !!actor.system.perception.senses.find(({ type }) => type === sense)
 }
 
 export function hasGreaterDarkvision(actor) {
