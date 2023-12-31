@@ -53,7 +53,7 @@ export async function checkRoll(wrapped, ...args) {
         const isUndetected = VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected
         const isBlind = event?.ctrlKey || event?.metaKey
 
-        const roll = await new originToken.actor.perception.constructor(originToken.actor, {
+        const roll = await new originToken.actor.saves.reflex.constructor(originToken.actor, {
             slug: 'visibility-check',
             label: `${game.i18n.localize('PF2E.FlatCheck')}: ${game.i18n.localize(`PF2E.condition.${visibility}.name`)}`,
             check: { type: 'flat-check' },
