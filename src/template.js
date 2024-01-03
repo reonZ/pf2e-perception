@@ -107,8 +107,7 @@ export function createTemplate({ type, distance, traits, fillColor, width, flags
 
     if (traits) setProperty(templateData, 'flags.pf2e.origin.traits', traits)
 
-    const templateDoc = new CONFIG.MeasuredTemplate.documentClass(templateData, { parent: canvas.scene })
-    new CONFIG.MeasuredTemplate.objectClass(templateDoc).drawPreview()
+    canvas.templates.createPreview(templateData)
 }
 
 export function getTemplateTokens(template, { collisionOrigin, collisionType = 'move' } = {}) {
