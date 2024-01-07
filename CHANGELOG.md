@@ -1,3 +1,9 @@
+# 0.34.0
+
+-   this is a `5.12.0` release
+-   updated NPCs senses not being a simple string anymore
+-   fixed template creation error
+
 # 0.33.1
 
 -   fixed the `set` rule element selector
