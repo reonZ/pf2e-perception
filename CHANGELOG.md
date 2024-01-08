@@ -1,3 +1,9 @@
+# 0.34.1
+
+-   removed custom NPC vision (it is in the system now)
+-   fixed `Greater Darkvision` check
+-   fixed `See Invisibility` check
+
 # 0.34.0
 
 -   this is a `5.12.0` release
