@@ -26,21 +26,6 @@ export function getFeatWithUUID(actor, uuid) {
     return actor.itemTypes.feat.find(f => f.sourceId === uuid)
 }
 
-export function npcVisionLevel() {
-    const senses = this.system.perception.senses.map(x => x.type)
-
-    const sensesRules = this.rules.filter(r => r.key === 'Sense').map(r => r.selector.toLowerCase())
-    senses.push(...sensesRules)
-
-    return this.getCondition('blinded')
-        ? VISION_LEVELS.BLINDED
-        : senses.includes('darkvision') || senses.includes('greaterdarkvision')
-        ? VISION_LEVELS.DARKVISION
-        : senses.includes('lowlightvision')
-        ? VISION_LEVELS.LOWLIGHT
-        : VISION_LEVELS.NORMAL
-}
-
 function hasSense(actor, sense) {
     if (!actor || !sense || !actor.system.perception?.senses) return false
     sense = sense.toLowerCase()
@@ -48,13 +33,9 @@ function hasSense(actor, sense) {
 }
 
 export function hasGreaterDarkvision(actor) {
-    return hasSense(actor, 'greaterdarkvision')
+    return hasSense(actor, 'greater-darkvision')
 }
 
 export function seeInvisibility(actor) {
-    return hasSense(actor, 'seeinvisibility')
-}
-
-function splitNPCSenses(sensesStr) {
-    return sensesStr.toLowerCase().replaceAll(/[ -]/g, '').split(',')
+    return hasSense(actor, 'see-invisibility')
 }
