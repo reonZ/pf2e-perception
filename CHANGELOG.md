@@ -1,3 +1,7 @@
+# 0.34.2
+
+-   fixed missing weapon runes strike adjustments
+
 # 0.34.1
 
 -   removed custom NPC vision (it is in the system now)
