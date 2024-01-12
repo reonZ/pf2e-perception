@@ -1,3 +1,5 @@
+import { PredicatePF2e } from './predicate'
+
 const WEAPON_PROPERTY_RUNES = {
     ancestralEchoing: {
         level: 15,
@@ -48,6 +50,17 @@ const WEAPON_PROPERTY_RUNES = {
         rarity: 'common',
         slug: 'ashen',
         traits: ['magical'],
+    },
+    astral: {
+        level: 8,
+        name: 'PF2E.WeaponPropertyRune.astral.Name',
+        price: 450,
+        rarity: 'common',
+        slug: 'astral',
+        traits: ['magical', 'spirit'],
+        damage: {
+            dice: [{ damageType: 'spirit', diceNumber: 1, dieSize: 'd6' }],
+        },
     },
     authorized: {
         level: 3,
@@ -104,7 +117,7 @@ const WEAPON_PROPERTY_RUNES = {
                     damageType: 'vitality',
                     diceNumber: 1,
                     dieSize: 'd4',
-                    predicate: ['target:mode:undead'],
+                    predicate: ['target:negative-healing'],
                 },
             ],
             notes: [
@@ -197,6 +210,32 @@ const WEAPON_PROPERTY_RUNES = {
         slug: 'dancing',
         traits: ['magical'],
     },
+    decaying: {
+        damage: {
+            dice: [
+                {
+                    slug: 'decaying',
+                    damageType: 'void',
+                    diceNumber: 1,
+                    dieSize: 'd4',
+                },
+                {
+                    slug: 'decaying-persistent',
+                    category: 'persistent',
+                    damageType: 'void',
+                    diceNumber: 2,
+                    dieSize: 'd4',
+                    critical: true,
+                },
+            ],
+        },
+        level: 8,
+        name: 'PF2E.WeaponPropertyRune.decaying.Name',
+        price: 500,
+        rarity: 'common',
+        slug: 'decaying',
+        traits: ['acid', 'magical', 'void'],
+    },
     deathdrinking: {
         damage: {
             dice: [
@@ -248,10 +287,11 @@ const WEAPON_PROPERTY_RUNES = {
         damage: {
             dice: [
                 {
+                    category: 'persistent',
                     damageType: 'vitality',
                     diceNumber: 1,
                     dieSize: 'd6',
-                    predicate: ['target:mode:undead'],
+                    predicate: ['target:negative-healing'],
                 },
             ],
             notes: [
@@ -259,7 +299,7 @@ const WEAPON_PROPERTY_RUNES = {
                     outcome: ['criticalSuccess'],
                     title: 'PF2E.WeaponPropertyRune.disrupting.Name',
                     text: 'PF2E.WeaponPropertyRune.disrupting.Note.criticalSuccess',
-                    predicate: ['target:mode:undead'],
+                    predicate: ['target:negative-healing'],
                 },
             ],
         },
@@ -447,6 +487,18 @@ const WEAPON_PROPERTY_RUNES = {
         slug: 'greaterAshen',
         traits: ['magical'],
     },
+    greaterAstral: {
+        level: 15,
+        name: 'PF2E.WeaponPropertyRune.greaterAstral.Name',
+        price: 6000,
+        rarity: 'common',
+        slug: 'greaterAstral',
+        traits: ['magical', 'spirit'],
+        damage: {
+            dice: [{ damageType: 'spirit', diceNumber: 1, dieSize: 'd6' }],
+            ignoredResistances: [{ type: 'spirit', max: null }],
+        },
+    },
     greaterBloodbane: {
         level: 13,
         name: 'PF2E.WeaponPropertyRune.greaterBloodbane.Name',
@@ -460,6 +512,7 @@ const WEAPON_PROPERTY_RUNES = {
             dice: [
                 { damageType: 'fire', diceNumber: 1, dieSize: 'd4' },
                 {
+                    damageType: 'spirit',
                     diceNumber: 1,
                     dieSize: 'd4',
                     predicate: ['target:trait:fiend'],
@@ -468,7 +521,7 @@ const WEAPON_PROPERTY_RUNES = {
                     damageType: 'vitality',
                     diceNumber: 1,
                     dieSize: 'd4',
-                    predicate: ['target:mode:undead'],
+                    predicate: ['target:negative-healing'],
                 },
             ],
             notes: [
@@ -485,7 +538,7 @@ const WEAPON_PROPERTY_RUNES = {
             ],
             ignoredResistances: [
                 { type: 'fire', max: null },
-                { type: 'good', max: null },
+                { type: 'spirit', max: null },
                 { type: 'vitality', max: null },
             ],
         },
@@ -511,6 +564,7 @@ const WEAPON_PROPERTY_RUNES = {
                     text: 'PF2E.WeaponPropertyRune.greaterCorrosive.Note.success',
                 },
             ],
+            ignoredResistances: [{ type: 'acid', max: null }],
         },
         level: 15,
         name: 'PF2E.WeaponPropertyRune.greaterCorrosive.Name',
@@ -536,14 +590,42 @@ const WEAPON_PROPERTY_RUNES = {
         slug: 'greaterCrushing',
         traits: ['magical'],
     },
+    greaterDecaying: {
+        damage: {
+            dice: [
+                {
+                    slug: 'decaying',
+                    damageType: 'void',
+                    diceNumber: 1,
+                    dieSize: 'd4',
+                },
+                {
+                    slug: 'decaying-persistent',
+                    category: 'persistent',
+                    damageType: 'void',
+                    diceNumber: 4,
+                    dieSize: 'd4',
+                    critical: true,
+                },
+            ],
+            ignoredResistances: [{ type: 'void', max: null }],
+        },
+        level: 15,
+        name: 'PF2E.WeaponPropertyRune.greaterDecaying.Name',
+        price: 6500,
+        rarity: 'common',
+        slug: 'greaterDecaying',
+        traits: ['acid', 'magical', 'void'],
+    },
     greaterDisrupting: {
         damage: {
             dice: [
                 {
+                    category: 'persistent',
                     damageType: 'vitality',
                     diceNumber: 2,
                     dieSize: 'd6',
-                    predicate: ['target:mode:undead'],
+                    predicate: ['target:negative-healing'],
                 },
             ],
             notes: [
@@ -551,7 +633,7 @@ const WEAPON_PROPERTY_RUNES = {
                     outcome: ['criticalSuccess'],
                     title: 'PF2E.WeaponPropertyRune.greaterDisrupting.Name',
                     text: 'PF2E.WeaponPropertyRune.greaterDisrupting.Note.criticalSuccess',
-                    predicate: ['target:mode:undead'],
+                    predicate: ['target:negative-healing'],
                 },
             ],
         },
@@ -982,7 +1064,17 @@ const WEAPON_PROPERTY_RUNES = {
         ],
     },
     keen: {
-        attack: {},
+        attack: {
+            dosAdjustments: [
+                {
+                    adjustments: { success: { label: 'PF2E.WeaponPropertyRune.keen.Name', amount: 'criticalSuccess' } },
+                    predicate: new PredicatePF2e([
+                        'check:total:natural:19',
+                        { or: ['item:damage:type:slashing', 'item:damage:type:piercing'] },
+                    ]),
+                },
+            ],
+        },
         level: 13,
         name: 'PF2E.WeaponPropertyRune.keen.Name',
         price: 3000,
@@ -1115,7 +1207,7 @@ const WEAPON_PROPERTY_RUNES = {
     },
     speed: {
         level: 16,
-        name: 'PF2E.WeaponPropertyRune.speed.Name',
+        name: 'PF2E.Actor.Speed.Label',
         price: 10_000,
         rarity: 'rare',
         slug: 'speed',
