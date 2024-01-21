@@ -73,9 +73,9 @@ export function getSeekTemplateTokens(token) {
     const template = canvas.scene.templates.find(t => getFlag(t, 'type') === 'seek')
     if (!template) return null
 
-    token = token instanceof Token ? token.document : token
+    const tokenDoc = token instanceof Token ? token.document : token
 
-    return getTemplateTokens(template, { collisionType: 'sight', collisionOrigin: token.center })
+    return getTemplateTokens(template, { collisionType: 'sight', collisionOrigin: tokenDoc.center })
 }
 
 export async function deleteSeekTemplate(token) {
@@ -125,15 +125,15 @@ export function createTemplate({ type, distance, traits, fillColor, width, flags
 }
 
 export function getTemplateTokens(template, { collisionOrigin, collisionType = 'move' } = {}) {
-    template = template instanceof MeasuredTemplateDocument ? template.object : template
+    const templateObj = template instanceof MeasuredTemplateDocument ? template.object : template
 
     if (!canvas.scene) return []
     const { grid, dimensions } = canvas
     if (!(grid && dimensions)) return []
 
-    const gridHighlight = grid.getHighlightLayer(template.highlightId)
+    const gridHighlight = grid.getHighlightLayer(templateObj.highlightId)
     if (!gridHighlight || grid.type !== CONST.GRID_TYPES.SQUARE) return []
-    const origin = collisionOrigin ?? template.center
+    const origin = collisionOrigin ?? templateObj.center
 
     // Get all the tokens that are inside the highlight bounds
     const tokens = canvas.tokens.quadtree.getObjects(gridHighlight.getLocalBounds(undefined, true))
