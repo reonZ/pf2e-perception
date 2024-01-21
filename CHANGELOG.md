@@ -1,3 +1,10 @@
+# 0.35.0
+
+-   improved secret action messages for players
+-   change the behavior of the `Seek` action when no token is targeted manually, it will no longer automatically select all available enemies and roll for them, leaving everything in the hands of the GM
+-   added support for the `Create a Diversion` action
+-   added a new `Use Seek Templates` client setting: when disabled, the `Seek` action will no longer bring up the templates dialog
+
 # 0.34.2
 
 -   fixed missing weapon runes strike adjustments

@@ -92,7 +92,7 @@
             },
             "seek-template": {
                 "name": "Use Seek Templates",
-                "hint": "When disabled, the seek action will not use templates."
+                "hint": "When disabled, the seek action will no longer bring up the templates dialog."
             }
         },
         "warning": {
