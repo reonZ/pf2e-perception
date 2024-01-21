@@ -78,6 +78,8 @@ export async function checkRoll(wrapped, ...args) {
         setProperty(context, 'pf2ePerception.selected', game.user.targets.ids)
         // } else if (context.options.has('action:sneak')) {
         //     context.selected = game.user.targets.ids
+    } else if (context.options.has('action:create-a-diversion')) {
+        setProperty(context, 'pf2ePerception.selected', game.user.targets.ids)
     } else if (context.options.has('action:seek')) {
         const highlighted = getSeekTemplateTokens(originToken)
         const tokens = highlighted ?? Array.from(game.user.targets)
@@ -112,11 +114,11 @@ export function renderCheckModifiersDialog(dialog, html) {
 
     const covers = isProne(targetActor) ? COVERS.slice(1) : COVERS.slice(1, -1)
 
-    covers.forEach(slug => {
+    for (const slug of covers) {
         const selected = slug === coverOverride ? 'selected' : ''
         const label = localize(`cover.${slug}`)
         template += `<option value="${slug}" ${selected}>${label}</option>`
-    })
+    }
 
     template += '</select></div>'
 

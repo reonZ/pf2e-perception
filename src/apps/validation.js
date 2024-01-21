@@ -9,6 +9,7 @@ import { BaseMenu } from './base-menu.js'
 
 class ValidationMenu extends BaseMenu {
     static async openMenu(params, options) {
+        // biome-ignore lint/complexity/noThisInStatic: shit aint working
         const validated = await super.openMenu(params, options)
         if (validated && params.message) validateMessage(params.message)
         return validated
@@ -73,7 +74,7 @@ class ValidationMenu extends BaseMenu {
         const originalData = this.getSavedData(false)
         const property = this.property
 
-        let selected = this.selected
+        const selected = this.selected
         let tokens = getValidTokens(this.token)
 
         tokens = tokens.map(({ id, name, actor }) => {
@@ -154,8 +155,20 @@ export class HideValidationMenu extends VisibilityValidationMenu {
         const success = new DegreeOfSuccess(roll, dc).value
 
         if (success >= DegreeOfSuccess.SUCCESS && visibility < VISIBILITY_VALUES.hidden) return 'hidden'
-        else if (success <= DegreeOfSuccess.FAILURE && visibility >= VISIBILITY_VALUES.hidden) return 'observed'
-        else return value
+        if (success <= DegreeOfSuccess.FAILURE && visibility >= VISIBILITY_VALUES.hidden) return 'observed'
+        return value
+    }
+}
+
+export class CreateADiversionMenu extends VisibilityValidationMenu {
+    processValue({ token, value }) {
+        const roll = this.roll
+        const dc = token.actor.perception.dc.value
+        const visibility = VISIBILITY_VALUES[value]
+        const success = new DegreeOfSuccess(roll, dc).value
+
+        if (success >= DegreeOfSuccess.SUCCESS && visibility < VISIBILITY_VALUES.hidden) return 'hidden'
+        return value
     }
 }
 
@@ -167,7 +180,7 @@ export class UnHideValidationMenu extends VisibilityValidationMenu {
     processValue({ token, value }) {
         const visibility = VISIBILITY_VALUES[value]
         if (visibility >= VISIBILITY_VALUES.hidden) return 'observed'
-        else return value
+        return value
     }
 }
 
@@ -226,11 +239,14 @@ class ReverseVisibilityValidationMenu extends VisibilityValidationMenu {
         const updates = []
 
         for (const [tokenId, data] of Object.entries(currentData)) {
-            let update = { _id: tokenId }
+            const update = { _id: tokenId }
             const token = scene.tokens.get(tokenId)
 
             if (token) {
-                if (data.visibility === defaultValues.visibility) delete data.visibility
+                if (data.visibility === defaultValues.visibility) {
+                    // biome-ignore lint/performance/noDelete: needs to be gone
+                    delete data.visibility
+                }
 
                 const original = getTokenData(token, thisId) ?? {}
                 if (original?.visibility === data.visibility) continue
@@ -265,6 +281,7 @@ export class SeekValidationMenu extends ReverseVisibilityValidationMenu {
     }
 
     static async openMenu(params, options) {
+        // biome-ignore lint/complexity/noThisInStatic: nop
         const validated = await super.openMenu(params, options)
         if (validated) deleteSeekTemplate(params.token)
     }
@@ -276,8 +293,8 @@ export class SeekValidationMenu extends ReverseVisibilityValidationMenu {
         const success = new DegreeOfSuccess(roll, dc).value
 
         if (success >= DegreeOfSuccess.CRITICAL_SUCCESS && visibility >= VISIBILITY_VALUES.hidden) return 'observed'
-        else if (success >= DegreeOfSuccess.SUCCESS && visibility === VISIBILITY_VALUES.hidden) return 'observed'
-        else if (success >= DegreeOfSuccess.SUCCESS && visibility >= VISIBILITY_VALUES.undetected) return 'hidden'
-        else return value
+        if (success >= DegreeOfSuccess.SUCCESS && visibility === VISIBILITY_VALUES.hidden) return 'observed'
+        if (success >= DegreeOfSuccess.SUCCESS && visibility >= VISIBILITY_VALUES.undetected) return 'hidden'
+        return value
     }
 }

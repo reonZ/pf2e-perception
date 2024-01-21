@@ -2,7 +2,7 @@ import { getActorToken, getCoverEffect, isProne } from './actor.js'
 import { createTokenMessage } from './chat.js'
 import { VISIBILITY_VALUES, defaultValues } from './constants.js'
 import { createCoverSource } from './effect.js'
-import { MODULE_ID, getSetting, localize, templatePath } from './module.js'
+import { MODULE_ID, getActionName, getSetting, localize, templatePath } from './module.js'
 import { validateTokens } from './scene.js'
 import { createSeekTemplate, deleteSeekTemplate } from './template.js'
 import { clearTokenData, getTokenData, setTokenData } from './token.js'
@@ -17,6 +17,7 @@ export function setupActions() {
 
     setupCover(BaseAction, BaseActionVariant)
     setupHide(SingleCheckAction, SingleCheckActionVariant)
+    setupCreateADiversion(SingleCheckAction, SingleCheckActionVariant)
     setupSneak(SingleCheckAction, SingleCheckActionVariant)
     setupSeek(SingleCheckAction, SingleCheckActionVariant)
     setupPointOut(BaseAction, BaseActionVariant)
@@ -85,7 +86,7 @@ async function pointOut({ name, traits }, token) {
 function setupSeek(SingleCheckAction, SingleCheckActionVariant) {
     class SeekVariant extends SingleCheckActionVariant {
         async use(options = {}) {
-            const action = game.i18n.localize('PF2E.Actions.Seek.Title')
+            const action = getActionName('Seek')
             const token = getSelectedToken(options, action)
             if (!token) return
 
@@ -182,7 +183,7 @@ async function seek(token) {
 function setupSneak(SingleCheckAction, SingleCheckActionVariant) {
     class SneakVariant extends SingleCheckActionVariant {
         async use(options = {}) {
-            const action = game.i18n.localize('PF2E.Actions.Sneak.Title')
+            const action = getActionName('Sneak')
             const token = getSelectedToken(options, action)
             if (!token) return
 
@@ -195,12 +196,12 @@ function setupSneak(SingleCheckAction, SingleCheckActionVariant) {
         constructor() {
             super({
                 cost: 1,
-                description: `PF2E.Actions.Sneak.Description`,
-                name: `PF2E.Actions.Sneak.Title`,
+                description: 'PF2E.Actions.Sneak.Description',
+                name: 'PF2E.Actions.Sneak.Title',
                 notes: [
-                    { outcome: ['success', 'criticalSuccess'], text: `PF2E.Actions.Sneak.Notes.success` },
-                    { outcome: ['failure'], text: `PF2E.Actions.Sneak.Notes.failure` },
-                    { outcome: ['criticalFailure'], text: `PF2E.Actions.Sneak.Notes.criticalFailure` },
+                    { outcome: ['success', 'criticalSuccess'], text: 'PF2E.Actions.Sneak.Notes.success' },
+                    { outcome: ['failure'], text: 'PF2E.Actions.Sneak.Notes.failure' },
+                    { outcome: ['criticalFailure'], text: 'PF2E.Actions.Sneak.Notes.criticalFailure' },
                 ],
                 rollOptions: ['action:sneak'],
                 slug: 'sneak',
@@ -216,10 +217,67 @@ function setupSneak(SingleCheckAction, SingleCheckActionVariant) {
     // game.pf2e.actions.set('sneak', new Sneak())
 }
 
+function setupCreateADiversion(SingleCheckAction, SingleCheckActionVariant) {
+    class CreateADiversionVariant extends SingleCheckActionVariant {
+        async use(options = {}) {
+            const action = getActionName('CreateADiversion')
+            const token = getSelectedToken(options, action)
+            if (!token) return
+
+            options.actors = [token.actor]
+            return super.use(options)
+        }
+    }
+
+    class CreateADiversion extends SingleCheckAction {
+        constructor() {
+            super({
+                cost: 1,
+                description: 'PF2E.Actions.CreateADiversion.Description',
+                name: 'PF2E.Actions.CreateADiversion.Title',
+                notes: [
+                    { outcome: ['criticalSuccess', 'success'], text: 'PF2E.Actions.CreateADiversion.Notes.success' },
+                    { outcome: ['criticalFailure', 'failure'], text: 'PF2E.Actions.CreateADiversion.Notes.failure' },
+                ],
+                section: 'skill',
+                slug: 'create-a-diversion',
+                statistic: 'deception',
+                traits: ['mental'],
+                variants: [
+                    {
+                        name: 'PF2E.Actions.CreateADiversion.DistractingWords.Title',
+                        rollOptions: ['action:create-a-diversion', 'action:create-a-diversion:distracting-words'],
+                        slug: 'distracting-words',
+                        traits: ['auditory', 'linguistic', 'mental'],
+                    },
+                    {
+                        name: 'PF2E.Actions.CreateADiversion.Gesture.Title',
+                        rollOptions: ['action:create-a-diversion', 'action:create-a-diversion:gesture'],
+                        slug: 'gesture',
+                        traits: ['manipulate', 'mental'],
+                    },
+                    {
+                        name: 'PF2E.Actions.CreateADiversion.Trick.Title',
+                        rollOptions: ['action:create-a-diversion', 'action:create-a-diversion:trick'],
+                        slug: 'trick',
+                        traits: ['manipulate', 'mental'],
+                    },
+                ],
+            })
+        }
+
+        toActionVariant(data) {
+            return new CreateADiversionVariant(this, data)
+        }
+    }
+
+    game.pf2e.actions.set('create-a-diversion', new CreateADiversion())
+}
+
 function setupHide(SingleCheckAction, SingleCheckActionVariant) {
     class HideVariant extends SingleCheckActionVariant {
         async use(options = {}) {
-            const action = game.i18n.localize('PF2E.Actions.Hide.Title')
+            const action = getActionName('Hide')
             const token = getSelectedToken(options, action)
             if (!token) return
 
@@ -232,13 +290,13 @@ function setupHide(SingleCheckAction, SingleCheckActionVariant) {
         constructor() {
             super({
                 cost: 1,
-                description: `PF2E.Actions.Hide.Description`,
-                name: `PF2E.Actions.Hide.Title`,
+                description: 'PF2E.Actions.Hide.Description',
+                name: 'PF2E.Actions.Hide.Title',
                 rollOptions: ['action:hide'],
                 slug: 'hide',
                 statistic: 'stealth',
                 traits: ['secret'],
-                notes: [{ outcome: ['success', 'criticalSuccess'], text: `PF2E.Actions.Hide.Notes.success` }],
+                notes: [{ outcome: ['success', 'criticalSuccess'], text: 'PF2E.Actions.Hide.Notes.success' }],
             })
         }
 
@@ -308,11 +366,11 @@ async function takeCover(token) {
                 const { level } = event.currentTarget.dataset
                 const skip = getSetting('skip-cover')
 
-                const process = async (cover, selected) => {
-                    selected = selected ? targets : undefined
+                const process = async (cover, isSelected) => {
+                    const selected = isSelected ? targets : undefined
 
                     const flavor = cover === defaultValues.cover ? (selected ? 'remove' : 'remove-all') : 'take'
-                    const message = await createTokenMessage({
+                    await createTokenMessage({
                         content: localize(`message.cover.${flavor}`, { cover: localize(`cover.${cover}`) }),
                         flags: { selected, cover, skipWait: skip },
                         token,
@@ -356,7 +414,9 @@ function getSelectedToken(options, action) {
     if (tokens.length > 1) {
         ui.notifications.warn(localize('action.only-one', { action }))
         return
-    } else if (!tokens.length) {
+    }
+
+    if (!tokens.length) {
         ui.notifications.warn(localize('action.must-one', { action }))
         return
     }

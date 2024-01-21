@@ -199,7 +199,8 @@
             },
             "unhide": {
                 "tooltip": "Click to un-hide the token."
-            }
+            },
+            "check": "Check"
         },
         "action": {
             "only-one": "Only one token/actor can be selected to use the <strong>{action}</strong> action.",

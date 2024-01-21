@@ -41,3 +41,7 @@ export function setSetting(setting, value) {
 export function hasPermission() {
     return game.user.role >= getSetting('permission')
 }
+
+export function getActionName(action) {
+    return game.i18n.localize(`PF2E.Actions.${action}.Title`)
+}

@@ -1,12 +1,13 @@
 import {
     CoverValidationMenu,
+    CreateADiversionMenu,
     HideValidationMenu,
     PointOutValidationMenu,
     SeekValidationMenu,
     UnHideValidationMenu,
 } from './apps/validation.js'
 import { attackCheckRoll } from './constants.js'
-import { MODULE_ID, getFlag, getFlags, localize, setFlag } from './module.js'
+import { MODULE_ID, getActionName, getFlag, getFlags, localize, setFlag } from './module.js'
 import { deleteSeekTemplate } from './template.js'
 
 export function renderChatMessage(message, html) {
@@ -70,10 +71,23 @@ export function renderChatMessage(message, html) {
                         selected: pf2eContext.pf2ePerception.selected,
                     })
                 })
+            } else if (pf2eContext.options.includes('action:create-a-diversion')) {
+                const button = createValidateButton({ property: 'visibility', skipWait, validated })
+                html.find('.flavor-text').append(button)
+                html.find('[data-action=validate-visibility]').on('click', () => {
+                    CreateADiversionMenu.openMenu({
+                        token,
+                        message,
+                        roll: message.rolls[0],
+                        selected: pf2eContext.pf2ePerception.selected,
+                    })
+                })
             }
         } else if (hasPlayerOwner) {
             if (pf2eContext.options.includes('action:hide')) {
-                addBlindSkillCheckFlavor({ token, message, html, validated })
+                addBlindSkillCheckFlavor({ token, message, html, validated, action: 'Hide' })
+            } else if (pf2eContext.options.includes('action:create-a-diversion')) {
+                addSkillCheckFlavor(html, validated)
             }
         }
     } else if (pf2eContext?.type === 'perception-check' && pf2eContext.pf2ePerception) {
@@ -105,7 +119,7 @@ export function renderChatMessage(message, html) {
             }
         } else if (hasPlayerOwner) {
             if (pf2eContext.options.includes('action:seek')) {
-                addBlindSkillCheckFlavor({ token, message, html, validated })
+                addBlindSkillCheckFlavor({ token, message, html, validated, action: 'Seek' })
             }
         }
     } else if (pointOut) {
@@ -176,11 +190,31 @@ function createValidateCombo({ skipWait, validated, smallIcon, smallAction, smal
     return buttons
 }
 
-function addBlindSkillCheckFlavor({ html, token, message, validated }) {
+function actionTitle(action, modifier) {
+    const skillName = game.i18n.localize(
+        modifier === 'perception' ? 'PF2E.PerceptionLabel' : `PF2E.Skill${modifier.capitalize()}`
+    )
+    const check = localize('message.check')
+    return `<h4 class="action">
+    <strong>${getActionName(action)}</strong>
+    <span class="action-glyph">1</span>
+    <span class="subtitle">(${skillName} ${check})</span>
+</h4>`
+}
+
+function addSkillCheckFlavor(html, validated) {
+    const hint = createWaitHint('visibility', validated)
+    html.find('.flavor-text').append(hint)
+}
+
+function addBlindSkillCheckFlavor({ html, token, message, validated, action }) {
+    const modifier = message.getFlag('pf2e', 'modifierName')
+    const title = actionTitle(action, modifier)
+
     html.find('.message-sender').text(token.name)
-    let flavor = message.getFlag('pf2e', 'modifierName')
-    flavor += createWaitHint('visibility', validated)
-    html.find('.flavor-text').html(flavor)
+    html.find('.flavor-text').html(title)
+
+    addSkillCheckFlavor(html, validated)
 }
 
 function createWaitHint(property, validated) {
@@ -189,9 +223,13 @@ function createWaitHint(property, validated) {
 }
 
 function createHint(hint, validated) {
-    if (validated === true) hint = '<i class="fa-solid fa-check validated"></i> ' + hint
-    else if (validated === false) hint = '<i class="fa-solid fa-xmark canceled"></i> ' + hint
-    return `<i class="pf2e-perception-hint">${hint}</i>`
+    const str =
+        validated === true
+            ? `<i class="fa-solid fa-check validated"></i> ${hint}`
+            : validated === false
+            ? `<i class="fa-solid fa-xmark canceled"></i> ${hint}`
+            : hint
+    return `<i class="pf2e-perception-hint">${str}</i>`
 }
 
 function createValidateButton({ skipWait, validated, property }) {

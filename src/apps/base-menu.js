@@ -35,7 +35,7 @@ export class BaseMenu extends Application {
     }
 
     static get defaultOptions() {
-        return mergeObject(super.defaultOptions, {
+        return mergeObject(Application.defaultOptions, {
             minimizable: false,
         })
     }
@@ -54,6 +54,7 @@ export class BaseMenu extends Application {
 
         return new Promise(resolve => {
             params.resolve = resolve
+            // biome-ignore lint/complexity/noThisInStatic: not working
             new this(params, options).render(true)
         })
     }
