@@ -276,8 +276,7 @@ export class SeekValidationMenu extends ReverseVisibilityValidationMenu {
     }
 
     get globalSelection() {
-        if (this.#fromTemplate) return []
-        return super.globalSelection
+        return []
     }
 
     static async openMenu(params, options) {
