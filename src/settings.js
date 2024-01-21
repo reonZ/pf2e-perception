@@ -68,6 +68,10 @@ export function registerSettings() {
     })
 
     register('encounter', Boolean, false)
+
+    register('seek-template', Boolean, true, {
+        scope: 'client',
+    })
 }
 
 function path(setting, key) {

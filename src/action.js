@@ -90,7 +90,12 @@ function setupSeek(SingleCheckAction, SingleCheckActionVariant) {
             const token = getSelectedToken(options, action)
             if (!token) return
 
-            if (!(await seek(token))) return deleteSeekTemplate(token)
+            if (getSetting('seek-template')) {
+                const useTemplate = await seek(token)
+                if (!useTemplate) {
+                    return deleteSeekTemplate(token)
+                }
+            }
 
             options.actors = [token.actor]
             return super.use(options)
