@@ -24,6 +24,7 @@ export async function checkRoll(wrapped, ...args) {
         isReroll ||
         !createMessage ||
         !originToken ||
+        actor.isOfType('hazard') ||
         !validCheckRoll.includes(type) ||
         (isAttackRoll && (!targetToken || flatCheck === 'none'))
     )
