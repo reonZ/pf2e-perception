@@ -1,3 +1,7 @@
+# 0.35.1
+
+-   fixed hazard rolling visibility flat-checks
+
 # 0.35.0
 
 -   improved secret action messages for players
