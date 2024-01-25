@@ -1,3 +1,15 @@
+# 0.36.0
+
+-   you can now register your own wall cover calculation function (it needs to be registered after the foundry `init` hook)
+
+```js
+game.modules.get('pf2e-perception').custom.getCreatureCover = (
+    originToken,
+    targetToken,
+    { perception: PerceptionRules, debug = false }
+) => 'none' | 'lesser' | 'standard' | 'greater' | 'greater-prone'
+```
+
 # 0.35.1
 
 -   fixed hazard rolling visibility flat-checks
