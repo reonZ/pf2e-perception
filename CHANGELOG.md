@@ -1,6 +1,6 @@
 # 0.36.0
 
--   you can now register your own wall cover calculation function (it needs to be registered after the foundry `init` hook)
+-   you can now register your own wall creature calculation function (it needs to be registered after the foundry `init` hook)
 
 ```js
 game.modules.get('pf2e-perception').custom.getCreatureCover = (
