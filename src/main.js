@@ -63,6 +63,7 @@ Hooks.once('init', () => {
 
     game.modules.get(MODULE_ID).custom = {
         getWallCover: undefined,
+        getCreatureCover: undefined,
     }
 })
 

@@ -110,8 +110,10 @@ export function getCover(origin, target, { perception = {}, options = [], affect
     if (!prone && cover === 'greater-prone') cover = undefined
 
     if (COVER_VALUES[systemCover] < COVER_VALUES.standard) {
+        const api = game.modules.get(MODULE_ID).custom ?? {}
+
         if (COVER_VALUES[cover] < COVER_VALUES.standard) {
-            const custom = game.modules.get(MODULE_ID).custom?.getWallCover
+            const custom = api.getWallCover
             let wallCover
 
             if (typeof custom === 'function') {
@@ -125,7 +127,18 @@ export function getCover(origin, target, { perception = {}, options = [], affect
         }
 
         if (COVER_VALUES[cover] < COVER_VALUES.standard && origin.distanceTo(target) > 5) {
-            const creatureCover = getCreatureCover(origin, target, { perception, debug })
+            const custom = api.getCreatureCover
+            let creatureCover
+
+            if (typeof custom === 'function') {
+                const customCover = custom(origin, target, { perception, debug })
+                creatureCover = COVERS.includes(customCover)
+                    ? customCover
+                    : getCreatureCover(origin, target, { perception, debug })
+            } else {
+                creatureCover = getCreatureCover(origin, target, { perception, debug })
+            }
+
             if (COVER_VALUES[creatureCover] > COVER_VALUES[cover]) cover = creatureCover
         }
     }

@@ -58,11 +58,19 @@ Bullet points:
 
 # Custom
 
--   you can register you own wall cover calculation function if you need something different or more in depth (it needs to be registered after the foundry `init` hook)
+-   you can register you own wall/creature cover calculation function if you need something different or more in depth (it needs to be registered after the foundry `init` hook)
 
 ```js
 game.modules.get('pf2e-perception').custom.getWallCover = (originToken, targetToken, debug = false) =>
     'none' | 'lesser' | 'standard' | 'greater' | 'greater-prone'
+```
+
+```js
+game.modules.get('pf2e-perception').custom.getCreatureCover = (
+    originToken,
+    targetToken,
+    { perception: PerceptionRules, debug = false }
+) => 'none' | 'lesser' | 'standard' | 'greater' | 'greater-prone'
 ```
 
 # Rule Element
