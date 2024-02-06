@@ -36,6 +36,8 @@
 }
 
 .pf2e-conditionals {
+    --icon-size: 26px;
+
     position: absolute;
     transform: translate(-50%, -100%);
     height: fit-content;
@@ -53,7 +55,7 @@
         }
 
         img {
-            width: 26px;
+            width: var(--icon-size);
             aspect-ratio: 1/1;
             border-radius: 50%;
             display: block;

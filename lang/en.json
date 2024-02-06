@@ -6,6 +6,10 @@
                 "name": "Conditional Icons",
                 "label": "Setup Paths"
             },
+            "icon-size": {
+                "name": "Conditional Icons Size",
+                "hint": "Size in pixel for the conditional icons shown on mouse over."
+            },
             "lesser": {
                 "name": "Automate Creature Cover",
                 "hint": "Should the module automatically check for creature covers on the board.",

@@ -385,9 +385,16 @@ export async function showConditionals(origin, target) {
 
     const scale = origin.worldTransform.a
     const coords = canvas.clientCoordinatesFromCanvas(origin.document._source)
+    const iconSize = getSetting('icon-size')
 
-    let content = `<div class="pf2e-conditionals" data-hover-id="${origin.id}" data-token-id="${target.id}" `
-    content += `style="top: ${coords.y}px; left: ${coords.x + (origin.hitArea.width * scale) / 2}px;">`
+    const style = [
+        `top: ${coords.y}px`,
+        `left: ${coords.x + (origin.hitArea.width * scale) / 2}px`,
+        `--icon-size: ${iconSize}px`,
+    ].join('; ')
+
+    let content = `<div class="pf2e-conditionals" data-hover-id="${origin.id}"`
+    content += ` data-token-id="${target.id}" style="${style}">`
 
     const savedPaths = getSetting('icon-path')
     Object.entries(data).map(([property, value]) => {

@@ -69,6 +69,14 @@ export function registerSettings() {
 
     register('encounter', Boolean, false)
 
+    register('icon-size', Number, 26, {
+        scope: 'client',
+        range: {
+            min: 26,
+            max: 52,
+        },
+    })
+
     register('seek-template', Boolean, true, {
         scope: 'client',
     })
