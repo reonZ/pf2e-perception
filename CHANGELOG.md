@@ -1,3 +1,7 @@
+# 0.37.0
+
+-   added a new `Conditional Icons Size` client setting which offers the possibility to change the size in pixel for the conditional icons shown on mouse over
+
 # 0.36.0
 
 -   you can now register your own wall creature calculation function (it needs to be registered after the foundry `init` hook)
