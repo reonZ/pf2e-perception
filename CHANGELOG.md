@@ -1,3 +1,7 @@
+# 0.37.1
+
+-   added compatibility with the `Disable Game Canvas` setting
+
 # 0.37.0
 
 -   added a new `Conditional Icons Size` client setting which offers the possibility to change the size in pixel for the conditional icons shown on mouse over
