@@ -1,11 +1,11 @@
-import { COVER_UUID, VISION_LEVELS } from './constants.js'
+import { COVER_UUID } from './constants.js'
 import { findChoiceSetRule } from './effect.js'
 
 export function getActorToken(actor, target = false) {
     if (!actor) return undefined
     const actorId = actor.id
     const isToken = actor.isToken
-    const tokens = target ? game.user.targets : canvas.tokens.controlled
+    const tokens = target ? game.user.targets : canvas.tokens?.controlled ?? []
     return (
         tokens.find(token => (isToken ? token.actor === actor : token.actor.id === actorId)) ??
         actor.getActiveTokens().shift() ??
