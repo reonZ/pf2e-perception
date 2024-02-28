@@ -46,7 +46,7 @@ Hooks.once('init', () => {
 
     libWrapper.register(MODULE_ID, RULES_BASED_VISION, rulesBasedVision, 'OVERRIDE')
 
-    libWrapper.register(MODULE_ID, GET_ROLL_CONTEXT, getRollContext, 'OVERRIDE')
+    // libWrapper.register(MODULE_ID, GET_ROLL_CONTEXT, getRollContext, 'OVERRIDE')
 
     libWrapper.register(MODULE_ID, DETECTION_MODE_TEST_VISIBILITY, detectionModeTestVisibility, 'OVERRIDE')
     libWrapper.register(MODULE_ID, BASIC_SIGHT_CAN_DETECT, basicSightCanDetect, 'OVERRIDE')
@@ -78,8 +78,19 @@ Hooks.once('ready', () => {
         renderChatMessage(message, $(el))
     }
 
-    if (game.user.isGM && game.modules.get('pf2e-rules-based-npc-vision')?.active) {
+    const isGM = game.user.isGM
+
+    if (isGM && game.modules.get('pf2e-rules-based-npc-vision')?.active) {
         ui.notifications.error(`${MODULE_ID}.warning.npc-vision`, { permanent: true, localize: true })
+    }
+
+    if (isGM && isNewerVersion(game.system.version, '5.13.6')) {
+        ChatMessage.create({
+            content: `<p><strong>WARNING!</strong></p>
+            <p>The module <strong>PF2e Perception</strong> cannot fully function with this version of the system.</p>
+            <p>It can no longer automatically apply the <em>cover</em> and <em>off-guard</em> effects when rolling an attack roll.</p>`,
+            whisper: [game.user],
+        })
     }
 })
 
