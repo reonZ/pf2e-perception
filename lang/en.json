@@ -223,7 +223,7 @@
         },
         "dice-checks": {
             "cover": {
-                "label": "Override Cover",
+                "label": "Override Target Cover",
                 "none": "No Cover"
             }
         },

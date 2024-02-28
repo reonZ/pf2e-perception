@@ -1,11 +1,11 @@
 import { getActorToken, getCoverEffect, isProne } from './actor.js'
-import { COVERS, COVER_UUID, VISIBILITY_VALUES, attackCheckRoll, validCheckRoll } from './constants.js'
-import { createCoverSource, findChoiceSetRule } from './effect.js'
+import { COVERS, COVER_UUID, COVER_VALUES, VISIBILITY_VALUES, attackCheckRoll, validCheckRoll } from './constants.js'
+import { createCoverSource, createFlatFootedSource, findChoiceSetRule } from './effect.js'
 import { MODULE_ID, getFlag, getSetting, localize } from './module.js'
 import { getPerception, perceptionRules } from './rule-element.js'
 import { validateTokens } from './scene.js'
 import { getSeekTemplateTokens } from './template.js'
-import { getVisibility } from './token.js'
+import { getCover, getVisibility } from './token.js'
 import { asNumberOnly } from './utils.js'
 
 export async function checkRoll(wrapped, ...args) {
@@ -14,67 +14,120 @@ export async function checkRoll(wrapped, ...args) {
 
     if (Array.isArray(context.options)) context.options = new Set(context.options)
 
-    const { actor, createMessage = 'true', type, token, target, isReroll } = context
-    const originToken = token ?? getActorToken(actor)
-    const targetToken = target?.token
-    const isAttackRoll = attackCheckRoll.includes(type)
+    const { actor, createMessage = 'true', type, token, target, isReroll, viewOnly, item } = context
+    const originToken = (token ?? getActorToken(actor))?.object
+    const targetToken = target?.token?.object
     const flatCheck = getSetting('flat-check')
 
-    if (
-        isReroll ||
-        !createMessage ||
-        !originToken ||
-        actor.isOfType('hazard') ||
-        !validCheckRoll.includes(type) ||
-        (isAttackRoll && (!targetToken || flatCheck === 'none'))
-    )
+    if (viewOnly || isReroll || !createMessage || !originToken || actor.isOfType('hazard') || !validCheckRoll.includes(type)) {
         return wrapped(...args)
+    }
 
-    if (isAttackRoll && targetToken.actor) {
+    const targetActor = targetToken?.actor
+    if (attackCheckRoll.includes(type) && targetActor) {
         const event = args[2]
+
+        // should we roll a flat check to attack the target
+        flatCheck: if (flatCheck !== 'none') {
+            const perception = perceptionRules(originToken, targetToken, {
+                extraOptions: context.options.filter(o => o.startsWith('item:')),
+            })
+
+            const visibility = getVisibility(targetToken, originToken, { perception, affects: 'target' })
+            if (!visibility) break flatCheck
+
+            const dc = (() => {
+                const dc = getPerception(perception, 'target', 'visibility', 'dc', visibility)?.first()
+                const numberedDC = asNumberOnly(dc)
+                if (!numberedDC) return numberedDC
+
+                const sign = dc[0]
+                if (!['-', '+'].includes(sign)) return numberedDC
+
+                return (visibility === 'concealed' ? 5 : 11) + numberedDC
+            })()
+            if (dc === 0) break flatCheck
+
+            const isUndetected = VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected
+            const isBlind = event?.ctrlKey || event?.metaKey
+
+            const roll = await new originToken.actor.saves.reflex.constructor(originToken.actor, {
+                modifiers: [],
+                slug: 'visibility-check',
+                label: `${game.i18n.localize('PF2E.FlatCheck')}: ${game.i18n.localize(`PF2E.condition.${visibility}.name`)}`,
+                check: { type: 'flat-check' },
+            }).roll({
+                dc: { value: dc ?? (visibility === 'concealed' ? 5 : 11) },
+                target: targetToken.actor,
+                rollMode: isUndetected || isBlind ? (game.user.isGM ? 'gmroll' : 'blindroll') : 'roll',
+            })
+
+            const isSuccess = roll.degreeOfSuccess > 1
+
+            if (isUndetected) {
+                context.options.add('secret')
+                context.pf2ePerception = {
+                    isSuccess: isSuccess,
+                    visibility,
+                }
+            }
+
+            if (flatCheck !== 'roll' && !isUndetected && !isSuccess) return
+        }
+
+        // this part replace formerly getRollContext
+        const itemOptions = item?.getRollOptions('item') ?? []
+        const distance = originToken.distanceTo(targetToken)
         const perception = perceptionRules(originToken, targetToken, {
-            extraOptions: context.options.filter(o => o.startsWith('item:')),
+            extraOptions: itemOptions,
+            distance,
         })
 
-        const visibility = getVisibility(targetToken, originToken, { perception, affects: 'target' })
-        if (!visibility) return wrapped(...args)
+        let visibility = getVisibility(originToken, targetToken, { perception, affects: 'origin' })
 
-        const dc = (() => {
-            const dc = getPerception(perception, 'target', 'visibility', 'dc', visibility)?.first()
-            const numberedDC = asNumberOnly(dc)
-            if (!numberedDC) return numberedDC
+        if (visibility && getPerception(perception, 'target', 'visibility', 'noff', visibility)) {
+            visibility = undefined
+        }
 
-            const sign = dc[0]
-            if (!['-', '+'].includes(sign)) return numberedDC
+        let cover = getCover(originToken, targetToken, { perception, affects: 'target', options: itemOptions })
+        let coverBonus = undefined
 
-            return (visibility === 'concealed' ? 5 : 11) + numberedDC
-        })()
-        if (dc === 0) return wrapped(...args)
+        if (cover) {
+            let ac = getPerception(perception, 'target', 'cover', 'ac', cover)?.first()
+            if (ac != null) ac = Math.clamped(asNumberOnly(ac), 0, 4)
+            if (ac === 0) cover = undefined
+            else if (ac) coverBonus = ac
+        }
 
-        const isUndetected = VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected
-        const isBlind = event?.ctrlKey || event?.metaKey
+        const overrideVisibility = VISIBILITY_VALUES[visibility] > VISIBILITY_VALUES.concealed
+        const overrideCover = COVER_VALUES[cover] > COVER_VALUES.none
 
-        const roll = await new originToken.actor.saves.reflex.constructor(originToken.actor, {
-            slug: 'visibility-check',
-            label: `${game.i18n.localize('PF2E.FlatCheck')}: ${game.i18n.localize(`PF2E.condition.${visibility}.name`)}`,
-            check: { type: 'flat-check' },
-        }).roll({
-            dc: { value: dc ?? (visibility === 'concealed' ? 5 : 11) },
-            target: targetToken.actor,
-            rollMode: isUndetected || isBlind ? (game.user.isGM ? 'gmroll' : 'blindroll') : 'roll',
-        })
+        if (overrideCover || overrideVisibility) {
+            const items = deepClone(targetActor._source.items)
 
-        const isSuccess = roll.degreeOfSuccess > 1
+            if (overrideCover) {
+                const source = createCoverSource(cover, coverBonus)
+                items.push(source)
+            }
 
-        if (isUndetected) {
-            context.options.add('secret')
-            context.pf2ePerception = {
-                isSuccess: isSuccess,
-                visibility,
+            if (overrideVisibility) {
+                const source = createFlatFootedSource(visibility)
+                items.push(source)
+            }
+
+            target.actor = targetActor.clone({ items }, { keepId: true })
+
+            const dc = context.dc
+            if (overrideCover && dc?.slug) {
+                const statistic = target.actor.getStatistic(dc.slug)?.dc
+                if (statistic) {
+                    dc.value = statistic.value
+                    dc.statistic = statistic
+                }
             }
         }
 
-        if (flatCheck !== 'roll' && !isUndetected && !isSuccess) return
+        return wrapped(...args)
     } else if (context.options.has('action:hide')) {
         setProperty(context, 'pf2ePerception.selected', game.user.targets.ids)
         // } else if (context.options.has('action:sneak')) {
@@ -109,9 +162,10 @@ export function renderCheckModifiersDialog(dialog, html) {
         : undefined
     let coverOverride = dialog[MODULE_ID]?.coverOverride ?? currentCover
 
-    let template = '<div class="roll-mode-panel">'
-    template += `<div class="label">${localize('dice-checks.cover.label')}</div>`
-    template += `<select name="overrideCover"><option value="">${localize('dice-checks.cover.none')}</option>`
+    let template = `<div class="conditional">
+    <div class="label">${localize('dice-checks.cover.label')}</div>
+    <select name="overrideCover">
+        <option value="">${localize('dice-checks.cover.none')}</option>`
 
     const covers = isProne(targetActor) ? COVERS.slice(1) : COVERS.slice(1, -1)
 

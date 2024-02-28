@@ -144,3 +144,11 @@
         left: 0px;
     }
 }
+
+.app.window-app.roll-modifiers-dialog.dice-checks.dialog {
+    .conditional {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+    }
+}
