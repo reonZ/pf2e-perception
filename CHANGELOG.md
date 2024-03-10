@@ -1,3 +1,9 @@
+# 0.38.0
+
+-   this is a `5.14.0` release
+-   due to a breaking change in the system, the core feature of the module had to be moved into another part of the roll chain
+-   while testings have shown to be satisfying, it is hard to forsee all the ramifications that this change involves
+
 # 0.37.1
 
 -   added compatibility with the `Disable Game Canvas` setting
