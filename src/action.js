@@ -128,30 +128,28 @@ function setupSeek(SingleCheckAction, SingleCheckActionVariant) {
 }
 
 async function seek(token) {
-    const unit = game.i18n.localize('PF2E.Foot')
+    const unit = game.i18n.localize('PF2E.Foot.Plural')
 
     let content = '<p style="margin: 0 0.3em; text-align: center;">'
     content += `${localize('dialog.seek.hint')}</p><p>`
 
-    content += createButton(
-        'create-cone',
-        'fa-thin fa-cubes',
-        game.i18n.format('PF2E.TemplateLabel', {
-            size: 30,
-            unit,
-            shape: game.i18n.localize(CONFIG.PF2E.areaTypes.cone),
-        })
-    )
+    const templates = [
+        { type: 'cone', distance: 30 },
+        { type: 'burst', distance: 15 },
+        { type: 'burst', distance: 30 },
+    ]
 
-    content += createButton(
-        'create-burst',
-        'fa-thin fa-cubes',
-        game.i18n.format('PF2E.TemplateLabel', {
-            size: 15,
+    for (const { type, distance } of templates) {
+        const label = game.i18n.format('PF2E.TemplateLabel', {
+            size: distance,
             unit,
-            shape: game.i18n.localize(CONFIG.PF2E.areaTypes.burst),
+            shape: game.i18n.localize(`PF2E.Area.Shape.${type}`),
         })
-    )
+        content += `<button type="button" data-action="create-template" 
+        data-type="${type}" data-distance="${distance}" style="margin: 0 0 5px; padding: 0;">
+    <i class="fa-thin fa-cubes"></i> ${label}</button>
+</button>`
+    }
 
     content += '</p>'
 
@@ -174,10 +172,10 @@ async function seek(token) {
             close: () => false,
             render: html => {
                 const content = html.filter('.dialog-content')
-                content.find('[data-action=create-cone], [data-action=create-burst]').on('click', event => {
-                    const { action } = event.currentTarget.dataset
+                content.find('[data-action=create-template]').on('click', event => {
+                    const { type, distance } = event.currentTarget.dataset
                     deleteSeekTemplate(token)
-                    createSeekTemplate({ type: action === 'create-cone' ? 'cone' : 'burst', token })
+                    createSeekTemplate({ type, distance, token })
                 })
             },
         },
@@ -433,10 +431,4 @@ function getSelectedToken(options, action) {
     }
 
     return token
-}
-
-function createButton(action, icon, label) {
-    return `<button type="button" data-action="${action}" style="margin: 0 0 5px; padding: 0;">
-    <i class="${icon}"></i> ${label}</button>
-</button>`
 }

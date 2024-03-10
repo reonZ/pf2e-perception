@@ -5,12 +5,45 @@ import { highlightGrid } from './pf2e/highlight.js'
 
 const templateConversion = {
     burst: 'circle',
+    cone: 'cone',
+    cube: 'rect',
+    cylinder: 'circle',
     emanation: 'circle',
     line: 'ray',
-    cone: 'cone',
-    rect: 'rect',
-    cube: 'rect',
     square: 'rect',
+}
+
+export function createTemplate({ type, distance, traits, fillColor, width, flags }) {
+    const templateType = templateConversion[type]
+
+    const templateData = {
+        t: templateType,
+        distance,
+        fillColor: fillColor || game.user.color,
+        flags: {
+            [MODULE_ID]: flags,
+        },
+    }
+
+    switch (templateType) {
+        case 'ray':
+            templateData.width = width || CONFIG.MeasuredTemplate.defaults.width * (canvas.dimensions?.distance ?? 1)
+            break
+        case 'cone':
+            templateData.angle = CONFIG.MeasuredTemplate.defaults.angle
+            break
+        case 'rect': {
+            const distance = templateData.distance ?? 0
+            templateData.distance = Math.hypot(distance, distance)
+            templateData.width = distance
+            templateData.direction = 45
+            break
+        }
+    }
+
+    if (traits) setProperty(templateData, 'flags.pf2e.origin.traits', traits)
+
+    canvas.templates.createPreview(templateData)
 }
 
 export function createSeekTemplate({ type = 'burst', token, distance }) {
@@ -89,39 +122,6 @@ function checkScene(token) {
     if (canvas.scene === token.scene) return true
     ui.notifications.error(localize('template.scene'))
     return false
-}
-
-export function createTemplate({ type, distance, traits, fillColor, width, flags }) {
-    const templateType = templateConversion[type]
-
-    const templateData = {
-        distance,
-        t: templateType,
-        fillColor: fillColor || game.user.color,
-        flags: {
-            [MODULE_ID]: flags,
-        },
-    }
-
-    switch (templateType) {
-        case 'ray':
-            templateData.width = width || CONFIG.MeasuredTemplate.defaults.width * (canvas.dimensions?.distance ?? 1)
-            break
-        case 'cone':
-            templateData.angle = CONFIG.MeasuredTemplate.defaults.angle
-            break
-        case 'rect': {
-            const distance = templateData.distance ?? 0
-            templateData.distance = Math.hypot(distance, distance)
-            templateData.width = distance
-            templateData.direction = 45
-            break
-        }
-    }
-
-    if (traits) setProperty(templateData, 'flags.pf2e.origin.traits', traits)
-
-    canvas.templates.createPreview(templateData)
 }
 
 export function getTemplateTokens(template, { collisionOrigin, collisionType = 'move' } = {}) {
