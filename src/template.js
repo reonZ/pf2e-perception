@@ -203,11 +203,12 @@ export function highlightTemplateGrid() {
 
     this.snapForShape()
     highlightGrid({
-        areaType: tupleHasValue(['burst', 'cone', 'emanation'], this.areaType) ? this.areaType : 'burst',
+        areaShape: this.areaShape,
         object: this,
         document: this.document,
         colors: { border: this.borderColor, fill: this.fillColor },
         preview: true,
+        // added stuff
         collisionType,
         collisionOrigin,
     })
