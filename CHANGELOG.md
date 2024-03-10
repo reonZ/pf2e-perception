@@ -1,8 +1,14 @@
+# 0.39.0
+
+-   added a third `30ft. burst` template to the `seek` action
+-   fixed template highlightGrid breaking cone templates
+-   fixed custom template creation not working
+
 # 0.38.0
 
 -   this is a `5.14.0` release
 -   due to a breaking change in the system, the core feature of the module had to be moved into another part of the roll chain
--   while testings have shown to be satisfying, it is hard to forsee all the ramifications that this change involves
+-   while testings have shown to be satisfying, it is hard to foresee all the ramifications that this change involves
 
 # 0.37.1
 

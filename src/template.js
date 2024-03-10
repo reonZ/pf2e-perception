@@ -1,6 +1,5 @@
 import { DARKNESS_COLOR, DARKNESS_SLUGS, MIST_COLOR, MIST_SLUGS, POISON_GREEN } from './constants.js'
 import { MODULE_ID, getFlag, localize } from './module.js'
-import { tupleHasValue } from './pf2e/helpers.js'
 import { highlightGrid } from './pf2e/highlight.js'
 
 const templateConversion = {
