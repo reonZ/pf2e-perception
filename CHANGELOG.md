@@ -1,3 +1,7 @@
+# 0.39.1
+
+-   fixed `off-guard` not applying when the attacker is hidden from its target
+
 # 0.39.0
 
 -   added a third `30ft. burst` template to the `seek` action
@@ -23,11 +27,11 @@
 -   you can now register your own wall creature calculation function (it needs to be registered after the foundry `init` hook)
 
 ```js
-game.modules.get('pf2e-perception').custom.getCreatureCover = (
+game.modules.get("pf2e-perception").custom.getCreatureCover = (
     originToken,
     targetToken,
     { perception: PerceptionRules, debug = false }
-) => 'none' | 'lesser' | 'standard' | 'greater' | 'greater-prone'
+) => "none" | "lesser" | "standard" | "greater" | "greater-prone";
 ```
 
 # 0.35.1
@@ -155,8 +159,8 @@ game.modules.get('pf2e-perception').custom.getCreatureCover = (
 -   you can now register your own wall cover calculation function:
 
 ```js
-game.modules.get('pf2e-perception').custom.getWallCover = (originToken, targetToken) =>
-    'none' | 'lesser' | 'standard' | 'greater' | 'greater-prone'
+game.modules.get("pf2e-perception").custom.getWallCover = (originToken, targetToken) =>
+    "none" | "lesser" | "standard" | "greater" | "greater-prone";
 ```
 
 # 0.20.2
