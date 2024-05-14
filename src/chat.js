@@ -277,7 +277,7 @@ export async function createTokenMessage({ content, token, flags, secret }) {
         content,
         speaker: ChatMessage.getSpeaker({ token: token instanceof Token ? token.document : token }),
     };
-    if (flags) setProperty(data, `flags.${MODULE_ID}`, flags);
+    if (flags) foundry.utils.setProperty(data, `flags.${MODULE_ID}`, flags);
     if (secret) {
         data.type = CONST.CHAT_MESSAGE_TYPES.WHISPER;
         data.whisper = ChatMessage.getWhisperRecipients("gm");

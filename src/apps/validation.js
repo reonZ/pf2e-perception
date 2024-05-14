@@ -52,13 +52,13 @@ class ValidationMenu extends BaseMenu {
         for (const tokenId of selected) {
             const token = scene.tokens.get(tokenId);
             const fullProperty = `${tokenId}.${property}`;
-            const currentValue = getProperty(data, fullProperty) ?? defaultValue;
+            const currentValue = foundry.utils.getProperty(data, fullProperty) ?? defaultValue;
 
             let processedValue = this.processValue({ token, value: currentValue });
             if (!propertyList.includes(processedValue)) processedValue = currentValue;
 
             if (currentValue === processedValue) continue;
-            setProperty(data, fullProperty, processedValue);
+            foundry.utils.setProperty(data, fullProperty, processedValue);
         }
 
         return data;
@@ -204,7 +204,7 @@ export class PointOutValidationMenu extends VisibilityValidationMenu {
         return getValidTokens(token)
             .filter((t) => {
                 if (t.id === originatorId || t.actor.alliance === alliance) return false;
-                const visibility = getProperty(data, `${t.id}.visibility`);
+                const visibility = foundry.utils.getProperty(data, `${t.id}.visibility`);
                 return VISIBILITY_VALUES[visibility] >= VISIBILITY_VALUES.undetected;
             })
             .map((t) => t.id);
@@ -223,7 +223,7 @@ class ReverseVisibilityValidationMenu extends VisibilityValidationMenu {
 
         for (const token of tokens) {
             const tokenData = getTokenData(token, thisId);
-            if (tokenData) data[token.id] = deepClone(tokenData);
+            if (tokenData) data[token.id] = foundry.utils.deepClone(tokenData);
         }
 
         return converted ? this._convertData(data) : data;

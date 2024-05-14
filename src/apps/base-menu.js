@@ -35,7 +35,7 @@ export class BaseMenu extends Application {
     }
 
     static get defaultOptions() {
-        return mergeObject(Application.defaultOptions, {
+        return foundry.utils.mergeObject(Application.defaultOptions, {
             minimizable: false,
         });
     }
@@ -93,7 +93,7 @@ export class BaseMenu extends Application {
     }
 
     get currentData() {
-        return deepClone(this.#currentData);
+        return foundry.utils.deepClone(this.#currentData);
     }
 
     get #currentData() {
@@ -103,7 +103,7 @@ export class BaseMenu extends Application {
 
     getSavedData() {
         const data = getTokenData(this.document) ?? {};
-        return deepClone(data);
+        return foundry.utils.deepClone(data);
     }
 
     reset() {
@@ -149,7 +149,7 @@ export class BaseMenu extends Application {
             const tokenIds = tokenId ? [tokenId] : this.#selected;
 
             for (const tokenId of tokenIds) {
-                setProperty(this.#currentData, `${tokenId}.${property}`, value);
+                foundry.utils.setProperty(this.#currentData, `${tokenId}.${property}`, value);
             }
 
             if (tokenId) {

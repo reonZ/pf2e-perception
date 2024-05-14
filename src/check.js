@@ -142,7 +142,7 @@ export async function checkRoll(wrapped, ...args) {
         const overrideCover = COVER_VALUES[cover] > COVER_VALUES.none;
 
         if (overrideCover || overrideVisibility) {
-            const items = deepClone(targetActor._source.items);
+            const items = foundry.utils.deepClone(targetActor._source.items);
 
             if (overrideCover) {
                 const source = createCoverSource(cover, coverBonus);
@@ -168,11 +168,11 @@ export async function checkRoll(wrapped, ...args) {
 
         return wrapped(...args);
     } else if (context.options.has("action:hide")) {
-        setProperty(context, "pf2ePerception.selected", game.user.targets.ids);
+        foundry.utils.setProperty(context, "pf2ePerception.selected", game.user.targets.ids);
         // } else if (context.options.has('action:sneak')) {
         //     context.selected = game.user.targets.ids
     } else if (context.options.has("action:create-a-diversion")) {
-        setProperty(context, "pf2ePerception.selected", game.user.targets.ids);
+        foundry.utils.setProperty(context, "pf2ePerception.selected", game.user.targets.ids);
     } else if (context.options.has("action:seek")) {
         const highlighted = getSeekTemplateTokens(originToken);
         const tokens = highlighted ?? Array.from(game.user.targets);
@@ -180,8 +180,8 @@ export async function checkRoll(wrapped, ...args) {
             .filter((t) => !t.document.hidden)
             .map((t) => t.id);
 
-        setProperty(context, "pf2ePerception.selected", selected);
-        setProperty(context, "pf2ePerception.fromTemplate", !!highlighted);
+        foundry.utils.setProperty(context, "pf2ePerception.selected", selected);
+        foundry.utils.setProperty(context, "pf2ePerception.fromTemplate", !!highlighted);
     }
 
     return wrapped(...args);
@@ -232,7 +232,7 @@ export function renderCheckModifiersDialog(dialog, html) {
 
     html.find("select[name=overrideCover]").on("change", (event) => {
         const value = event.currentTarget.value || undefined;
-        setProperty(dialog, `${MODULE_ID}.coverOverride`, value);
+        foundry.utils.setProperty(dialog, `${MODULE_ID}.coverOverride`, value);
         coverOverride = value;
     });
 
@@ -244,13 +244,13 @@ export function renderCheckModifiersDialog(dialog, html) {
             event.stopImmediatePropagation();
 
             let modified = false;
-            const items = deepClone(targetActor._source.items);
+            const items = foundry.utils.deepClone(targetActor._source.items);
 
             if (coverOverride !== currentCover) {
                 modified = true;
 
                 const coverIndex = items.findIndex(
-                    (i) => getProperty(i, "flags.core.sourceId") === COVER_UUID
+                    (i) => foundry.utils.getProperty(i, "flags.core.sourceId") === COVER_UUID
                 );
                 if (coverIndex !== -1) items.splice(coverIndex, 1);
 

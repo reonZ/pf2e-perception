@@ -185,7 +185,7 @@ export function setupRuleElement() {
             const verificator = DATA[this.type][this.selector];
 
             if (!verificator.targets) {
-                setProperty(perception, root, true);
+                foundry.utils.setProperty(perception, root, true);
                 return;
             }
 
@@ -194,7 +194,7 @@ export function setupRuleElement() {
             if (!verificator.value) {
                 for (const target of targets) {
                     const path = `${root}.${target}`;
-                    setProperty(perception, path, true);
+                    foundry.utils.setProperty(perception, path, true);
                 }
                 return;
             }
@@ -202,11 +202,11 @@ export function setupRuleElement() {
             for (const target of targets) {
                 const path = `${root}.${target}`;
 
-                let value = getProperty(perception, path);
+                let value = foundry.utils.getProperty(perception, path);
                 if (value) value.add(this.value);
                 else value = new Set([this.value]);
 
-                setProperty(perception, path, value);
+                foundry.utils.setProperty(perception, path, value);
             }
         }
     }

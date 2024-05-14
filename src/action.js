@@ -384,7 +384,7 @@ async function takeCover(token) {
     const content = await renderTemplate(templatePath("covers-dialog"), {
         i18n: localize,
         hasTargets: !!targets.length,
-        hasCovers: !isEmpty(covers),
+        hasCovers: !foundry.utils.isEmpty(covers),
         hasTargetCover: targets.some((id) => id in covers),
         isProne: isProne(actor),
     });
@@ -418,9 +418,9 @@ async function takeCover(token) {
                     if (skip) {
                         if (cover === defaultValues.cover && !selected)
                             return clearTokenData(token);
-                        const data = deepClone(getTokenData(token)) ?? {};
+                        const data = foundry.utils.deepClone(getTokenData(token)) ?? {};
                         for (const tokenId of targets) {
-                            setProperty(data, `${tokenId}.cover`, cover);
+                            foundry.utils.setProperty(data, `${tokenId}.cover`, cover);
                         }
                         return setTokenData(token, data);
                     }

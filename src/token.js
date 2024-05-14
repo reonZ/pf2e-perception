@@ -239,7 +239,7 @@ export function getCreatureCover(
 
     const intersectsEdge = (edge) => {
         if (debug) drawDebugLine(edge.A, edge.B, "red");
-        return lineSegmentIntersects(origin, target, edge.A, edge.B);
+        return foundry.utils.lineSegmentIntersects(origin, target, edge.A, edge.B);
     };
 
     const intersectsWith =
@@ -426,7 +426,7 @@ export async function showConditionals(origin, target) {
     if (!origin.visible || !origin.actor?.isOfType("creature")) return;
 
     let data = getTokenData(origin, target.id);
-    if (isEmpty(data)) return;
+    if (foundry.utils.isEmpty(data)) return;
 
     if (
         !game.user.isGM &&

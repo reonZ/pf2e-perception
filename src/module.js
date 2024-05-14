@@ -27,7 +27,7 @@ export function unsetFlag(doc, flag) {
 }
 
 export function getFlags(doc) {
-    return getProperty(doc, `flags.${MODULE_ID}`) ?? {};
+    return foundry.utils.getProperty(doc, `flags.${MODULE_ID}`) ?? {};
 }
 
 export function getSetting(setting) {
