@@ -39,7 +39,7 @@ export class PredicatePF2e extends Array {
     }
 
     toObject() {
-        return deepClone([...this]);
+        return foundry.utils.deepClone([...this]);
     }
 
     clone() {

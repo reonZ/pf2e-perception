@@ -23,6 +23,7 @@ export function traitSlugToObject(trait, dictionary) {
     const traitObject = {
         name: trait,
         label: game.i18n.localize(dictionary[trait] ?? trait),
+        description: null,
     };
     if (objectHasKey(CONFIG.PF2E.traitsDescriptions, trait)) {
         traitObject.description = CONFIG.PF2E.traitsDescriptions[trait];
@@ -45,13 +46,21 @@ export function getRangeIncrement(attackItem, distance) {
 }
 
 export function isOffGuardFromFlanking(target, origin) {
-    if (!target?.isOfType("creature")) return false;
-    const { flanking } = target.attributes;
-    return !flanking.flankable
-        ? false
-        : typeof flanking.offGuardable === "number"
-        ? origin.level > flanking.offGuardable
-        : flanking.offGuardable;
+    if (!target.isOfType("creature") || !target.attributes.flanking.flankable) {
+        return false;
+    }
+    const flanking = target.attributes.flanking;
+    const rollOptions = [
+        "item:type:condition",
+        "item:slug:off-guard",
+        ...origin.getSelfRollOptions("origin"),
+    ];
+    return (
+        (typeof flanking.offGuardable === "number"
+            ? origin.level > flanking.offGuardable
+            : flanking.offGuardable) &&
+        !target.attributes.immunities.some((i) => i.test(rollOptions))
+    );
 }
 
 export function isObject(value) {
