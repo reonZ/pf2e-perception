@@ -6,7 +6,11 @@ export function getLightExposure(token, debug = false) {
     if (token.document.hasStatusEffect(CONFIG.specialStatusEffects.INVISIBLE)) return undefined;
 
     const scene = token.scene;
-    if (scene !== canvas.scene || !scene.tokenVision || scene.darkness < scene.globalLightThreshold)
+    if (
+        scene !== canvas.scene ||
+        !scene.tokenVision ||
+        scene.environment.darknessLevel < scene.environment.globalLight.darkness.max
+    )
         return undefined;
 
     if (debug) clearDebug();

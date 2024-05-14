@@ -19,10 +19,8 @@ const templateConversion = {
 };
 
 export function createTemplate({ type, distance, traits, fillColor, width, flags }) {
-    const templateType = templateConversion[type];
-
     const templateData = {
-        t: templateType,
+        t: templateConversion[type],
         distance,
         fillColor: fillColor || game.user.color,
         flags: {
@@ -30,11 +28,11 @@ export function createTemplate({ type, distance, traits, fillColor, width, flags
         },
     };
 
-    switch (templateType) {
+    switch (templateData.t) {
         case "ray":
             templateData.width =
-                width ||
-                CONFIG.MeasuredTemplate.defaults.width * (canvas.dimensions?.distance ?? 1);
+                Number(width) ||
+                CONFIG.MeasuredTemplate.defaults.width * canvas.dimensions.distance;
             break;
         case "cone":
             templateData.angle = CONFIG.MeasuredTemplate.defaults.angle;
@@ -48,7 +46,7 @@ export function createTemplate({ type, distance, traits, fillColor, width, flags
         }
     }
 
-    if (traits) setProperty(templateData, "flags.pf2e.origin.traits", traits);
+    if (traits) foundry.utils.setProperty(templateData, "flags.pf2e.origin.traits", traits);
 
     canvas.templates.createPreview(templateData);
 }
@@ -136,57 +134,64 @@ function checkScene(token) {
     return false;
 }
 
-export function getTemplateTokens(template, { collisionOrigin, collisionType = "move" } = {}) {
-    const templateObj = template instanceof MeasuredTemplateDocument ? template.object : template;
+export function getTemplateTokens(
+    measuredTemplate,
+    { collisionOrigin, collisionType = "move" } = {}
+) {
+    const grid = canvas.interface.grid;
+    const dimensions = canvas.dimensions;
+    const template =
+        measuredTemplate instanceof MeasuredTemplateDocument
+            ? measuredTemplate.object
+            : measuredTemplate;
+    if (!canvas.scene || !template?.highlightId || !grid || !dimensions) return [];
 
-    if (!canvas.scene) return [];
-    const { grid, dimensions } = canvas;
-    if (!(grid && dimensions)) return [];
+    const gridHighlight = grid.getHighlightLayer(template.highlightId);
+    if (!gridHighlight || canvas.grid.type !== CONST.GRID_TYPES.SQUARE) return [];
 
-    const gridHighlight = grid.getHighlightLayer(templateObj.highlightId);
-    if (!gridHighlight || grid.type !== CONST.GRID_TYPES.SQUARE) return [];
-    const origin = collisionOrigin ?? templateObj.center;
-
-    // Get all the tokens that are inside the highlight bounds
+    const gridSize = canvas.grid.size;
+    const containedTokens = [];
+    const origin = collisionOrigin ?? template.center;
     const tokens = canvas.tokens.quadtree.getObjects(gridHighlight.getLocalBounds(undefined, true));
 
-    const containedTokens = [];
     for (const token of tokens) {
         const tokenDoc = token.document;
-
-        // Collect the position of all grid squares that this token occupies as "x.y"
         const tokenPositions = [];
+
         for (let h = 0; h < tokenDoc.height; h++) {
-            const y = token.y + h * grid.size;
-            tokenPositions.push(`${token.x}.${y}`);
+            const tokenX = Math.floor(token.x / gridSize) * gridSize;
+            const tokenY = Math.floor(token.y / gridSize) * gridSize;
+            const y = tokenY + h * gridSize;
+
+            tokenPositions.push(`${tokenX},${y}`);
+
             if (tokenDoc.width > 1) {
                 for (let w = 1; w < tokenDoc.width; w++) {
-                    tokenPositions.push(`${token.x + w * grid.size}.${y}`);
+                    tokenPositions.push(`${tokenX + w * gridSize},${y}`);
                 }
             }
         }
 
         for (const position of tokenPositions) {
-            // Check if a position exists within this GridHiglight
             if (!gridHighlight.positions.has(position)) {
                 continue;
             }
-            // Position of cell's top-left corner, in pixels
-            const [gx, gy] = position.split(".").map((s) => Number(s));
-            // Position of cell's center in pixels
+
+            const [gx, gy] = position.split(",").map((s) => Number(s));
             const destination = {
                 x: gx + dimensions.size * 0.5,
                 y: gy + dimensions.size * 0.5,
             };
             if (destination.x < 0 || destination.y < 0) continue;
 
-            const hasCollision =
-                canvas.ready &&
-                collisionType &&
-                CONFIG.Canvas.polygonBackends[collisionType].testCollision(origin, destination, {
+            const hasCollision = CONFIG.Canvas.polygonBackends[collisionType].testCollision(
+                origin,
+                destination,
+                {
                     type: collisionType,
                     mode: "any",
-                });
+                }
+            );
 
             if (!hasCollision) {
                 containedTokens.push(token);
@@ -194,6 +199,7 @@ export function getTemplateTokens(template, { collisionOrigin, collisionType = "
             }
         }
     }
+
     return containedTokens;
 }
 
@@ -206,19 +212,21 @@ export function highlightTemplateGrid() {
 
     // Refrain from highlighting if not visible
     if (!this.isVisible) {
-        canvas.grid.getHighlightLayer(this.highlightId)?.clear();
+        canvas.interface.grid.getHighlightLayer(this.highlightId)?.clear();
         return;
     }
 
     const collisionType = getFlag(this.document, "collisionType");
     const collisionOrigin = getFlag(this.document, "collisionOrigin");
 
-    this.snapForShape();
     highlightGrid({
         areaShape: this.areaShape,
         object: this,
         document: this.document,
-        colors: { border: this.borderColor, fill: this.fillColor },
+        colors: {
+            border: Number(this.document.borderColor),
+            fill: Number(this.document.fillColor),
+        },
         preview: true,
         // added stuff
         collisionType,
