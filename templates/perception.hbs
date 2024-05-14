@@ -10,13 +10,13 @@
     <div>
         <select name="visibility">
             <option value=""></option>
-            {{selectOptions @root.visibilities nameAttr="value" labelAttr="label"}}
+            {{selectOptions @root.visibilities valueAttr="value" labelAttr="label"}}
         </select>
     </div>
     <div>
         <select name="cover">
             <option value=""></option>
-            {{selectOptions @root.covers nameAttr="value" labelAttr="label"}}
+            {{selectOptions @root.covers valueAttr="value" labelAttr="label"}}
         </select>
     </div>
     <div class="name">{{i18n 'menu.perception.selected'}}</div>
@@ -64,14 +64,14 @@
                 class="{{#if token.visibility.changed}}changed{{/if}}{{#if token.visibility.custom}} custom{{/if}}"
                 data-original="{{token.visibility.original}}">
                 {{selectOptions @root.visibilities selected=token.visibility.current
-                nameAttr="value" labelAttr="label"}}
+                valueAttr="value" labelAttr="label"}}
             </select>
         </div>
         <div class="cover">
             <select name="cover"
                 class="{{#if token.cover.changed}}changed{{/if}}{{#if token.cover.custom}} custom{{/if}}"
                 data-original="{{token.cover.original}}">
-                {{selectOptions @root.covers selected=token.cover.current nameAttr="value"
+                {{selectOptions @root.covers selected=token.cover.current valueAttr="value"
                 labelAttr="label"}}
             </select>
         </div>

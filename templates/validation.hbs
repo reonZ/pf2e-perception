@@ -46,7 +46,7 @@
         <div class="current">
             <select name="{{@root.property}}" data-original="{{token.original}}"
                 class="{{#if (and token.changed @root.showChanges)}}changed{{/if}}{{#if token.custom}} custom{{/if}}">
-                {{selectOptions @root.options selected=token.current nameAttr="value"
+                {{selectOptions @root.options selected=token.current valueAttr="value"
                 labelAttr="label"}}
             </select>
         </div>
