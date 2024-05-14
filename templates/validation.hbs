@@ -7,7 +7,8 @@
 
 <div class="buttons">
     <button data-action="accept"><i class="fa-solid fa-check"></i> {{i18n 'menu.accept'}}</button>
-    <button data-action="cancel"><i class="fa-solid fa-xmark"></i> {{i18n 'menu.validation.cancel'}}</button>
+    <button data-action="cancel"><i class="fa-solid fa-xmark"></i> {{i18n
+        'menu.validation.cancel'}}</button>
 </div>
 
 
@@ -29,7 +30,8 @@
         <div class="type">{{@root.i18n 'menu' ../type}}</div>
     </header>
     {{#each tokens as |token|}}
-    <div class="token {{#if (and token.selected @root.showSelected)}}ui-selected{{/if}}" data-token-id="{{token.id}}">
+    <div class="token {{#if (and token.selected @root.showSelected)}}ui-selected{{/if}}"
+        data-token-id="{{token.id}}">
         {{#if @root.isReversed}}
         <div class="name">{{token.name}}</div>
         {{/if}}
@@ -44,7 +46,8 @@
         <div class="current">
             <select name="{{@root.property}}" data-original="{{token.original}}"
                 class="{{#if (and token.changed @root.showChanges)}}changed{{/if}}{{#if token.custom}} custom{{/if}}">
-                {{selectOptions @root.options selected=token.current nameAttr="value" labelAttr="label"}}
+                {{selectOptions @root.options selected=token.current nameAttr="value"
+                labelAttr="label"}}
             </select>
         </div>
         {{#unless @root.isReversed}}

@@ -1,7 +1,9 @@
 {{#if hasTokens}}
 <div class="buttons">
-    <button data-action="use-selection"><i class="fa-solid fa-expand"></i> {{i18n 'menu.perception.use-selection'}}</button>
-    <button data-action="select-all"><i class="fa-solid fa-users"></i> {{i18n 'menu.perception.select-all'}}</button>
+    <button data-action="use-selection"><i class="fa-solid fa-expand"></i> {{i18n
+        'menu.perception.use-selection'}}</button>
+    <button data-action="select-all"><i class="fa-solid fa-users"></i> {{i18n
+        'menu.perception.select-all'}}</button>
 </div>
 
 <div class="options">
@@ -30,7 +32,8 @@
 
 <div class="buttons">
     <button data-action="accept"><i class="fa-solid fa-check"></i> {{i18n 'menu.accept'}}</button>
-    <button data-action="reset"><i class="fa-solid fa-rotate-left"></i> {{i18n 'menu.perception.reset'}}</button>
+    <button data-action="reset"><i class="fa-solid fa-rotate-left"></i> {{i18n
+        'menu.perception.reset'}}</button>
 </div>
 
 
@@ -57,15 +60,19 @@
     {{#each tokens as |token|}}
     <div class="token {{#if token.selected}}ui-selected{{/if}}" data-token-id="{{token.id}}">
         <div class="visibility">
-            <select name="visibility" class="{{#if token.visibility.changed}}changed{{/if}}{{#if token.visibility.custom}} custom{{/if}}"
+            <select name="visibility"
+                class="{{#if token.visibility.changed}}changed{{/if}}{{#if token.visibility.custom}} custom{{/if}}"
                 data-original="{{token.visibility.original}}">
-                {{selectOptions @root.visibilities selected=token.visibility.current nameAttr="value" labelAttr="label"}}
+                {{selectOptions @root.visibilities selected=token.visibility.current
+                nameAttr="value" labelAttr="label"}}
             </select>
         </div>
         <div class="cover">
-            <select name="cover" class="{{#if token.cover.changed}}changed{{/if}}{{#if token.cover.custom}} custom{{/if}}"
+            <select name="cover"
+                class="{{#if token.cover.changed}}changed{{/if}}{{#if token.cover.custom}} custom{{/if}}"
                 data-original="{{token.cover.original}}">
-                {{selectOptions @root.covers selected=token.cover.current nameAttr="value" labelAttr="label"}}
+                {{selectOptions @root.covers selected=token.cover.current nameAttr="value"
+                labelAttr="label"}}
             </select>
         </div>
         <div class="name">{{token.name}}</div>

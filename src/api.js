@@ -1,8 +1,13 @@
-import { getCoverEffect, hasGreaterDarkvision, isProne, seeInvisibility } from './actor.js'
-import { clearDebug, getRectEdges, lineIntersectWall, pointToTokenIntersectWall } from './geometry.js'
-import { getLightExposure } from './lighting.js'
-import { getPerception, perceptionRules, updateFromPerceptionRules } from './rule-element.js'
-import { getSceneSetting, getValidTokens, validateTokens } from './scene.js'
+import { getCoverEffect, hasGreaterDarkvision, isProne, seeInvisibility } from "./actor.js";
+import {
+    clearDebug,
+    getRectEdges,
+    lineIntersectWall,
+    pointToTokenIntersectWall,
+} from "./geometry.js";
+import { getLightExposure } from "./lighting.js";
+import { getPerception, perceptionRules, updateFromPerceptionRules } from "./rule-element.js";
+import { getSceneSetting, getValidTokens, validateTokens } from "./scene.js";
 import {
     createDarknessTemplate,
     createMistTemplate,
@@ -12,7 +17,7 @@ import {
     getMistTemplates,
     getSeekTemplateTokens,
     getTemplateTokens,
-} from './template.js'
+} from "./template.js";
 import {
     clearConditionals,
     getCover,
@@ -23,7 +28,7 @@ import {
     openHUD,
     showAllConditionals,
     showConditionals,
-} from './token.js'
+} from "./token.js";
 
 export const API = {
     geometry: {
@@ -72,4 +77,4 @@ export const API = {
         getPerception,
         updateFromPerceptionRules,
     },
-}
+};

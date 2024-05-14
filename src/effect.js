@@ -1,65 +1,70 @@
-import { COVER_UUID, COVER_VALUES } from './constants.js'
-import { MODULE_ID, localize } from './module.js'
+import { COVER_UUID, COVER_VALUES } from "./constants.js";
+import { MODULE_ID, localize } from "./module.js";
 
 export function createFlatFootedSource(visibility) {
-    const condition = game.pf2e.ConditionManager.getCondition('off-guard')
-    const source = condition.toObject()
-    source.name += ` (${game.i18n.localize(`PF2E.condition.${visibility}.name`)})`
-    return source
+    const condition = game.pf2e.ConditionManager.getCondition("off-guard");
+    const source = condition.toObject();
+    source.name += ` (${game.i18n.localize(`PF2E.condition.${visibility}.name`)})`;
+    return source;
 }
 
 export function createCoverSource(level, bonus) {
-    bonus ??= COVER_VALUES[level] === 3 ? 4 : COVER_VALUES[level]
+    bonus ??= COVER_VALUES[level] === 3 ? 4 : COVER_VALUES[level];
 
     return {
-        _id: 'I9lfZUiCwMiGogVi',
-        img: 'systems/pf2e/icons/conditions-2/status_acup.webp',
-        name: localize('cover', level),
+        _id: "I9lfZUiCwMiGogVi",
+        img: "systems/pf2e/icons/conditions-2/status_acup.webp",
+        name: localize("cover", level),
         system: {
             description: {
-                gm: '',
+                gm: "",
                 value: "<p>When you're behind an obstacle that could block weapons, guard you against explosions, and make you harder to detect, you're behind cover. Standard cover gives you a +2 circumstance bonus to AC, to Reflex saves against area effects, and to Stealth checks to Hide, Sneak, or otherwise avoid detection. You can increase this to greater cover using the Take Cover basic action, increasing the circumstance bonus to +4. If cover is especially light, typically when it's provided by a creature, you have lesser cover, which grants a +1 circumstance bonus to AC. A creature with standard cover or greater cover can attempt to use Stealth to Hide, but lesser cover isn't sufficient.</p>",
             },
             rules: [
-                { domain: 'all', key: 'RollOption', option: `self:cover-bonus:${bonus}` },
-                { domain: 'all', key: 'RollOption', option: `self:cover-level:${level}` },
+                { domain: "all", key: "RollOption", option: `self:cover-bonus:${bonus}` },
+                { domain: "all", key: "RollOption", option: `self:cover-level:${level}` },
                 {
-                    key: 'FlatModifier',
+                    key: "FlatModifier",
                     predicate: [
-                        { or: [{ and: ['self:condition:prone', 'item:ranged'] }, { not: 'self:cover-level:greater-prone' }] },
+                        {
+                            or: [
+                                { and: ["self:condition:prone", "item:ranged"] },
+                                { not: "self:cover-level:greater-prone" },
+                            ],
+                        },
                     ],
-                    selector: 'ac',
-                    type: 'circumstance',
+                    selector: "ac",
+                    type: "circumstance",
                     value: bonus,
                 },
                 {
-                    key: 'FlatModifier',
-                    predicate: ['area-effect', { not: 'self:cover-level:greater-prone' }],
-                    selector: 'reflex',
-                    type: 'circumstance',
+                    key: "FlatModifier",
+                    predicate: ["area-effect", { not: "self:cover-level:greater-prone" }],
+                    selector: "reflex",
+                    type: "circumstance",
                     value: bonus,
                 },
                 {
-                    key: 'FlatModifier',
+                    key: "FlatModifier",
                     predicate: [
-                        { or: ['action:hide', 'action:sneak', 'avoid-detection'] },
-                        { not: 'self:cover-level:greater-prone' },
+                        { or: ["action:hide", "action:sneak", "avoid-detection"] },
+                        { not: "self:cover-level:greater-prone" },
                     ],
-                    selector: 'stealth',
-                    type: 'circumstance',
+                    selector: "stealth",
+                    type: "circumstance",
                     value: bonus,
                 },
                 {
-                    key: 'FlatModifier',
-                    predicate: ['action:avoid-notice', { not: 'self:cover-level:greater-prone' }],
-                    selector: 'initiative',
-                    type: 'circumstance',
+                    key: "FlatModifier",
+                    predicate: ["action:avoid-notice", { not: "self:cover-level:greater-prone" }],
+                    selector: "initiative",
+                    type: "circumstance",
                     value: bonus,
                 },
             ],
-            slug: 'effect-cover',
+            slug: "effect-cover",
         },
-        type: 'effect',
+        type: "effect",
         flags: {
             core: { sourceId: COVER_UUID },
             [MODULE_ID]: {
@@ -67,10 +72,12 @@ export function createCoverSource(level, bonus) {
                 bonus,
             },
         },
-    }
+    };
 }
 
 export function findChoiceSetRule(item, flag = undefined) {
-    if (!item) return undefined
-    return item.system.rules.find(rule => rule.key === 'ChoiceSet' && (!flag || rule.flag === flag))
+    if (!item) return undefined;
+    return item.system.rules.find(
+        (rule) => rule.key === "ChoiceSet" && (!flag || rule.flag === flag)
+    );
 }
