@@ -1,0 +1,236 @@
+{
+    "PF2E.RuleElement.PF2ePerception": "PF2e Perception",
+    "pf2e-perception": {
+        "settings": {
+            "icon-path": {
+                "name": "Ikony stanów",
+                "label": "Ścieżki ustawień"
+            },
+            "icon-size": {
+                "name": "Rozmiar ikon stanów",
+                "hint": "Rozmiar w pikselach dla ikon stanu wyświetlanych po najechaniu myszą."
+            },
+            "lesser": {
+                "name": "Automatyzacja osłony stworzeń",
+                "hint": "Czy moduł powinien automatycznie sprawdzać obecność osłon stworzeń na planszy.",
+                "choices": {
+                    "none": "Wyłączone",
+                    "cross": "Musi przecinać 2 przeciwległe boki",
+                    "zero": "Przecięcie dowolnego boku",
+                    "ten": "Przecięcie dowolnego boku z 10% marginesem",
+                    "twenty": "Przecięcie dowolnego boku z 20% marginesem"
+                }
+            },
+            "standard": {
+                "name": "Automatyzacja standardowej osłony",
+                "hint": "Czy moduł ma automatycznie sprawdzać standardowe osłony na planszy. Ustawienie to można również skonfigurować dla poszczególnych scen.",
+                "short": "Czy moduł powinien automatycznie sprawdzać standardowe osłony na planszy."
+            },
+            "standard-type": {
+                "name": "Obliczanie standardowej osłony",
+                "hint": "W jaki sposób moduł automatycznie oblicza standardowe osłony od punktu początkowego do tokena docelowego.",
+                "choices": {
+                    "center": "Od środka do środka",
+                    "points": "Od środka do obszaru",
+                    "corners": "Od narożników do środka"
+                }
+            },
+            "skip-cover": {
+                "name": "Pomiń sprawdzanie osłony",
+                "hint": "Po włączeniu tej opcji MG nie będzie musiał ręcznie sprawdzać, kiedy gracz bierze/usuwa osłony warunkowe."
+            },
+            "target": {
+                "name": "Zezwalaj na walczące cele",
+                "hint": "Gdy ta opcja jest włączona, wszystkie stwory w śledzeniu walki mogą być celem ataku, nawet te, które nie są aktualnie widoczne na planszy. Jest to przydatne, gdy gracz chce zaatakować niewykrytą istotę."
+            },
+            "validation": {
+                "name": "Wyświetlanie weryfikacji tokenów",
+                "hint": "Które tokeny powinny być wyświetlane w menu weryfikacji.",
+                "choices": {
+                    "all": "Wszystkie prawidłowe tokeny",
+                    "selected": "Tylko wybrane tokeny",
+                    "changed": "Tylko tokeny ze zmianami"
+                }
+            },
+            "exposure": {
+                "name": "Automatyzacja ekspozycji na światło",
+                "hint": "Czy moduł powinien automatycznie sprawdzać ekspozycję tokenów na jasne i słabe światło. To ustawienie można również ustawić dla poszczególnych scen.",
+                "short": "Czy moduł powinien automatycznie sprawdzać ekspozycję tokenów na jasne i słabe światło?"
+            },
+            "encounter": {
+                "name": "Tylko tokeny potyczki",
+                "hint": "Po włączeniu moduł będzie działał tylko z tokenami należącymi do bieżącego spotkania, jeśli w ogóle, dla większości jego funkcji. Pamiętaj, aby dodać cechy \"sługus\" i \"eidolon\" do stworzeń, które powinny uczestniczyć, ale nie pojawiać się w trackerze. To ustawienie pojawia się również w ustawieniach śledzenia spotkań.",
+                "short": "Moduł będzie działał tylko z tokenami należącymi do bieżącego spotkania, jeśli takie istnieją."
+            },
+            "flat-check": {
+                "name": "Płaski test",
+                "hint": "Czy moduł powinien automatycznie rzucać płaski test przed atakiem wymierzonym w ukryty cel.",
+                "choices": {
+                    "none": "Wyłączone",
+                    "roll": "Rzuć Płaski test",
+                    "cancel": "Anulowanie ataku w przypadku porażki"
+                }
+            },
+            "permission": {
+                "name": "Zezwolenie na menu percepcji",
+                "hint": "Jakie minimalne uprawnienia musi mieć użytkownik, aby móc korzystać z menu percepcji. Należy pamiętać, że menu jest poważnym spoilerem, jeśli zostanie udostępnione graczom.",
+                "choices": {
+                    "1": "Gracz",
+                    "2": "Zaufany gracz",
+                    "3": "Asystent Mistrza Gry",
+                    "4": "Mistrz Gry"
+                }
+            },
+            "npc-vision": {
+                "name": "Wymuś widzenie BN",
+                "hint": "Po włączeniu moduł wymusi opcję \" Włączone widzenie\" na nowo utworzonych tokenach BN. Może to być obciążające dla klienta, gdy na scenie znajduje się wiele postaci niezależnych. Ustawienie to można również skonfigurować dla poszczególnych scen.",
+                "short": "Moduł wymusi opcję <strong>Włączone Widzenie</strong> na nowo utworzonych tokenach BN. Może to być obciążające dla klienta, gdy na scenie znajduje się wiele postaci niezależnych."
+            },
+            "dead-cover": {
+                "name": "Martwi dają osłonę",
+                "hint": "Po wyłączeniu, martwe i nieprzytomne stworzenia nie zapewniają osłony."
+            },
+            "prone-cover": {
+                "name": "Przewróceni dają osłonę",
+                "hint": "Po wyłączeniu, przewrócone stworzenia nie zapewniają osłony."
+            },
+            "seek-template": {
+                "name": "Korzystanie z szablonów wyszukiwania",
+                "hint": "Po wyłączeniu akcja wyszukiwania nie będzie już powodować wyświetlenia okna dialogowego szablonów."
+            }
+        },
+        "warning": {
+            "npc-vision": "<strong>PF2e Perception</strong> już implementuje wszystko z <strong>PF2e Rules-Based NPC Vision</strong>, posiadanie aktywnych obu modułów spowoduje uszkodzenie plików."
+        },
+        "menu": {
+            "perception": {
+                "title": "{name} - Menu Percepcji",
+                "use-selection": "Wybrane tokeny",
+                "select-all": "Wybierz wszystko",
+                "selected": "Wybrane",
+                "nothing": "Brak prawidłowych tokenów na planszy",
+                "reset": "Reset"
+            },
+            "validation": {
+                "title": "{name} - Menu walidacji",
+                "nothing": "Brak zmian do wprowadzenia",
+                "cancel": "Anuluj"
+            },
+            "allies": "Sojusznicy",
+            "neutral": "Neutralni",
+            "enemies": "Wrogowie",
+            "accept": "Akceptuj",
+            "close": "Zamknij",
+            "no-token": "Nie można znaleźć powiązanego tokena"
+        },
+        "visibility": {
+            "observed": "Obserwowany przez",
+            "concealed": "Przysłonięty przed",
+            "hidden": "Ukryty przed",
+            "undetected": "Niewykryty przez",
+            "unnoticed": "Niezauważony przez",
+            "reversed": {
+                "observed": "Jest obserwowany",
+                "concealed": "Jest przysłonięty",
+                "hidden": "Jest ukryty",
+                "undetected": "Jest niewykryty",
+                "unnoticed": "Jest niezauważony"
+            }
+        },
+        "cover": {
+            "none": "Brak osłony od",
+            "lesser": "Mniejsza osłona",
+            "standard": "Standardowa osłona",
+            "greater": "Większa osłona",
+            "greater-prone": "Osłona (przewrócony)"
+        },
+        "dialog": {
+            "cover": {
+                "remove": "Usuń z",
+                "remove-all": "Usuń wszystkie",
+                "hint": {
+                    "targets": "<strong>Cele:</strong> wybrany poziom osłony zostanie dodany do wszystkich celów",
+                    "no-target": "<strong>Brak celu:</strong> efekt osłony systemowej zostanie dodany do aktora z wybranym poziomem"
+                }
+            },
+            "seek": {
+                "hint": "Utwórz szablon do skanowania obszaru i poszukiwania ukrytych/niewykrytych stworzeń",
+                "accept": "Akceptuj",
+                "cancel": "Anuluj"
+            }
+        },
+        "message": {
+            "flat-check": {
+                "button": {
+                    "attack-roll": "Rzut na atak",
+                    "spell-attack-roll": "Rzut na atak zaklęciem",
+                    "failure": "Wiadomość w razie porażki",
+                    "success": "Wiadomość w razie sukcesu"
+                },
+                "blind": "Próbuje trafić w coś niewykrytego",
+                "failure": "Nie był w stanie w nic trafić",
+                "success": "Był w stanie coś trafić"
+            },
+            "cover": {
+                "take": "Znajduje osłonę ({cover}) dla wybranych tokenów na planszy",
+                "remove": "Usuwa osłonę z wybranych tokenów na planszy",
+                "remove-all": "Usuwa wszystkie osłony warunkowe",
+                "gm": {
+                    "validate": "Sprawdź osłony",
+                    "validated": "Osłony sprawdzone",
+                    "check": "Sprawdź wybrane"
+                },
+                "player": {
+                    "wait": "Poczekaj na zatwierdzenie przez MG...",
+                    "validated": "Osłony zostały zatwierdzone"
+                }
+            },
+            "visibility": {
+                "gm": {
+                    "validate": "Weryfikacja widoczności",
+                    "validated": "Widoczność zatwierdzona",
+                    "check": "Sprawdź wybrane"
+                },
+                "player": {
+                    "wait": "Poczekaj na zatwierdzenie przez MG...",
+                    "validated": "Widoczność została zatwierdzona"
+                },
+                "small-button": {
+                    "ping-token": "Ping wskazanego tokena",
+                    "delete-template": "Usuń powiązany szablon"
+                }
+            },
+            "point-out": {
+                "description": "<p>Wskazujesz widoczną istotę jednemu lub kilku sojusznikom, gestykulując w jej kierunku i opisując werbalnie odległość. To stworzenie jest <strong>ukryte</strong> dla twoich sojuszników, a nie <strong>niewykryte</strong>. Działa to tylko w przypadku sojuszników, którzy cię widzą i znajdują się w miejscu, w którym mogliby potencjalnie wykryć cel. Jeśli twoi sojusznicy nie słyszą lub nie rozumieją cię, muszą wykonać test Percepcji przeciwko ST <strong>Ukryciu</strong> lub źle zrozumieją i uznają, że cel znajduje się w innym miejscu.</p>",
+                "short": "Jeśli sojusznicy cię nie słyszą lub nie rozumieją, muszą wykonać test Percepcji przeciwko ST Ukrycia istoty lub źle zrozumieją i uznają, że cel znajduje się w innym miejscu",
+                "short-check": "Jeśli sojusznicy cię nie słyszą lub nie rozumieją, muszą odnieść sukces w {check} lub źle zrozumieją i uznają, że cel znajduje się w innym miejscu."
+            },
+            "unhide": {
+                "tooltip": "Kliknij, aby usunąć ukrycie tokena."
+            },
+            "check": "Test"
+        },
+        "action": {
+            "only-one": "Tylko jeden token/aktor może zostać wybrany do użycia akcji <strong>{action}</strong>.",
+            "must-one": "Jeden token/aktor musi zostać wybrany do użycia akcji <strong>{action}</strong>.",
+            "must-target": "Musisz namierzyć jeden token/aktora, aby użyć akcji <strong>{action}</strong>.",
+            "must-creature": "Tylko stworzenie może używać akcji <strong>{action}</strong>.",
+            "take-cover": "Znajdź Osłonę",
+            "point-out": "Wskaż Palcem"
+        },
+        "template": {
+            "scene": "Szablony można umieszczać tylko na scenie, na której znajduje się token."
+        },
+        "dice-checks": {
+            "cover": {
+                "label": "Nadpisanie osłony celu",
+                "none": "Brak osłony"
+            }
+        },
+        "icon-path": {
+            "save": "Zapisz",
+            "cancel": "Anuluj",
+            "cover": "Osłona"
+        }
+    }
+}
