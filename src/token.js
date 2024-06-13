@@ -324,6 +324,12 @@ export function getVisibility(
 
     let inDarkness;
     if (!targetGreaterDarkvision) {
+        // const darknessExposure = getDarknessExposure(origin)
+        // if (darknessExposure) {
+        //     inDarkness = true;
+        //     // if (!targetDarkvision) return returnValue("hidden");
+        // }
+
         const darknessTemplates = getDarknessTemplates(origin);
         if (darknessTemplates?.length) {
             let darknessVisibility;
@@ -461,14 +467,6 @@ export async function showConditionals(origin, target) {
     content += "</div>";
 
     $(document.body).append(content);
-}
-
-export function rulesBasedVision() {
-    return !!(
-        this.sight.enabled &&
-        this.actor?.isOfType("creature") &&
-        this.scene?.rulesBasedVision
-    );
 }
 
 export function preCreateToken(token) {

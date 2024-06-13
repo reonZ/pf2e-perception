@@ -1,5 +1,42 @@
 import { clearDebug, drawDebugLine } from "./geometry.js";
 
+export function getDarknessExposure(token, debug = false) {
+    token = token instanceof Token ? token : token.object;
+
+    if (token.document.hasStatusEffect(CONFIG.specialStatusEffects.INVISIBLE)) return undefined;
+
+    const scene = token.scene;
+    if (scene !== canvas.scene || !scene.tokenVision) return undefined;
+
+    if (debug) clearDebug();
+
+    const center = token.document.center;
+    let darkness = null;
+
+    for (const light of canvas.effects.darknessSources) {
+        if (!light.active) continue;
+
+        const greaterDarkness = light.data.color === 0;
+
+        if (light.object === token) {
+            if (greaterDarkness) return "greater";
+            darkness = "darkness";
+            continue;
+        }
+
+        if (!light.shape.contains(center.x, center.y)) {
+            if (debug) drawDebugLine(light, center, "red");
+            continue;
+        }
+
+        if (greaterDarkness) return "greater";
+        darkness = "darkness";
+        continue;
+    }
+
+    return darkness;
+}
+
 export function getLightExposure(token, debug = false) {
     token = token instanceof Token ? token : token.object;
 
