@@ -3,7 +3,7 @@
 -   this is a system `6.0.1` and foundry `v12` release
 -   fixed most of the broken features
 -   added Polish localization (thanks to [Lioheart](https://github.com/Lioheart))
--   conditional token display was disabled until i find what/why is happening, this
+-   conditional token display was disabled until i find why/what is happening
     -   this doesn't impact flat check rolls or off-guard automation
     -   the module will just not change the state of visibility of tokens based their conditional status related to the currently selected token
 
