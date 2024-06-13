@@ -19,7 +19,7 @@ export function getLightExposure(token, debug = false) {
     let exposure = null;
 
     for (const light of canvas.effects.lightSources) {
-        if (!light.active) continue;
+        if (!light.active || light instanceof foundry.canvas.sources.GlobalLightSource) continue;
 
         const bright = light.data.bright;
         const dim = light.data.dim;
@@ -35,12 +35,12 @@ export function getLightExposure(token, debug = false) {
             continue;
         }
 
-        if (light.ratio === 1) {
+        if (light.ratio === 1 && bright > 0) {
             if (debug) drawDebugLine(light, center, "green");
             return "bright";
         }
 
-        if (light.ratio === 0) {
+        if (light.ratio === 0 && bright > 0) {
             if (debug) drawDebugLine(light, center, "blue");
             exposure = "dim";
             continue;
