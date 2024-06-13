@@ -1,5 +1,3 @@
-import { PredicatePF2e } from "./predicate";
-
 const WEAPON_PROPERTY_RUNES = {
     ancestralEchoing: {
         level: 15,
@@ -940,7 +938,7 @@ const WEAPON_PROPERTY_RUNES = {
             adjustments: [
                 {
                     slug: "critical-specialization",
-                    test: (options) => new PredicatePF2e("item:group:pick").test(options),
+                    test: (options) => new game.pf2e.Predicate("item:group:pick").test(options),
                     getNewValue: (current) => current * 2,
                 },
             ],
@@ -1078,7 +1076,7 @@ const WEAPON_PROPERTY_RUNES = {
                             amount: "criticalSuccess",
                         },
                     },
-                    predicate: new PredicatePF2e([
+                    predicate: new game.pf2e.Predicate([
                         "check:total:natural:19",
                         { or: ["item:damage:type:slashing", "item:damage:type:piercing"] },
                     ]),
