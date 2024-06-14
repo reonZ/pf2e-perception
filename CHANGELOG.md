@@ -1,3 +1,7 @@
+# 0.40.1
+
+-   fixed emanation templates freezing foundry
+
 # 0.40.0
 
 -   this is a system `6.0.1` and foundry `v12` release
