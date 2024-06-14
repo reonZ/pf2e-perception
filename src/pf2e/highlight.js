@@ -122,7 +122,7 @@ export function highlightGrid({
 
     // If this is an emanation, measure from the outer squares of the token's space
     const offsetEmanationOrigin = (destination) => {
-        if (!(areaShape === "emanation" && object instanceof TokenPF2e)) {
+        if (!(areaShape === "emanation" && object instanceof Token)) {
             return { x: 0, y: 0 };
         }
 
