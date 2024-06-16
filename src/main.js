@@ -3,12 +3,8 @@ import { API } from "./api.js";
 import { renderChatMessage } from "./chat.js";
 import { checkRoll, renderCheckModifiersDialog } from "./check.js";
 import { renderCombatTracker, renderCombatTrackerConfig } from "./combat.js";
-import {
-    visionCanDetect,
-    detectionModeTestVisibility,
-    feelTremorCanDetect,
-    hearingCanDetect,
-} from "./detection.js";
+import { VISIBILITY_VALUES } from "./constants.js";
+import { canDetect, detectionModeTestVisibility } from "./detection.js";
 import { MODULE_ID } from "./module.js";
 import { setupRuleElement } from "./rule-element.js";
 import { renderSceneConfig } from "./scene.js";
@@ -34,6 +30,7 @@ const CHECK_ROLL = "game.pf2e.Check.roll";
 const HIGHLIGHT_TEMPLATE_GRID = "CONFIG.MeasuredTemplate.objectClass.prototype.highlightGrid";
 
 const DETECTION_MODE_TEST_VISIBILITY = "DetectionMode.prototype.testVisibility";
+const LIGHT_CAN_DETECT = "CONFIG.Canvas.detectionModes.lightPerception._canDetect";
 const VISION_CAN_DETECT = "CONFIG.Canvas.detectionModes.basicSight._canDetect";
 const HEARING_CAN_DETECT = "CONFIG.Canvas.detectionModes.hearing._canDetect";
 const TREMOR_CAN_DETECT = "CONFIG.Canvas.detectionModes.feelTremor._canDetect";
@@ -47,15 +44,36 @@ Hooks.once("init", () => {
 
     libWrapper.register(MODULE_ID, HIGHLIGHT_TEMPLATE_GRID, highlightTemplateGrid, "OVERRIDE");
 
-    // libWrapper.register(
-    //     MODULE_ID,
-    //     DETECTION_MODE_TEST_VISIBILITY,
-    //     detectionModeTestVisibility,
-    //     "OVERRIDE"
-    // );
-    // libWrapper.register(MODULE_ID, VISION_CAN_DETECT, visionCanDetect, "MIXED");
-    // libWrapper.register(MODULE_ID, HEARING_CAN_DETECT, hearingCanDetect, "MIXED");
-    // libWrapper.register(MODULE_ID, TREMOR_CAN_DETECT, feelTremorCanDetect, "MIXED");
+    libWrapper.register(
+        MODULE_ID,
+        DETECTION_MODE_TEST_VISIBILITY,
+        detectionModeTestVisibility,
+        "OVERRIDE"
+    );
+    libWrapper.register(
+        MODULE_ID,
+        LIGHT_CAN_DETECT,
+        canDetect(VISIBILITY_VALUES.hidden),
+        "WRAPPER"
+    );
+    libWrapper.register(
+        MODULE_ID,
+        VISION_CAN_DETECT,
+        canDetect(VISIBILITY_VALUES.hidden),
+        "WRAPPER"
+    );
+    libWrapper.register(
+        MODULE_ID,
+        HEARING_CAN_DETECT,
+        canDetect(VISIBILITY_VALUES.undetected),
+        "WRAPPER"
+    );
+    libWrapper.register(
+        MODULE_ID,
+        TREMOR_CAN_DETECT,
+        canDetect(VISIBILITY_VALUES.undetected),
+        "WRAPPER"
+    );
 
     const isGM =
         game.data.users.find((x) => x._id === game.data.userId).role >= CONST.USER_ROLES.GAMEMASTER;
