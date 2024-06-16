@@ -1,3 +1,11 @@
+# 0.41.0
+
+-   fixed and re-enabled conditional token display
+
+# 0.40.2
+
+-   re-enable conditional token display
+
 # 0.40.1
 
 -   fixed emanation templates freezing foundry
