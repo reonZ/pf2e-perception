@@ -413,11 +413,17 @@ export function controlToken(token, controlled) {
     Hooks.once("sightRefresh", () => token.hover && showAllConditionals(token));
 }
 
+const CONDITIONALS = {};
+
 export function clearConditionals(token) {
     const tokenId = token?.id;
     if (!tokenId) return $(".pf2e-conditionals").remove();
-    $(`.pf2e-conditionals[data-hover-id=${token.id}]`).remove();
-    $(`.pf2e-conditionals[data-token-id=${token.id}]`).remove();
+
+    for (const el of CONDITIONALS[tokenId] ?? []) {
+        el.remove();
+    }
+
+    delete CONDITIONALS[tokenId];
 }
 
 export function showAllConditionals(token) {
@@ -443,6 +449,7 @@ export async function showConditionals(origin, target) {
         data = { cover: data.cover };
     }
 
+    const targetId = target.id;
     const scale = origin.worldTransform.a;
     const coords = canvas.clientCoordinatesFromCanvas(origin.document._source);
     const iconSize = getSetting("icon-size");
@@ -454,7 +461,7 @@ export async function showConditionals(origin, target) {
     ].join("; ");
 
     let content = `<div class="pf2e-conditionals" data-hover-id="${origin.id}"`;
-    content += ` data-token-id="${target.id}" style="${style}">`;
+    content += ` data-token-id="${targetId}" style="${style}">`;
 
     const savedPaths = getSetting("icon-path");
     Object.entries(data).map(([property, value]) => {
@@ -466,7 +473,10 @@ export async function showConditionals(origin, target) {
 
     content += "</div>";
 
-    $(document.body).append(content);
+    const conditionals = $(content);
+    (CONDITIONALS[targetId] ??= []).push(conditionals);
+
+    $(document.body).append(conditionals);
 }
 
 export function preCreateToken(token) {
