@@ -1,3 +1,8 @@
+# 0.42.0
+
+-   now cache conditionals DOM elements for a small boost in performance
+-   fix conditionals icons showing on the left side of the viewport on hex grid scene
+
 # 0.41.0
 
 -   fixed and re-enabled conditional token display
