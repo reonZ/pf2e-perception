@@ -450,13 +450,13 @@ export async function showConditionals(origin, target) {
     }
 
     const targetId = target.id;
-    const scale = origin.worldTransform.a;
-    const coords = canvas.clientCoordinatesFromCanvas(origin.document._source);
+    const coords = canvas.clientCoordinatesFromCanvas(origin);
     const iconSize = getSetting("icon-size");
+    const width = origin.document.width * canvas.grid.size * origin.worldTransform.a;
 
     const style = [
         `top: ${coords.y}px`,
-        `left: ${coords.x + (origin.hitArea.width * scale) / 2}px`,
+        `left: ${coords.x + width / 2}px`,
         `--icon-size: ${iconSize}px`,
     ].join("; ");
 
