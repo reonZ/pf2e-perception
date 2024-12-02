@@ -2,7 +2,7 @@ import { COVER_UUID } from "./constants.js";
 import { findChoiceSetRule } from "./effect.js";
 
 export function getActorToken(actor, target = false) {
-    if (!actor) return undefined;
+    if (!(actor instanceof Actor)) return undefined;
     const actorId = actor.id;
     const isToken = actor.isToken;
     const tokens = target ? game.user.targets : canvas.tokens?.controlled ?? [];
