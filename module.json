@@ -19,11 +19,11 @@
         "verified": "12.331",
         "maximum": "12"
     },
-    "version": "0.42.0",
+    "version": "0.42.1",
     "url": "https://github.com/reonZ/pf2e-perception",
     "readme": "https://github.com/reonZ/pf2e-perception/blob/master/README.md",
     "manifest": "https://raw.githubusercontent.com/reonZ/pf2e-perception/master/module.json",
-    "download": "https://github.com/reonZ/pf2e-perception/releases/download/0.42.0/module.zip",
+    "download": "https://github.com/reonZ/pf2e-perception/releases/download/0.42.1/module.zip",
     "changelog": "https://github.com/reonZ/pf2e-perception/blob/master/CHANGELOG.md",
     "bugs": "https://github.com/reonZ/pf2e-perception/issues",
     "styles": [

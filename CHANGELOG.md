@@ -1,3 +1,7 @@
+# 0.42.1
+
+-   fix issue when a fake actor is passed in a check roll
+
 # 0.42.0
 
 -   now cache conditionals DOM elements for a small boost in performance
