@@ -1,3 +1,7 @@
+# 0.43.0
+
+-   expose new `check.getFlatCheckDc` function to the API
+
 # 0.42.1
 
 -   fix issue when a fake actor is passed in a check roll
