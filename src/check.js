@@ -281,3 +281,28 @@ export function renderCheckModifiersDialog(dialog, html) {
 
     dialog.setPosition();
 }
+
+export function getFlatCheckDc(originToken, targetToken, extraOptions = []) {
+    const perception = perceptionRules(originToken, targetToken, {
+        extraOptions,
+    });
+
+    const visibility = getVisibility(targetToken, originToken, {
+        perception,
+        affects: "target",
+    });
+    if (!visibility) return 0;
+
+    const dc = (() => {
+        const dc = getPerception(perception, "target", "visibility", "dc", visibility)?.first();
+        const numberedDC = asNumberOnly(dc);
+        if (!numberedDC) return numberedDC;
+
+        const sign = dc[0];
+        if (!["-", "+"].includes(sign)) return numberedDC;
+
+        return (visibility === "concealed" ? 5 : 11) + numberedDC;
+    })();
+
+    return dc ?? (visibility === "concealed" ? 5 : 11);
+}

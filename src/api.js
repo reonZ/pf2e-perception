@@ -1,4 +1,5 @@
 import { getCoverEffect, hasGreaterDarkvision, isProne, seeInvisibility } from "./actor.js";
+import { getFlatCheckDc } from "./check.js";
 import {
     clearDebug,
     getRectEdges,
@@ -31,6 +32,9 @@ import {
 } from "./token.js";
 
 export const API = {
+    check: {
+        getFlatCheckDc,
+    },
     geometry: {
         clearDebug,
         getRectEdges,
